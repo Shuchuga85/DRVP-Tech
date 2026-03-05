@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "2/fOKzphoL8=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\shuch\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.2\\microsoft.aspnetcore.openapi.10.0.2.nupkg.sha512",
+    "C:\\Users\\shuch\\.nuget\\packages\\microsoft.aspnetcore.spaproxy\\10.0.3\\microsoft.aspnetcore.spaproxy.10.0.3.nupkg.sha512",
+    "C:\\Users\\shuch\\.nuget\\packages\\microsoft.openapi\\2.0.0\\microsoft.openapi.2.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

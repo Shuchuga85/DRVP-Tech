@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="danceschoolapp.client/danceschoolapp.client.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="DanceSchoolApp.Server/DanceSchoolApp.Server.csproj" />
+</Solution>
