@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace DanceSchoolApp.Server.Models;
+
+public partial class Modality
+{
+    public int ModalityId { get; set; }
+
+    public string Name { get; set; } = null!;
+
+    public virtual ICollection<CoachClass> CoachClasses { get; set; } = new List<CoachClass>();
+
+    public virtual ICollection<Coach> IdCoaches { get; set; } = new List<Coach>();
+
+    public virtual ICollection<Studio> IdStudios { get; set; } = new List<Studio>();
+}

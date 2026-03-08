@@ -1,13 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
 
-namespace DanceSchoolApp.Server.Models
+namespace DanceSchoolApp.Server.Models;
+
+public partial class Role
 {
-    public class Role
-    {
-        [Key]
-        public int Role_Id { get; set; }
-        public string Role_Name { get; set; }
+    public byte RoleId { get; set; }
 
-        public ICollection<UserRole> UserRoles { get; set; }
-    }
+    public string RoleName { get; set; } = null!;
+
+    public virtual ICollection<User> IdUsers { get; set; } = new List<User>();
 }

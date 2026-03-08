@@ -1,11 +1,21 @@
+using DanceSchoolApp.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.SqlServer;
-using DanceSchoolApp.Server.Data;
 using System;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+var serviceTypes = Assembly.GetExecutingAssembly()
+    .GetTypes()
+    .Where(t => t.IsClass && t.Name.EndsWith("Service"));
+
+foreach (var service in serviceTypes)
+{
+    builder.Services.AddScoped(service);
+}
+
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -16,7 +26,7 @@ if (conn == null) Console.WriteLine("Warning - Failed to get Db enviromental var
 
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(Environment.GetEnvironmentVariable("DanceSchoolApp_DB")));
+    options.UseSqlServer(conn));
 
 builder.Services.AddEndpointsApiExplorer();
 

@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DanceSchoolApp.Server.Models;
 using DanceSchoolApp.Server.DTOs;
+using Microsoft.AspNetCore.Http.HttpResults;
+using DanceSchoolApp.Server.Services;
 
 
 namespace DanceSchoolApp.Server.Controllers
@@ -13,55 +15,52 @@ namespace DanceSchoolApp.Server.Controllers
     public class AuthController : ControllerBase
     {
 
-        private readonly AppDbContext _context;
+        private readonly AuthService _authService;
 
-        public AuthController(AppDbContext context)
+
+        public AuthController(AuthService authService)
         {
-            _context = context;
+            _authService = authService;
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var user = await _context.User
-                .Include(u => u.UserRoles)
-                .ThenInclude(ur => ur.Role)
-                .FirstOrDefaultAsync(u => u.Username == request.Username);
-
-            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password_Hash))
-                return Unauthorized("Invalid username or password");
-
-            if (!user.Is_Active)
-                return Unauthorized("User is inactive");
-
-            // For now we just return user info and roles
-            var roles = user.UserRoles.Select(ur => ur.Role.Role_Name).ToList();
-
-            return Ok(new
+            try
             {
-                userId = user.User_Id,
-                username = user.Username,
-                roles
-            });
+                var result = await _authService.LoginAsync(request);
+
+                if (result is null || result.Success == false)
+                    return BadRequest("User login failed");
+                
+                // result.Roles later
+
+                return Ok("User logged in");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register(LoginRequest request)
         {
-            var hash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
-            var user = new User
+            try
             {
-                Username = request.Username,
-                Password_Hash = hash,
-                Is_Active = true,
-                Created_At = DateTime.Now
-            };
+                var result = await _authService.RegisterAsync(request);
 
-            _context.User.Add(user);
-            await _context.SaveChangesAsync();
+                if (!result)
+                    return BadRequest("User failed to register");
 
-            return Ok(user);
+                return Ok("New user registered");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            
         }
     }
 }
