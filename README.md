@@ -29,7 +29,7 @@ Este repositório contém o desenvolvimento do trabalho realizado no âmbito do 
 ---
 
 ## 📂 Estrutura da Documentação do projeto
-...bash
+```bash
 Docs/
   Diagramas/
     ER_Diagram
@@ -37,4 +37,4 @@ Docs/
     Aula_Sequence_Diagram
     Figurino_Sequence_Diagram
 https://dbdiagram.io/d/Proj50_10-651fc996ffbf5169f02a1443
-...
+```
