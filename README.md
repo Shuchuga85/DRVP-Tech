@@ -28,6 +28,12 @@ Este repositório contém o desenvolvimento do trabalho realizado no âmbito do 
 
 ---
 
+## Ferramentas e Links
+Diagrama ER -> https://dbdiagram.io/d/Proj50_10-651fc996ffbf5169f02a1443
+Mockups em Figma -> https://www.figma.com/site/LPWLS162F4YUpQlvcLtgrU/ENT-ARTES?node-id=0-1&t=tpL1WClgzJuTTfCi-1
+
+---
+
 ## 📂 Estrutura da Documentação do projeto
 ```bash
 Docs/
@@ -36,5 +42,6 @@ Docs/
     Class_Diagram
     Aula_Sequence_Diagram
     Figurino_Sequence_Diagram
-https://dbdiagram.io/d/Proj50_10-651fc996ffbf5169f02a1443
+
 ```
+---
