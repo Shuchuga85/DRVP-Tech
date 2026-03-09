@@ -13,6 +13,9 @@ public partial class Coach
 
     public string? PhotoUrl { get; set; }
 
+    public bool IsActive { get; set; }
+
+
     public virtual ICollection<BlockedPeriod> BlockedPeriods { get; set; } = new List<BlockedPeriod>();
 
     public virtual ICollection<CoachAvailability> CoachAvailabilities { get; set; } = new List<CoachAvailability>();

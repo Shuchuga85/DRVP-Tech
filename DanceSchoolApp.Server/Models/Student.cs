@@ -11,6 +11,8 @@ public partial class Student
 
     public int PersonInfoId { get; set; }
 
+    public bool IsActive { get; set; }
+
     public virtual Parent IdParentNavigation { get; set; } = null!;
 
     public virtual ICollection<Participant> Participants { get; set; } = new List<Participant>();

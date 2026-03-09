@@ -9,6 +9,8 @@ public partial class Parent
 
     public int PersonInfoId { get; set; }
 
+    public bool IsActive { get; set; } 
+
     public virtual User ParentNavigation { get; set; } = null!;
 
     public virtual PersonInfo PersonInfo { get; set; } = null!;

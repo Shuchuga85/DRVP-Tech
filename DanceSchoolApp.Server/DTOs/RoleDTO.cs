@@ -1,6 +1,6 @@
 ﻿namespace DanceSchoolApp.Server.DTOs
 {
-    public class RoleRequest
+    public class RoleCreateRequest
     {
         public byte RoleId { get; set; }
         public string RoleName { get; set; }
@@ -16,7 +16,13 @@
     {
         public byte RoleId { get; set; }
         public string RoleName { get; set; } = null!;
-        public List<UserResponse> Users { get; set; } = new();
+        public List<UserListResponse> Users { get; set; } = new();
+    }
+
+    public class RoleSummaryResponse
+    {
+        public byte RoleId { get; set; }
+        public string RoleName { get; set; }
     }
 
 }

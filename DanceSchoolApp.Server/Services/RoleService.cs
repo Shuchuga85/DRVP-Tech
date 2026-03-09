@@ -15,7 +15,7 @@ namespace DanceSchoolApp.Server.Services
         }
 
 
-        public async Task<bool> AddRoleAsync(RoleRequest request)
+        public async Task<bool> CreateRoleAsync(RoleCreateRequest request)
         {
             if (request.RoleName == null)
                 throw new Exception("rolename is null");
@@ -31,12 +31,12 @@ namespace DanceSchoolApp.Server.Services
         }
 
 
-        public async Task<List<Role>> AllRolesAsync()
+        public async Task<List<Role>> GetRolesAsync()
         {
             return await _context.Roles.ToListAsync();
         }
 
-        public async Task<RoleResponse> GetRolesAsync(int id)
+        public async Task<RoleResponse> GetRoleAsync(int id)
         {
             var role = await _context.Roles
                    .Include(r => r.IdUsers) 
@@ -49,19 +49,20 @@ namespace DanceSchoolApp.Server.Services
                     RoleId = role.RoleId,
                     RoleName = role.RoleName,
                     Users = role.IdUsers
-                    .Select(u => new UserResponse
+                    .Select(u => new UserListResponse
                     {
                         UserId = u.UserId,
                         Usarname = u.Username,
                         IsActive = u.IsActive,
-                        CreatedAt = u.CreatedAt
-                        
+                        CreatedAt = u.CreatedAt,
+                        IdRoles = null
+                       
                     }).ToList()
                  };
             return response;
         }
 
-        public async Task<bool> AssignRoleAsync(RoleAssign request)
+        public async Task<bool> AddRoleAsync(RoleAssign request)
         {
             var user = await _context.Users
                    .Include(u => u.IdRoles)

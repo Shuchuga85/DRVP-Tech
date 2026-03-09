@@ -15,22 +15,28 @@ namespace DanceSchoolApp.Server.Services
             _context = context;
         }
 
-        public async Task<List<UserResponse>> AllUsersAsync()
+        public async Task<List<UserListResponse>> GetUsersAsync()
         {
-            var user = await _context.Users.ToListAsync();
+            var user = await _context.Users.Include(u=> u.IdRoles)
+                .ToListAsync();
 
-            var response = user.Select(r => new UserResponse
+            var response = user.Select(r => new UserListResponse
             {
                 UserId = r.UserId,
                 Usarname = r.Username,
                 IsActive = r.IsActive,
-                CreatedAt = r.CreatedAt
+                CreatedAt = r.CreatedAt,
+                IdRoles = r.IdRoles.Select(r => new RoleSummaryResponse
+                {
+                    RoleId = r.RoleId,
+                    RoleName = r.RoleName
+                }).ToList()
             }).ToList();
 
             return response;
         }
 
-        public async Task<UserAltResponse> GetUserAsync(int id)
+        public async Task<UserDetailResponse> GetUserAsync(int id)
         {
             var user = await _context.Users
                     .Include(u => u.Coach)
@@ -42,7 +48,7 @@ namespace DanceSchoolApp.Server.Services
             if (user == null)
                 throw new Exception("Failed to find user");
 
-            var response = new UserAltResponse
+            var response = new UserDetailResponse
             {
                 UserId = user.UserId,
                 Username = user.Username,
@@ -65,7 +71,7 @@ namespace DanceSchoolApp.Server.Services
                     Position = user.Staff.Position
                 },
 
-                IdRoles = user.IdRoles.Select(r => new RoleAltResponse
+                IdRoles = user.IdRoles.Select(r => new RoleSummaryResponse
                 {
                     RoleId = r.RoleId,
                     RoleName = r.RoleName
@@ -75,7 +81,7 @@ namespace DanceSchoolApp.Server.Services
             return response;
         }
 
-        public async Task<bool> SetUserActiveAsync(UserActiveRequest request)
+        public async Task<bool> SetUserStateAsync(UserActivationRequest request)
         {
             var rowsAffected = await _context.Users
                 .Where(u => u.UserId == request.UserId)

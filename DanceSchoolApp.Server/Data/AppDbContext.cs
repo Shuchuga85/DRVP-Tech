@@ -104,6 +104,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.IdUserNavigation).WithMany(p => p.AuditLogs)
                 .HasForeignKey(d => d.IdUser)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK__Audit_Log__id_us__6BE40491");
         });
 
@@ -147,7 +148,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.IdCoachClassNavigation).WithOne(p => p.ClassValidation)
                 .HasForeignKey<ClassValidation>(d => d.IdCoachClass)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK__Class_Val__id_co__4C6B5938");
         });
 
@@ -167,6 +168,8 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.PhotoUrl)
                 .HasMaxLength(256)
                 .HasColumnName("photo_url");
+            entity.Property(e => e.IsActive).HasDefaultValue(true).HasColumnName("is_active");
+
 
             entity.HasOne(d => d.CoachNavigation).WithOne(p => p.Coach)
                 .HasForeignKey<Coach>(d => d.CoachId)
@@ -239,22 +242,22 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.CoachClasses)
                 .HasForeignKey(d => d.CreatedBy)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK__Coach_Cla__creat__45BE5BA9");
 
             entity.HasOne(d => d.IdCoachNavigation).WithMany(p => p.CoachClasses)
                 .HasForeignKey(d => d.IdCoach)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK__Coach_Cla__id_co__44CA3770");
 
             entity.HasOne(d => d.IdModalityNavigation).WithMany(p => p.CoachClasses)
                 .HasForeignKey(d => d.IdModality)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK__Coach_Cla__id_mo__42E1EEFE");
 
             entity.HasOne(d => d.IdStudioNavigation).WithMany(p => p.CoachClasses)
                 .HasForeignKey(d => d.IdStudio)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK__Coach_Cla__id_st__43D61337");
         });
 
@@ -324,6 +327,8 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.CatgName)
                 .HasMaxLength(128)
                 .HasColumnName("catg_name");
+            entity.Property(e => e.IsActive).HasDefaultValue(true).HasColumnName("is_active");
+
         });
 
         modelBuilder.Entity<ItemContact>(entity =>
@@ -359,6 +364,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.IdItemNavigation).WithMany(p => p.ItemImages)
                 .HasForeignKey(d => d.IdItem)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Item_Imag__id_it__634EBE90");
         });
 
@@ -381,10 +387,12 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.IdParentNavigation).WithMany(p => p.ItemRequisitions)
                 .HasForeignKey(d => d.IdParent)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK__Item_Requ__id_pa__690797E6");
 
             entity.HasOne(d => d.ItemVariant).WithMany(p => p.ItemRequisitions)
                 .HasForeignKey(d => d.ItemVariantId)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK__Item_Requ__item___681373AD");
         });
 
@@ -406,6 +414,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.IdItemNavigation).WithMany(p => p.ItemVariants)
                 .HasForeignKey(d => d.IdItem)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Item_Vari__id_it__607251E5");
         });
 
@@ -419,6 +428,8 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Name)
                 .HasMaxLength(64)
                 .HasColumnName("name");
+            entity.Property(e => e.IsActive).HasDefaultValue(true).HasColumnName("is_active");
+
         });
 
         modelBuilder.Entity<NewsPost>(entity =>
@@ -468,6 +479,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.IdUserNavigation).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.IdUser)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK__Notificat__id_us__6EC0713C");
         });
 
@@ -481,6 +493,8 @@ public partial class AppDbContext : DbContext
                 .ValueGeneratedNever()
                 .HasColumnName("parent_id");
             entity.Property(e => e.PersonInfoId).HasColumnName("person_info_id");
+            entity.Property(e => e.IsActive).HasDefaultValue(true).HasColumnName("is_active");
+
 
             entity.HasOne(d => d.ParentNavigation).WithOne(p => p.Parent)
                 .HasForeignKey<Parent>(d => d.ParentId)
@@ -511,12 +525,12 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.IdCoachClassNavigation).WithMany(p => p.Participants)
                 .HasForeignKey(d => d.IdCoachClass)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK__Participa__id_co__489AC854");
 
             entity.HasOne(d => d.IdStudentNavigation).WithMany(p => p.Participants)
                 .HasForeignKey(d => d.IdStudent)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK__Participa__id_st__498EEC8D");
         });
 
@@ -571,6 +585,8 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Position)
                 .HasMaxLength(64)
                 .HasColumnName("position");
+            entity.Property(e => e.IsActive).HasDefaultValue(true).HasColumnName("is_active");
+
 
             entity.HasOne(d => d.PersonInfo).WithMany(p => p.Staff)
                 .HasForeignKey(d => d.PersonInfoId)
@@ -592,6 +608,8 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.StudentId).HasColumnName("student_id");
             entity.Property(e => e.IdParent).HasColumnName("id_parent");
             entity.Property(e => e.PersonInfoId).HasColumnName("person_info_id");
+            entity.Property(e => e.IsActive).HasDefaultValue(true).HasColumnName("is_active");
+
 
             entity.HasOne(d => d.IdParentNavigation).WithMany(p => p.Students)
                 .HasForeignKey(d => d.IdParent)
@@ -684,6 +702,7 @@ public partial class AppDbContext : DbContext
                     });
         });
 
+  
         OnModelCreatingPartial(modelBuilder);
     }
 

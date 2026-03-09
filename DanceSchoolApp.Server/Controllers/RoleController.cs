@@ -1,13 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using DanceSchoolApp.Server.DTOs;
+﻿using DanceSchoolApp.Server.DTOs;
 using DanceSchoolApp.Server.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DanceSchoolApp.Server.Controllers
 {
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[controller]s")]
     public class RoleController : ControllerBase
     {
 
@@ -18,12 +19,14 @@ namespace DanceSchoolApp.Server.Controllers
             _roleService = roleService;
         }
 
-        [HttpPost("add")]
-        public async Task<IActionResult> AddRole([FromBody] RoleRequest request)
+
+        [Authorize(Roles = "admin")]
+        [HttpPost]
+        public async Task<IActionResult> CreateRole([FromBody] RoleCreateRequest request)
         {
             try
             {
-                var result = await _roleService.AddRoleAsync(request);
+                var result = await _roleService.CreateRoleAsync(request);
 
                 if (!result)
                     return BadRequest("Failed to add role");
@@ -37,12 +40,12 @@ namespace DanceSchoolApp.Server.Controllers
             }
         }
 
-        [HttpGet("all")]
-        public async Task<IActionResult> AllRoles() 
+        [HttpGet]
+        public async Task<IActionResult> GetRoles() 
         {
             try
             {
-                var roles = await _roleService.AllRolesAsync();
+                var roles = await _roleService.GetRolesAsync();
 
                 if (roles is null || !roles.Any()) 
                 {
@@ -58,11 +61,11 @@ namespace DanceSchoolApp.Server.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetRoles(int id)
+        public async Task<IActionResult> GetRole(int id)
         {
             try
             {
-                var role = await _roleService.GetRolesAsync(id);
+                var role = await _roleService.GetRoleAsync(id);
 
                 return Ok(role);
             }
@@ -72,12 +75,12 @@ namespace DanceSchoolApp.Server.Controllers
             }
         }
 
-        [HttpPost("assign")]
-        public async Task<IActionResult> AssignRole([FromBody] RoleAssign request)
+        [HttpPut("add")]
+        public async Task<IActionResult> AddRole([FromBody] RoleAssign request)
         {
             try
             {
-                var result = await _roleService.AssignRoleAsync(request);
+                var result = await _roleService.AddRoleAsync(request);
 
                 if(!result)
                     return BadRequest("Failed to assign role");
@@ -91,7 +94,7 @@ namespace DanceSchoolApp.Server.Controllers
             }
         }
 
-        [HttpPost("remove")]
+        [HttpPut("remove")]
         public async Task<IActionResult> RemoveRole([FromBody] RoleAssign request)
         {
             try

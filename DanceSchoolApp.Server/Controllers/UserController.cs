@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DanceSchoolApp.Server.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[controller]s")]
     public class UserController : ControllerBase
     {
         private readonly UserService _userService;
@@ -16,12 +16,12 @@ namespace DanceSchoolApp.Server.Controllers
         }
 
 
-        [HttpGet("all")]
-        public async Task<IActionResult> AllUsers()
+        [HttpGet]
+        public async Task<IActionResult> GetUsers()
         {
             try
             {
-                var result = await _userService.AllUsersAsync();
+                var result = await _userService.GetUsersAsync();
 
                 if (result is null || !result.Any())
                 {
@@ -57,7 +57,7 @@ namespace DanceSchoolApp.Server.Controllers
         {
             try
             {
-                var result = await _userService.SetUserActiveAsync(new UserActiveRequest{UserId= id, IsActive = true});
+                var result = await _userService.SetUserStateAsync(new UserActivationRequest{UserId= id, IsActive = true});
 
                 if (!result)
                     return BadRequest("Failed to activate user");
@@ -75,7 +75,7 @@ namespace DanceSchoolApp.Server.Controllers
         {
             try
             {
-                var result = await _userService.SetUserActiveAsync(new UserActiveRequest { UserId = id, IsActive = false });
+                var result = await _userService.SetUserStateAsync(new UserActivationRequest { UserId = id, IsActive = false });
 
                 if (!result)
                     return BadRequest("Failed to deactivate user");
@@ -87,9 +87,6 @@ namespace DanceSchoolApp.Server.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
-
-
-
 
     }
 }
