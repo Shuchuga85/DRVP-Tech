@@ -29,9 +29,9 @@ Este repositório contém o desenvolvimento do trabalho realizado no âmbito do 
 ---
 
 ## Ferramentas e Links
-**Ferraments utilizada**
-Diagrama ER -> https://dbdiagram.io/d/Proj50_10-651fc996ffbf5169f02a1443
-Mockups em Figma -> https://www.figma.com/site/LPWLS162F4YUpQlvcLtgrU/ENT-ARTES?node-id=0-1&t=tpL1WClgzJuTTfCi-1
+**Ferraments utilizada**\n
+Diagrama ER -> https://dbdiagram.io/d/Proj50_10-651fc996ffbf5169f02a1443\n
+Mockups em Figma -> https://www.figma.com/site/LPWLS162F4YUpQlvcLtgrU/ENT-ARTES?node-id=0-1&t=tpL1WClgzJuTTfCi-1\n
 
 ---
 
