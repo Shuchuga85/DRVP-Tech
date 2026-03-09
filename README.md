@@ -30,4 +30,10 @@ Este repositório contém o desenvolvimento do trabalho realizado no âmbito do 
 
 ## 📂 Estrutura do Projeto
 
+  Git Tree:  
+    [main](https://github.com/wpaulosilva/DRVP-Tech/)  
+    [dev](https://github.com/wpaulosilva/DRVP-Tech/tree/Dev)  
+    [documentation](https://github.com/wpaulosilva/DRVP-Tech/tree/documentation)   
+    [product]()
+  
 ...
