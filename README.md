@@ -29,7 +29,6 @@ Este repositório contém o desenvolvimento do trabalho realizado no âmbito do 
 ---
 
 ## Ferramentas e Links
-[Contribution guidelines for this project](Docs/ER_DiagramOnline.md)  
 Diagrama ER -> [DbDiagram.io](https://dbdiagram.io/d/Proj50_10-651fc996ffbf5169f02a1443)  
 Mockups em Figma -> [Figma.com](https://www.figma.com/site/LPWLS162F4YUpQlvcLtgrU/ENT-ARTES?node-id=0-1&t=tpL1WClgzJuTTfCi-1)  
 
@@ -39,10 +38,10 @@ Mockups em Figma -> [Figma.com](https://www.figma.com/site/LPWLS162F4YUpQlvcLtgr
 ```bash
 Docs/
   Diagrams/
-    ER_Diagram
-    Class_Diagram
-    Aula_Sequence_Diagram
-    Figurino_Sequence_Diagram
+    ER_Diagram.jpeg
+    Class_Diagram.jpeg
+    Aula_Sequence_Diagram.jpeg
+    Figurino_Sequence_Diagram.jpeg
 
 ```
 ---
