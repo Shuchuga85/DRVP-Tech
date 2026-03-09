@@ -28,6 +28,6 @@ Este repositório contém o desenvolvimento do trabalho realizado no âmbito do 
 
 ---
 
-## 📂 Estrutura do Projeto
+## 📂 Estrutura da Documentação do projeto
 
 ...
