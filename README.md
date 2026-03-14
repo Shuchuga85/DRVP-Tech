@@ -39,13 +39,14 @@ Mockups em Figma -> [Figma.com](https://www.figma.com/site/LPWLS162F4YUpQlvcLtgr
 Docs/
   [Relatório]
   Diagrams/
-    ER_Diagram.jpeg
+    ER_Diagram.png
     [Class_Diagram.jpeg]
-    Aula_Sequence_Diagram.jpeg
-    Figurino_Sequence_Diagram.jpeg
-    visualprojeto.vpp
+    ...
   Sql/
     script.sql
+  VisualParadigm/
+    ER_diargram.vpp
+    ...
   
 
 ```
