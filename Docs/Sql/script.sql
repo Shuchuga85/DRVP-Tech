@@ -1,4 +1,4 @@
-/****** Object:  Database [DanceSchoolDb]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Database [DanceSchoolDb]    Script Date: 3/14/2026 6:19:30 PM ******/
 CREATE DATABASE [DanceSchoolDb]  (EDITION = 'GeneralPurpose', SERVICE_OBJECTIVE = 'GP_S_Gen5_1', MAXSIZE = 32 GB) WITH CATALOG_COLLATION = SQL_Latin1_General_CP1_CI_AS, LEDGER = OFF;
 GO
 ALTER DATABASE [DanceSchoolDb] SET COMPATIBILITY_LEVEL = 170
@@ -47,15 +47,15 @@ GO
 GO
 -- ALTER DATABASE SCOPED CONFIGURATION SET MAXDOP = 8;
 GO
-/****** Object:  Table [dbo].[App_Setting]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[App_Setting]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[App_Setting](
 	[setting_id] [int] IDENTITY(1,1) NOT NULL,
-	[key] [nvarchar](64) NULL,
-	[value] [nvarchar](128) NULL,
+	[setting_key] [nvarchar](64) NULL,
+	[setting_value] [nvarchar](128) NULL,
 	[updated_at] [date] NULL,
 PRIMARY KEY CLUSTERED 
 (
@@ -63,7 +63,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Blocked_Period]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Blocked_Period]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -82,24 +82,22 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Coach]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Coach]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[Coach](
 	[coach_id] [int] NOT NULL,
-	[person_info_id] [int] NOT NULL,
 	[biography] [nvarchar](256) NULL,
 	[photo_url] [nvarchar](256) NULL,
-	[is_active] [bit] NOT NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[coach_id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Coach_Availability]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Coach_Availability]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -118,7 +116,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Coach_Class]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Coach_Class]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -142,7 +140,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Coach_Modality]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Coach_Modality]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -157,7 +155,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Event]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Event]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -170,14 +168,14 @@ CREATE TABLE [dbo].[Event](
 	[end_datetime] [datetime2](7) NULL,
 	[image_url] [nvarchar](256) NULL,
 	[is_active] [bit] NOT NULL,
-	[created_by] [int] NOT NULL,
+	[created_by] [int] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[event_id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Item]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Item]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -198,7 +196,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Item_Category]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Item_Category]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -213,7 +211,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Item_Contact]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Item_Contact]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -222,14 +220,13 @@ CREATE TABLE [dbo].[Item_Contact](
 	[icontact_id] [int] IDENTITY(1,1) NOT NULL,
 	[phone_number] [varchar](20) NULL,
 	[email] [nvarchar](254) NULL,
-	[address] [nvarchar](128) NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[icontact_id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Item_Images]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Item_Images]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -244,7 +241,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Item_Requisition]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Item_Requisition]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -255,8 +252,8 @@ CREATE TABLE [dbo].[Item_Requisition](
 	[id_parent] [int] NOT NULL,
 	[quantity] [int] NOT NULL,
 	[requested_at] [datetime2](7) NOT NULL,
-	[approved_at] [datetime2](7) NULL,
-	[rejected_at] [datetime2](7) NULL,
+	[need_from] [datetime2](7) NULL,
+	[need_until] [datetime2](7) NULL,
 	[expected_return_date] [date] NULL,
 	[returned_at] [datetime2](7) NULL,
 	[status] [tinyint] NOT NULL,
@@ -266,7 +263,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Item_Variant]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Item_Variant]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -285,7 +282,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Modality]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Modality]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -300,7 +297,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[News_Post]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[News_Post]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -312,14 +309,14 @@ CREATE TABLE [dbo].[News_Post](
 	[description] [nvarchar](256) NULL,
 	[image_url] [nvarchar](256) NULL,
 	[created_at] [date] NULL,
-	[created_by] [int] NOT NULL,
+	[created_by] [int] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[post_id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Notification]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Notification]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -342,22 +339,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Parent]    Script Date: 3/10/2026 7:57:21 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[Parent](
-	[parent_id] [int] NOT NULL,
-	[person_info_id] [int] NOT NULL,
-	[is_active] [bit] NOT NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[parent_id] ASC
-)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-GO
-/****** Object:  Table [dbo].[Participant]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Participant]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -381,7 +363,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Person_Info]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Person_Info]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -393,13 +375,14 @@ CREATE TABLE [dbo].[Person_Info](
 	[birth_date] [date] NULL,
 	[phone] [varchar](20) NULL,
 	[address] [nvarchar](128) NULL,
+	[nif] [varchar](9) NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[person_id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Role]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Role]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -417,30 +400,14 @@ UNIQUE NONCLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Staff]    Script Date: 3/10/2026 7:57:21 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[Staff](
-	[staff_id] [int] NOT NULL,
-	[person_info_id] [int] NOT NULL,
-	[position] [nvarchar](64) NULL,
-	[is_active] [bit] NOT NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[staff_id] ASC
-)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-GO
-/****** Object:  Table [dbo].[Student]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Student]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[Student](
 	[student_id] [int] IDENTITY(1,1) NOT NULL,
-	[id_parent] [int] NOT NULL,
+	[parent_user_id] [int] NOT NULL,
 	[person_info_id] [int] NOT NULL,
 	[is_active] [bit] NOT NULL,
 PRIMARY KEY CLUSTERED 
@@ -449,7 +416,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Studio]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Studio]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -466,7 +433,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Studio_Modality]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[Studio_Modality]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -481,7 +448,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[User]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[User]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -493,6 +460,7 @@ CREATE TABLE [dbo].[User](
 	[is_active] [bit] NOT NULL,
 	[created_at] [date] NOT NULL,
 	[email] [nvarchar](254) NULL,
+	[person_info_id] [int] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[user_id] ASC
@@ -503,7 +471,7 @@ UNIQUE NONCLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[User_Role]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Table [dbo].[User_Role]    Script Date: 3/14/2026 6:19:30 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -518,7 +486,7 @@ PRIMARY KEY CLUSTERED
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_CoachClass_Coach_Time]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Index [IX_CoachClass_Coach_Time]    Script Date: 3/14/2026 6:19:30 PM ******/
 CREATE NONCLUSTERED INDEX [IX_CoachClass_Coach_Time] ON [dbo].[Coach_Class]
 (
 	[id_coach] ASC,
@@ -526,13 +494,13 @@ CREATE NONCLUSTERED INDEX [IX_CoachClass_Coach_Time] ON [dbo].[Coach_Class]
 	[end_datetime] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_CoachClass_Start]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Index [IX_CoachClass_Start]    Script Date: 3/14/2026 6:19:30 PM ******/
 CREATE NONCLUSTERED INDEX [IX_CoachClass_Start] ON [dbo].[Coach_Class]
 (
 	[start_datetime] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_CoachClass_Studio_Time]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Index [IX_CoachClass_Studio_Time]    Script Date: 3/14/2026 6:19:30 PM ******/
 CREATE NONCLUSTERED INDEX [IX_CoachClass_Studio_Time] ON [dbo].[Coach_Class]
 (
 	[id_studio] ASC,
@@ -540,19 +508,19 @@ CREATE NONCLUSTERED INDEX [IX_CoachClass_Studio_Time] ON [dbo].[Coach_Class]
 	[end_datetime] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ItemRequisition_Parent]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Index [IX_ItemRequisition_Parent]    Script Date: 3/14/2026 6:19:30 PM ******/
 CREATE NONCLUSTERED INDEX [IX_ItemRequisition_Parent] ON [dbo].[Item_Requisition]
 (
 	[id_parent] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Participant_Class]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Index [IX_Participant_Class]    Script Date: 3/14/2026 6:19:30 PM ******/
 CREATE NONCLUSTERED INDEX [IX_Participant_Class] ON [dbo].[Participant]
 (
 	[id_coach_class] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Participant_Student]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Index [IX_Participant_Student]    Script Date: 3/14/2026 6:19:30 PM ******/
 CREATE NONCLUSTERED INDEX [IX_Participant_Student] ON [dbo].[Participant]
 (
 	[id_student] ASC
@@ -560,15 +528,13 @@ CREATE NONCLUSTERED INDEX [IX_Participant_Student] ON [dbo].[Participant]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UX_User_Email]    Script Date: 3/10/2026 7:57:21 PM ******/
+/****** Object:  Index [UX_User_Email]    Script Date: 3/14/2026 6:19:30 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_User_Email] ON [dbo].[User]
 (
 	[email] ASC
 )
 WHERE ([email] IS NOT NULL)
 WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-ALTER TABLE [dbo].[Coach] ADD  DEFAULT ((1)) FOR [is_active]
 GO
 ALTER TABLE [dbo].[Coach_Class] ADD  DEFAULT (getdate()) FOR [created_at]
 GO
@@ -581,10 +547,6 @@ GO
 ALTER TABLE [dbo].[Modality] ADD  DEFAULT ((1)) FOR [is_active]
 GO
 ALTER TABLE [dbo].[Notification] ADD  DEFAULT ((0)) FOR [is_deleted]
-GO
-ALTER TABLE [dbo].[Parent] ADD  DEFAULT ((1)) FOR [is_active]
-GO
-ALTER TABLE [dbo].[Staff] ADD  DEFAULT ((1)) FOR [is_active]
 GO
 ALTER TABLE [dbo].[Student] ADD  DEFAULT ((1)) FOR [is_active]
 GO
@@ -602,9 +564,6 @@ REFERENCES [dbo].[Studio] ([studio_id])
 GO
 ALTER TABLE [dbo].[Coach]  WITH CHECK ADD FOREIGN KEY([coach_id])
 REFERENCES [dbo].[User] ([user_id])
-GO
-ALTER TABLE [dbo].[Coach]  WITH CHECK ADD FOREIGN KEY([person_info_id])
-REFERENCES [dbo].[Person_Info] ([person_id])
 GO
 ALTER TABLE [dbo].[Coach_Availability]  WITH CHECK ADD FOREIGN KEY([id_coach])
 REFERENCES [dbo].[Coach] ([coach_id])
@@ -627,10 +586,10 @@ GO
 ALTER TABLE [dbo].[Coach_Modality]  WITH CHECK ADD FOREIGN KEY([id_modality])
 REFERENCES [dbo].[Modality] ([modality_id])
 GO
-ALTER TABLE [dbo].[Event]  WITH CHECK ADD  CONSTRAINT [FK_Event_Staff] FOREIGN KEY([created_by])
-REFERENCES [dbo].[Staff] ([staff_id])
+ALTER TABLE [dbo].[Event]  WITH CHECK ADD  CONSTRAINT [FK_Event_User] FOREIGN KEY([created_by])
+REFERENCES [dbo].[User] ([user_id])
 GO
-ALTER TABLE [dbo].[Event] CHECK CONSTRAINT [FK_Event_Staff]
+ALTER TABLE [dbo].[Event] CHECK CONSTRAINT [FK_Event_User]
 GO
 ALTER TABLE [dbo].[Item]  WITH CHECK ADD FOREIGN KEY([id_category])
 REFERENCES [dbo].[Item_Category] ([category_id])
@@ -653,19 +612,13 @@ GO
 ALTER TABLE [dbo].[Item_Variant]  WITH CHECK ADD FOREIGN KEY([id_item])
 REFERENCES [dbo].[Item] ([item_id])
 GO
-ALTER TABLE [dbo].[News_Post]  WITH CHECK ADD  CONSTRAINT [FK_NewsPost_Staff] FOREIGN KEY([created_by])
-REFERENCES [dbo].[Staff] ([staff_id])
+ALTER TABLE [dbo].[News_Post]  WITH CHECK ADD  CONSTRAINT [FK_NewsPost_User] FOREIGN KEY([created_by])
+REFERENCES [dbo].[User] ([user_id])
 GO
-ALTER TABLE [dbo].[News_Post] CHECK CONSTRAINT [FK_NewsPost_Staff]
+ALTER TABLE [dbo].[News_Post] CHECK CONSTRAINT [FK_NewsPost_User]
 GO
 ALTER TABLE [dbo].[Notification]  WITH CHECK ADD FOREIGN KEY([id_user])
 REFERENCES [dbo].[User] ([user_id])
-GO
-ALTER TABLE [dbo].[Parent]  WITH CHECK ADD FOREIGN KEY([parent_id])
-REFERENCES [dbo].[User] ([user_id])
-GO
-ALTER TABLE [dbo].[Parent]  WITH CHECK ADD FOREIGN KEY([person_info_id])
-REFERENCES [dbo].[Person_Info] ([person_id])
 GO
 ALTER TABLE [dbo].[Participant]  WITH CHECK ADD FOREIGN KEY([id_coach_class])
 REFERENCES [dbo].[Coach_Class] ([class_id])
@@ -673,23 +626,26 @@ GO
 ALTER TABLE [dbo].[Participant]  WITH CHECK ADD FOREIGN KEY([id_student])
 REFERENCES [dbo].[Student] ([student_id])
 GO
-ALTER TABLE [dbo].[Staff]  WITH CHECK ADD FOREIGN KEY([person_info_id])
+ALTER TABLE [dbo].[Student]  WITH CHECK ADD  CONSTRAINT [FK_Student_PersonInfo] FOREIGN KEY([person_info_id])
 REFERENCES [dbo].[Person_Info] ([person_id])
 GO
-ALTER TABLE [dbo].[Staff]  WITH CHECK ADD FOREIGN KEY([staff_id])
+ALTER TABLE [dbo].[Student] CHECK CONSTRAINT [FK_Student_PersonInfo]
+GO
+ALTER TABLE [dbo].[Student]  WITH CHECK ADD  CONSTRAINT [FK_Student_UserParent] FOREIGN KEY([parent_user_id])
 REFERENCES [dbo].[User] ([user_id])
 GO
-ALTER TABLE [dbo].[Student]  WITH CHECK ADD FOREIGN KEY([id_parent])
-REFERENCES [dbo].[Parent] ([parent_id])
-GO
-ALTER TABLE [dbo].[Student]  WITH CHECK ADD FOREIGN KEY([person_info_id])
-REFERENCES [dbo].[Person_Info] ([person_id])
+ALTER TABLE [dbo].[Student] CHECK CONSTRAINT [FK_Student_UserParent]
 GO
 ALTER TABLE [dbo].[Studio_Modality]  WITH CHECK ADD FOREIGN KEY([id_modality])
 REFERENCES [dbo].[Modality] ([modality_id])
 GO
 ALTER TABLE [dbo].[Studio_Modality]  WITH CHECK ADD FOREIGN KEY([id_studio])
 REFERENCES [dbo].[Studio] ([studio_id])
+GO
+ALTER TABLE [dbo].[User]  WITH CHECK ADD  CONSTRAINT [FK_User_PersonInfo] FOREIGN KEY([person_info_id])
+REFERENCES [dbo].[Person_Info] ([person_id])
+GO
+ALTER TABLE [dbo].[User] CHECK CONSTRAINT [FK_User_PersonInfo]
 GO
 ALTER TABLE [dbo].[User_Role]  WITH CHECK ADD FOREIGN KEY([id_role])
 REFERENCES [dbo].[Role] ([role_id])
