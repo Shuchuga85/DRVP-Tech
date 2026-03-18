@@ -14,10 +14,9 @@ namespace DanceSchoolApp.Server.Controllers
         {
             _personService = personService;
         }
-
+        /*
 
         #region Add Requests
-
         [HttpPost("add/staff")]
         public async Task<IActionResult> AddStaff([FromBody] StaffRequest request)
         {
@@ -99,7 +98,7 @@ namespace DanceSchoolApp.Server.Controllers
 
         #endregion add
 
-
+        */
 
     }
 }

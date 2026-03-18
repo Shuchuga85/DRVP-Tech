@@ -19,12 +19,15 @@ namespace DanceSchoolApp.Server.Services
 
         public async Task<List<StaffListResponse>> GetStaffsAsync()
         {
-            var staff = await _context.Staff.Include(p => p.PersonInfo).ToListAsync();
+            var staff = await _context.Users
+                .Include(u => u.PersonInfo)
+                .Include(u => u.IdRoles)
+                .Where(u => u.IdRoles.Any(r => r.RoleId == Roles.Staff))
+                .ToListAsync();
 
             var response = staff.Select(r => new StaffListResponse
             {
-                StaffId = r.StaffId,
-                Position = r.Position,
+                StaffId = r.UserId,
                 IsActive = r.IsActive,
                 PersonInfo = r.PersonInfo == null ? null : new PersonListResponse
                 {
@@ -39,24 +42,24 @@ namespace DanceSchoolApp.Server.Services
 
         public async Task<StaffDetailResponse> GetStaffAsync(int id)
         {
-            var staff = await _context.Staff.Include(p => p.PersonInfo)
-                    .FirstOrDefaultAsync(p => p.StaffId == id);
+            var staff = await _context.Users
+                .Include(u => u.PersonInfo)
+                .Include(u => u.IdRoles)
+                .FirstOrDefaultAsync(u => u.UserId == id && u.IdRoles.Any(r => r.RoleId == Roles.Staff));
 
             if (staff == null)
                 throw new Exception("Failed to find Staff");
 
             var response = new StaffDetailResponse
             {
-                StaffId = staff.StaffId,
-                Position = staff.Position,
+                StaffId = staff.UserId,
                 IsActive = staff.IsActive,
-                PersonInfo = new PersonDetailResponse
+                PersonInfo = staff.PersonInfo == null ? null : new PersonDetailResponse
                 {
                     PersonId = staff.PersonInfo.PersonId,
                     FirstName = staff.PersonInfo.FirstName,
                     LastName = staff.PersonInfo.LastName,
                     BirthDate = staff.PersonInfo.BirthDate,
-                    Email = staff.PersonInfo.Email,
                     Phone = staff.PersonInfo.Phone,
                     Address = staff.PersonInfo.Address
                 }
@@ -65,6 +68,7 @@ namespace DanceSchoolApp.Server.Services
             return response;
         }
 
+        /*
         public async Task<bool> CreateStaffAsync(StaffCreateRequest request)
         {
             var user = await _context.Users
@@ -88,7 +92,6 @@ namespace DanceSchoolApp.Server.Services
                     FirstName = request.FirstName,
                     LastName = request.LastName,
                     BirthDate = request.BirthDate,
-                    Email = request.Email,
                     Phone = request.Phone,
                     Address = request.Address
                 }
@@ -106,9 +109,9 @@ namespace DanceSchoolApp.Server.Services
             var rowsAffected = await _context.Staff
                 .Where(u => u.StaffId == request.StaffId)
                 .ExecuteUpdateAsync(u => u.SetProperty(x => x.IsActive, request.IsActive));
-
+           
             return rowsAffected > 0;
         }
-
+        */
     }
 }

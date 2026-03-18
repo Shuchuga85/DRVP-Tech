@@ -14,7 +14,7 @@ namespace DanceSchoolApp.Server.Services
             _context = context;
         }
 
-
+        /*
         public async Task<bool> AddStaffAsync(StaffRequest request)
         {
             var user = await _context.Users
@@ -36,7 +36,6 @@ namespace DanceSchoolApp.Server.Services
                     FirstName = request.FirstName,
                     LastName = request.LastName,
                     BirthDate = request.BirthDate,
-                    Email = request.Email,
                     Phone = request.Phone,
                     Address = request.Address
                 }
@@ -72,7 +71,6 @@ namespace DanceSchoolApp.Server.Services
                     FirstName = request.FirstName,
                     LastName = request.LastName,
                     BirthDate = request.BirthDate,
-                    Email = request.Email,
                     Phone = request.Phone,
                     Address = request.Address
                 }
@@ -104,7 +102,6 @@ namespace DanceSchoolApp.Server.Services
                     FirstName = request.FirstName,
                     LastName = request.LastName,
                     BirthDate = request.BirthDate,
-                    Email = request.Email,
                     Phone = request.Phone,
                     Address = request.Address
                 }
@@ -135,7 +132,6 @@ namespace DanceSchoolApp.Server.Services
                     FirstName = request.FirstName,
                     LastName = request.LastName,
                     BirthDate = request.BirthDate,
-                    Email = request.Email,
                     Phone = request.Phone,
                     Address = request.Address
                 }
@@ -147,6 +143,6 @@ namespace DanceSchoolApp.Server.Services
 
             return true;
         }
-
+        */
     }
 }

@@ -7,9 +7,9 @@ public partial class ItemImage
 {
     public int ImageId { get; set; }
 
-    public int? IdItem { get; set; }
+    public int IdItem { get; set; }
 
     public string? ImageUrl { get; set; }
 
-    public virtual Item? IdItemNavigation { get; set; }
+    public virtual Item IdItemNavigation { get; set; } = null!;
 }

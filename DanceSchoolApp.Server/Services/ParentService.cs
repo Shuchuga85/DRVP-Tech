@@ -18,11 +18,15 @@ namespace DanceSchoolApp.Server.Services
 
         public async Task<List<ParentListResponse>> GetParentsAsync()
         {
-            var parents = await _context.Parents.Include(p => p.PersonInfo).ToListAsync();
+            var users = await _context.Users
+                .Include(u => u.PersonInfo)
+                .Include(u => u.IdRoles)
+                .Where(u => u.IdRoles.Any(r => r.RoleId == Roles.Parent))
+                .ToListAsync();
 
-            var response = parents.Select(r => new ParentListResponse
+            var response = users.Select(r => new ParentListResponse
             {
-                ParentId = r.ParentId,
+                ParentId = r.UserId,
                 IsActive = r.IsActive,
                 PersonInfo = r.PersonInfo == null ? null : new PersonListResponse
                 {
@@ -37,31 +41,33 @@ namespace DanceSchoolApp.Server.Services
 
         public async Task<ParentDetailResponse> GetParentAsync(int id)
         {
-            var parent = await _context.Parents.Include(p => p.PersonInfo)
-                    .FirstOrDefaultAsync(p => p.ParentId == id);
+            var user = await _context.Users
+                .Include(u => u.PersonInfo)
+                .Include(u => u.IdRoles)
+                .FirstOrDefaultAsync(u => u.UserId == id && u.IdRoles.Any(r => r.RoleId == Roles.Parent));
 
-            if (parent == null)
+            if (user == null)
                 throw new Exception("Failed to find parent");
 
             var response = new ParentDetailResponse
             {
-                ParentId = parent.ParentId,
-                IsActive = parent.IsActive,
-                PersonInfo = new PersonDetailResponse
+                ParentId = user.UserId,
+                IsActive = user.IsActive,
+                PersonInfo = user.PersonInfo == null ? null : new PersonDetailResponse
                 {
-                    PersonId = parent.PersonInfo.PersonId,
-                    FirstName = parent.PersonInfo.FirstName,
-                    LastName = parent.PersonInfo.LastName,
-                    BirthDate = parent.PersonInfo.BirthDate,
-                    Email = parent.PersonInfo.Email,
-                    Phone = parent.PersonInfo.Phone,
-                    Address = parent.PersonInfo.Address
+                    PersonId = user.PersonInfo.PersonId,
+                    FirstName = user.PersonInfo.FirstName,
+                    LastName = user.PersonInfo.LastName,
+                    BirthDate = user.PersonInfo.BirthDate,
+                    Phone = user.PersonInfo.Phone,
+                    Address = user.PersonInfo.Address
                 }
             };
 
             return response;
         }
 
+        /*
         public async Task<bool> CreateParentAsync(ParentCreateRequest request)
         {
             var user = await _context.Users
@@ -83,7 +89,6 @@ namespace DanceSchoolApp.Server.Services
                     FirstName = request.FirstName,
                     LastName = request.LastName,
                     BirthDate = request.BirthDate,
-                    Email = request.Email,
                     Phone = request.Phone,
                     Address = request.Address
                 }
@@ -104,7 +109,7 @@ namespace DanceSchoolApp.Server.Services
 
             return rowsAffected > 0;
         }
-
+        */
 
 
     }

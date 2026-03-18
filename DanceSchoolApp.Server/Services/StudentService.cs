@@ -1,5 +1,4 @@
-﻿
-using DanceSchoolApp.Server.Data;
+﻿using DanceSchoolApp.Server.Data;
 using DanceSchoolApp.Server.DTOs;
 using DanceSchoolApp.Server.Models;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +15,7 @@ namespace DanceSchoolApp.Server.Services
             _context = context;
         }
 
-
+        
         public async Task<List<StudentListResponse>> GetStudentsAsync()
         {
             var students = await _context.Students.Include(s => s.PersonInfo).ToListAsync();
@@ -24,7 +23,7 @@ namespace DanceSchoolApp.Server.Services
             var response = students.Select(r => new StudentListResponse
             {
                 StudentId = r.StudentId,
-                IdParent = r.IdParent,
+                IdParent = r.ParentUserId,
                 IsActive = r.IsActive,
                 PersonInfo = r.PersonInfo == null ? null : new PersonListResponse
                 {
@@ -48,7 +47,7 @@ namespace DanceSchoolApp.Server.Services
             var response = new StudentDetailResponse
             {
                 StudentId = student.StudentId,
-                IdParent = student.IdParent,
+                IdParent = student.ParentUserId,
                 IsActive = student.IsActive,
                 PersonInfo = new PersonDetailResponse
                 {
@@ -56,7 +55,6 @@ namespace DanceSchoolApp.Server.Services
                     FirstName= student.PersonInfo.FirstName,
                     LastName= student.PersonInfo.LastName,
                     BirthDate = student.PersonInfo.BirthDate,
-                    Email = student.PersonInfo.Email,
                     Phone = student.PersonInfo.Phone,
                     Address = student.PersonInfo.Address
                 }
@@ -67,10 +65,10 @@ namespace DanceSchoolApp.Server.Services
 
         public async Task<List<StudentListResponse>> GetStudentByParentAsync(int id)
         {
-            var parent = await _context.Parents
+            var parent = await _context.Users
                 .Include(p => p.Students)
                     .ThenInclude(s => s.PersonInfo)
-                .FirstOrDefaultAsync(p => p.ParentId == id);
+                .FirstOrDefaultAsync(p => p.UserId == id);
 
             if (parent == null)
                 throw new Exception("Failed to find parent");
@@ -78,7 +76,7 @@ namespace DanceSchoolApp.Server.Services
             var response = parent.Students.Select(r => new StudentListResponse
             {
                 StudentId = r.StudentId,
-                IdParent = r.IdParent,
+                IdParent = r.ParentUserId,
                 IsActive = r.IsActive,
                 PersonInfo = r.PersonInfo == null ? null : new PersonListResponse
                 {
@@ -93,23 +91,20 @@ namespace DanceSchoolApp.Server.Services
 
         public async Task<bool> CreateStudentAsync(StudentCreateRequest request)
         {
-            var parent = await _context.Parents
-                    .Include(u => u.Students)
-                    .FirstOrDefaultAsync(u => u.ParentId == request.ParentId);
+            var parent = await _context.Users.Include(u => u.Students)
+                    .FirstOrDefaultAsync(u => u.UserId == request.ParentId);
 
             if (parent == null)
                 throw new Exception("Parent not found");
 
             var student = new Student
             {
-                IdParent = parent.ParentId,
-                IdParentNavigation = parent,
+                ParentUserId = parent.UserId,
                 PersonInfo = new PersonInfo
                 {
                     FirstName = request.FirstName,
                     LastName = request.LastName,
                     BirthDate = request.BirthDate,
-                    Email = request.Email,
                     Phone = request.Phone,
                     Address = request.Address
                 }

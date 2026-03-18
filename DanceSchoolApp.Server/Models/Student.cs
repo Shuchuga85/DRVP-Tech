@@ -7,13 +7,13 @@ public partial class Student
 {
     public int StudentId { get; set; }
 
-    public int IdParent { get; set; }
+    public int ParentUserId { get; set; }
 
     public int PersonInfoId { get; set; }
 
     public bool IsActive { get; set; }
 
-    public virtual Parent IdParentNavigation { get; set; } = null!;
+    public virtual User ParentUser { get; set; } = null!;
 
     public virtual ICollection<Participant> Participants { get; set; } = new List<Participant>();
 

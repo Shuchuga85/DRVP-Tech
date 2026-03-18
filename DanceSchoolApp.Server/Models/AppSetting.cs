@@ -7,9 +7,9 @@ public partial class AppSetting
 {
     public int SettingId { get; set; }
 
-    public string? Key { get; set; }
+    public string? SettingKey { get; set; }
 
-    public string? Value { get; set; }
+    public string? SettingValue { get; set; }
 
     public DateOnly? UpdatedAt { get; set; }
 }

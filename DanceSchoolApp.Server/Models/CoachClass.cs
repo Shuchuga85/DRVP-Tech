@@ -25,7 +25,9 @@ public partial class CoachClass
 
     public DateOnly CreatedAt { get; set; }
 
-    public virtual ClassValidation? ClassValidation { get; set; }
+    public DateTime? CoachValidatedAt { get; set; }
+
+    public DateTime? StaffValidatedAt { get; set; }
 
     public virtual User CreatedByNavigation { get; set; } = null!;
 

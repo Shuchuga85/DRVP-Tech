@@ -7,14 +7,9 @@ public partial class Coach
 {
     public int CoachId { get; set; }
 
-    public int PersonInfoId { get; set; }
-
     public string? Biography { get; set; }
 
     public string? PhotoUrl { get; set; }
-
-    public bool IsActive { get; set; }
-
 
     public virtual ICollection<BlockedPeriod> BlockedPeriods { get; set; } = new List<BlockedPeriod>();
 
@@ -23,8 +18,6 @@ public partial class Coach
     public virtual ICollection<CoachClass> CoachClasses { get; set; } = new List<CoachClass>();
 
     public virtual User CoachNavigation { get; set; } = null!;
-
-    public virtual PersonInfo PersonInfo { get; set; } = null!;
 
     public virtual ICollection<Modality> IdModalities { get; set; } = new List<Modality>();
 }

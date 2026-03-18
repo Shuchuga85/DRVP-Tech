@@ -23,7 +23,9 @@ public partial class Notification
 
     public DateTime? ReadAt { get; set; }
 
-    public bool? IsSent { get; set; }
+    public bool IsSent { get; set; }
+
+    public bool? IsDeleted { get; set; }
 
     public virtual User? IdUserNavigation { get; set; }
 }

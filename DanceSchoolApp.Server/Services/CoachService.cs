@@ -15,16 +15,20 @@ namespace DanceSchoolApp.Server.Services
             _context = context;
         }
 
-
         public async Task<List<CoachListResponse>> GetCoachsAsync()
         {
-            var coaches = await _context.Coaches.Include(p => p.PersonInfo).ToListAsync();
+            var users = await _context.Users
+                .Include(u => u.PersonInfo)
+                .Include(u => u.IdRoles)
+                .Include(u => u.Coach)
+                .Where(u => u.IdRoles.Any(r => r.RoleId == Roles.Coach))
+                .ToListAsync();
 
-            var response = coaches.Select(r => new CoachListResponse
+            var response = users.Select(r => new CoachListResponse
             {
-                CoachId = r.CoachId,
-                Biography = r.Biography,
-                PhotoUrl = r.PhotoUrl,
+                CoachId = r.UserId,
+                Biography = r.Coach == null ? null : r.Coach.Biography,
+                PhotoUrl = r.Coach == null ? null : r.Coach.PhotoUrl,
                 IsActive = r.IsActive,
                 PersonInfo = r.PersonInfo == null ? null : new PersonListResponse
                 {
@@ -39,17 +43,21 @@ namespace DanceSchoolApp.Server.Services
 
         public async Task<CoachDetailResponse> GetCoachAsync(int id)
         {
-            var coach = await _context.Coaches.Include(p => p.PersonInfo)
-                    .FirstOrDefaultAsync(p => p.CoachId == id);
+            var coach = await _context.Users
+               .Include(u => u.PersonInfo)
+               .Include(u => u.IdRoles)
+               .Include(u => u.Coach)
+               .FirstOrDefaultAsync(u => u.UserId == id && u.IdRoles.Any(r => r.RoleId == Roles.Coach));
+
 
             if (coach == null)
                 throw new Exception("Failed to find Coach");
 
             var response = new CoachDetailResponse
             {
-                CoachId = coach.CoachId,
-                Biography = coach.Biography,
-                PhotoUrl = coach.PhotoUrl,
+                CoachId = coach.UserId,
+                Biography = coach.Coach == null ? null : coach.Coach.Biography,
+                PhotoUrl = coach.Coach == null ? null : coach.Coach.PhotoUrl,
                 IsActive = coach.IsActive,
                 PersonInfo = new PersonDetailResponse
                 {
@@ -57,7 +65,6 @@ namespace DanceSchoolApp.Server.Services
                     FirstName = coach.PersonInfo.FirstName,
                     LastName = coach.PersonInfo.LastName,
                     BirthDate = coach.PersonInfo.BirthDate,
-                    Email = coach.PersonInfo.Email,
                     Phone = coach.PersonInfo.Phone,
                     Address = coach.PersonInfo.Address
                 }
@@ -65,7 +72,7 @@ namespace DanceSchoolApp.Server.Services
 
             return response;
         }
-
+        /*
         public async Task<bool> CreateCoachAsync(CoachCreateRequest request)
         {
             var user = await _context.Users
@@ -90,7 +97,6 @@ namespace DanceSchoolApp.Server.Services
                     FirstName = request.FirstName,
                     LastName = request.LastName,
                     BirthDate = request.BirthDate,
-                    Email = request.Email,
                     Phone = request.Phone,
                     Address = request.Address
                 }
@@ -110,6 +116,6 @@ namespace DanceSchoolApp.Server.Services
                 .ExecuteUpdateAsync(u => u.SetProperty(x => x.IsActive, request.IsActive));
 
             return rowsAffected > 0;
-        }
+        }*/
     }
 }

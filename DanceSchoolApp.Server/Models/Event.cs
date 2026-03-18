@@ -18,4 +18,8 @@ public partial class Event
     public string? ImageUrl { get; set; }
 
     public bool IsActive { get; set; }
+
+    public int? CreatedBy { get; set; }
+
+    public virtual User? CreatedByNavigation { get; set; }
 }

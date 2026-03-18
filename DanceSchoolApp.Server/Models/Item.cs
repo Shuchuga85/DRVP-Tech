@@ -7,11 +7,11 @@ public partial class Item
 {
     public int ItemId { get; set; }
 
-    public string? Name { get; set; }
+    public string Name { get; set; } = null!;
 
     public string? Description { get; set; }
 
-    public bool? FromSchool { get; set; }
+    public bool FromSchool { get; set; }
 
     public int? IdOwner { get; set; }
 
@@ -21,7 +21,7 @@ public partial class Item
 
     public DateOnly? CreatedAt { get; set; }
 
-    public bool? IsActive { get; set; }
+    public bool IsActive { get; set; }
 
     public virtual ItemCategory? IdCategoryNavigation { get; set; }
 

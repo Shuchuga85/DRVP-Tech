@@ -13,17 +13,11 @@ public partial class PersonInfo
 
     public DateOnly? BirthDate { get; set; }
 
-    public string? Email { get; set; }
-
     public string? Phone { get; set; }
 
     public string? Address { get; set; }
 
-    public virtual ICollection<Coach> Coaches { get; set; } = new List<Coach>();
-
-    public virtual ICollection<Parent> Parents { get; set; } = new List<Parent>();
-
-    public virtual ICollection<Staff> Staff { get; set; } = new List<Staff>();
-
     public virtual ICollection<Student> Students { get; set; } = new List<Student>();
+
+    public virtual ICollection<User> Users { get; set; } = new List<User>();
 }

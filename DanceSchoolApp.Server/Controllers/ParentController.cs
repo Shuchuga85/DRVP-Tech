@@ -9,10 +9,10 @@ namespace DanceSchoolApp.Server.Controllers
     [ApiController]
     public class ParentController : ControllerBase
     {
-        public readonly ParentService _ParentService;
+        public readonly ParentService _parentService;
         public ParentController(ParentService ParentService)
         {
-            _ParentService = ParentService;
+            _parentService = ParentService;
         }
 
         [HttpGet]
@@ -20,7 +20,7 @@ namespace DanceSchoolApp.Server.Controllers
         {
             try
             {
-                var result = await _ParentService.GetParentsAsync();
+                var result = await _parentService.GetParentsAsync();
 
                 if (result is null || !result.Any())
                 {
@@ -41,7 +41,7 @@ namespace DanceSchoolApp.Server.Controllers
         {
             try
             {
-                var result = await _ParentService.GetParentAsync(id);
+                var result = await _parentService.GetParentAsync(id);
 
                 return Ok(result);
             }
@@ -50,7 +50,7 @@ namespace DanceSchoolApp.Server.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
-
+        /*
         [HttpPost]
         public async Task<IActionResult> CreateParent([FromBody] ParentCreateRequest request)
         {
@@ -106,6 +106,6 @@ namespace DanceSchoolApp.Server.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
-
+        */
     }
 }

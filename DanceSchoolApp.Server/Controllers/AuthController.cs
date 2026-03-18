@@ -1,10 +1,7 @@
 ﻿using BCrypt.Net;
 using DanceSchoolApp.Server.Data;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using DanceSchoolApp.Server.Models;
 using DanceSchoolApp.Server.DTOs;
-using Microsoft.AspNetCore.Http.HttpResults;
 using DanceSchoolApp.Server.Services;
 
 
@@ -46,7 +43,9 @@ namespace DanceSchoolApp.Server.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(LoginRequest request)
         {
+            return BadRequest("disabled");
 
+            /*
             try
             {
                 var result = await _authService.RegisterAsync(request);
@@ -60,7 +59,7 @@ namespace DanceSchoolApp.Server.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            
+            */
         }
     }
 }

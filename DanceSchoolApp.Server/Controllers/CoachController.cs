@@ -51,7 +51,7 @@ namespace DanceSchoolApp.Server.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
-
+        /*
         [HttpPost]
         public async Task<IActionResult> CreateCoach([FromBody] CoachCreateRequest request)
         {
@@ -107,5 +107,7 @@ namespace DanceSchoolApp.Server.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
+        */
     }
 }

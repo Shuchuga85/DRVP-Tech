@@ -20,10 +20,13 @@ namespace DanceSchoolApp.Server.Controllers
         }
 
 
-        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<IActionResult> CreateRole([FromBody] RoleCreateRequest request)
         {
+            // Dsabled
+            return Ok("Disabled");
+
+
             try
             {
                 var result = await _roleService.CreateRoleAsync(request);

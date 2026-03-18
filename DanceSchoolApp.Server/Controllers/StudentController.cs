@@ -16,7 +16,6 @@ namespace DanceSchoolApp.Server.Controllers
             _studentService = studentService;
         }
 
-
         [HttpGet]
         public async Task<IActionResult> GetStudents()
         {
@@ -125,8 +124,6 @@ namespace DanceSchoolApp.Server.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
-
-
 
     }
 }

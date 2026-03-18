@@ -1,8 +1,8 @@
-﻿using Azure.Core;
-using DanceSchoolApp.Server.Data;
+﻿using DanceSchoolApp.Server.Data;
 using DanceSchoolApp.Server.DTOs;
 using DanceSchoolApp.Server.Models;
 using Microsoft.EntityFrameworkCore;
+
 
 namespace DanceSchoolApp.Server.Services
 {
@@ -24,6 +24,7 @@ namespace DanceSchoolApp.Server.Services
             {
                 UserId = r.UserId,
                 Usarname = r.Username,
+                Email = r.Email,
                 IsActive = r.IsActive,
                 CreatedAt = r.CreatedAt,
                 IdRoles = r.IdRoles.Select(r => new RoleSummaryResponse
@@ -40,8 +41,7 @@ namespace DanceSchoolApp.Server.Services
         {
             var user = await _context.Users
                     .Include(u => u.Coach)
-                    .Include(u => u.Parent)
-                    .Include(u => u.Staff)
+                    .Include(u => u.PersonInfo)
                     .Include(u => u.IdRoles)
                     .FirstOrDefaultAsync(u => u.UserId == id);
 
@@ -52,23 +52,17 @@ namespace DanceSchoolApp.Server.Services
             {
                 UserId = user.UserId,
                 Username = user.Username,
+                Email = user.Email,
                 IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt,
-
-                Coach = user.Coach == null ? null : new CoachResponse
+                PersonInfo = user.PersonInfo == null ? null : new PersonDetailResponse
                 {
-                    CoachId = user.Coach.CoachId
-                },
-
-                Parent = user.Parent == null ? null : new ParentResponse
-                {
-                    ParentId = user.Parent.ParentId
-                },
-
-                Staff = user.Staff == null ? null : new StaffResponse
-                {
-                    StaffId = user.Staff.StaffId,
-                    Position = user.Staff.Position
+                    PersonId = user.PersonInfo.PersonId,
+                    FirstName = user.PersonInfo.FirstName,
+                    LastName = user.PersonInfo.LastName,
+                    BirthDate = user.PersonInfo.BirthDate,
+                    Phone = user.PersonInfo.Phone,
+                    Address = user.PersonInfo.Address
                 },
 
                 IdRoles = user.IdRoles.Select(r => new RoleSummaryResponse
@@ -79,6 +73,53 @@ namespace DanceSchoolApp.Server.Services
             };
 
             return response;
+        }
+
+        public async Task<bool> CreateUserAsync(UserCreateRequest request)
+        {
+            var _user = await _context.Users
+                    .AnyAsync(u => u.Username == request.Username);
+
+            if (_user)
+                throw new Exception("Username already exist");
+
+            Role role = null;
+
+            if (request.FirstRole != null)
+            {
+               role = await _context.Roles.FirstOrDefaultAsync(r => r.RoleId == request.FirstRole);
+
+                if (role == null)
+                    throw new Exception("Role not found");
+            }
+
+            var hash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+
+            var user = new User
+            {
+                Username = request.Username,
+                Email = request.Email,
+                PasswordHash = hash,
+                IsActive = true,
+                CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow),
+                PersonInfo = request.PersonInfo == null ? null : new PersonInfo
+                {
+                    FirstName = request.PersonInfo.FirstName,
+                    LastName = request.PersonInfo.LastName,
+                    BirthDate = request.PersonInfo.BirthDate,
+                    Phone = request.PersonInfo.Phone,
+                    Address = request.PersonInfo.Address
+                }
+            };
+
+            if (role != null) 
+                user.IdRoles.Add(role);
+
+            _context.Users.Add(user);
+
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task<bool> SetUserStateAsync(UserActivationRequest request)

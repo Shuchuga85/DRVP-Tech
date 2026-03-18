@@ -70,6 +70,7 @@ namespace DanceSchoolApp.Server.Services
 
             if (user == null)
                 throw new Exception("User not found");
+
             var role = await _context.Roles
                 .FirstOrDefaultAsync(r => r.RoleId == request.RoleId);
 

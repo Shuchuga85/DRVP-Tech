@@ -1,22 +1,20 @@
-﻿using DanceSchoolApp.Server.Models;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using DanceSchoolApp.Server.Models;
 
 namespace DanceSchoolApp.Server.Data;
 
 public partial class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options)
-        : base(options)
+    : base(options)
     {
     }
 
     public virtual DbSet<AppSetting> AppSettings { get; set; }
 
-    public virtual DbSet<AuditLog> AuditLogs { get; set; }
-
     public virtual DbSet<BlockedPeriod> BlockedPeriods { get; set; }
-
-    public virtual DbSet<ClassValidation> ClassValidations { get; set; }
 
     public virtual DbSet<Coach> Coaches { get; set; }
 
@@ -44,15 +42,11 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Notification> Notifications { get; set; }
 
-    public virtual DbSet<Parent> Parents { get; set; }
-
     public virtual DbSet<Participant> Participants { get; set; }
 
     public virtual DbSet<PersonInfo> PersonInfos { get; set; }
 
     public virtual DbSet<Role> Roles { get; set; }
-
-    public virtual DbSet<Staff> Staff { get; set; }
 
     public virtual DbSet<Student> Students { get; set; }
 
@@ -69,43 +63,13 @@ public partial class AppDbContext : DbContext
             entity.ToTable("App_Setting");
 
             entity.Property(e => e.SettingId).HasColumnName("setting_id");
-            entity.Property(e => e.Key)
+            entity.Property(e => e.SettingKey)
                 .HasMaxLength(64)
-                .HasColumnName("key");
-            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
-            entity.Property(e => e.Value)
+                .HasColumnName("setting_key");
+            entity.Property(e => e.SettingValue)
                 .HasMaxLength(128)
-                .HasColumnName("value");
-        });
-
-        modelBuilder.Entity<AuditLog>(entity =>
-        {
-            entity.HasKey(e => e.LogId).HasName("PK__Audit_Lo__9E2397E076071A8D");
-
-            entity.ToTable("Audit_Log");
-
-            entity.Property(e => e.LogId).HasColumnName("log_id");
-            entity.Property(e => e.Action)
-                .HasMaxLength(64)
-                .HasColumnName("action");
-            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
-            entity.Property(e => e.Description)
-                .HasMaxLength(256)
-                .HasColumnName("description");
-            entity.Property(e => e.EntityId).HasColumnName("entity_id");
-            entity.Property(e => e.EntityType)
-                .HasMaxLength(32)
-                .HasColumnName("entity_type");
-            entity.Property(e => e.IdUser).HasColumnName("id_user");
-            entity.Property(e => e.IpAddress)
-                .HasMaxLength(45)
-                .IsUnicode(false)
-                .HasColumnName("ip_address");
-
-            entity.HasOne(d => d.IdUserNavigation).WithMany(p => p.AuditLogs)
-                .HasForeignKey(d => d.IdUser)
-                .OnDelete(DeleteBehavior.Restrict)
-                .HasConstraintName("FK__Audit_Log__id_us__6BE40491");
+                .HasColumnName("setting_value");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
         });
 
         modelBuilder.Entity<BlockedPeriod>(entity =>
@@ -133,25 +97,6 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("FK__Blocked_P__id_st__503BEA1C");
         });
 
-        modelBuilder.Entity<ClassValidation>(entity =>
-        {
-            entity.HasKey(e => e.IdCoachClass).HasName("PK__Class_Va__B764B2D3A716F3CB");
-
-            entity.ToTable("Class_Validation");
-
-            entity.Property(e => e.IdCoachClass)
-                .ValueGeneratedNever()
-                .HasColumnName("id_coach_class");
-            entity.Property(e => e.CoachValAt).HasColumnName("coach_val_at");
-            entity.Property(e => e.StaffValAt).HasColumnName("staff_val_at");
-            entity.Property(e => e.Status).HasColumnName("status");
-
-            entity.HasOne(d => d.IdCoachClassNavigation).WithOne(p => p.ClassValidation)
-                .HasForeignKey<ClassValidation>(d => d.IdCoachClass)
-                .OnDelete(DeleteBehavior.Restrict)
-                .HasConstraintName("FK__Class_Val__id_co__4C6B5938");
-        });
-
         modelBuilder.Entity<Coach>(entity =>
         {
             entity.HasKey(e => e.CoachId).HasName("PK__Coach__2BEBE044AA702FF0");
@@ -164,22 +109,14 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Biography)
                 .HasMaxLength(256)
                 .HasColumnName("biography");
-            entity.Property(e => e.PersonInfoId).HasColumnName("person_info_id");
             entity.Property(e => e.PhotoUrl)
                 .HasMaxLength(256)
                 .HasColumnName("photo_url");
-            entity.Property(e => e.IsActive).HasDefaultValue(true).HasColumnName("is_active");
-
 
             entity.HasOne(d => d.CoachNavigation).WithOne(p => p.Coach)
                 .HasForeignKey<Coach>(d => d.CoachId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Coach__coach_id__2B0A656D");
-
-            entity.HasOne(d => d.PersonInfo).WithMany(p => p.Coaches)
-                .HasForeignKey(d => d.PersonInfoId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Coach__person_in__2BFE89A6");
 
             entity.HasMany(d => d.IdModalities).WithMany(p => p.IdCoaches)
                 .UsingEntity<Dictionary<string, object>>(
@@ -227,7 +164,14 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable("Coach_Class");
 
+            entity.HasIndex(e => new { e.IdCoach, e.StartDatetime, e.EndDatetime }, "IX_CoachClass_Coach_Time");
+
+            entity.HasIndex(e => e.StartDatetime, "IX_CoachClass_Start");
+
+            entity.HasIndex(e => new { e.IdStudio, e.StartDatetime, e.EndDatetime }, "IX_CoachClass_Studio_Time");
+
             entity.Property(e => e.ClassId).HasColumnName("class_id");
+            entity.Property(e => e.CoachValidatedAt).HasColumnName("coach_validated_at");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("created_at");
@@ -237,27 +181,28 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.IdModality).HasColumnName("id_modality");
             entity.Property(e => e.IdStudio).HasColumnName("id_studio");
             entity.Property(e => e.MaxParticipants).HasColumnName("max_participants");
+            entity.Property(e => e.StaffValidatedAt).HasColumnName("staff_validated_at");
             entity.Property(e => e.StartDatetime).HasColumnName("start_datetime");
             entity.Property(e => e.Status).HasColumnName("status");
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.CoachClasses)
                 .HasForeignKey(d => d.CreatedBy)
-                .OnDelete(DeleteBehavior.Restrict)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Coach_Cla__creat__45BE5BA9");
 
             entity.HasOne(d => d.IdCoachNavigation).WithMany(p => p.CoachClasses)
                 .HasForeignKey(d => d.IdCoach)
-                .OnDelete(DeleteBehavior.Restrict)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Coach_Cla__id_co__44CA3770");
 
             entity.HasOne(d => d.IdModalityNavigation).WithMany(p => p.CoachClasses)
                 .HasForeignKey(d => d.IdModality)
-                .OnDelete(DeleteBehavior.Restrict)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Coach_Cla__id_mo__42E1EEFE");
 
             entity.HasOne(d => d.IdStudioNavigation).WithMany(p => p.CoachClasses)
                 .HasForeignKey(d => d.IdStudio)
-                .OnDelete(DeleteBehavior.Restrict)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Coach_Cla__id_st__43D61337");
         });
 
@@ -268,6 +213,7 @@ public partial class AppDbContext : DbContext
             entity.ToTable("Event");
 
             entity.Property(e => e.EventId).HasColumnName("event_id");
+            entity.Property(e => e.CreatedBy).HasColumnName("created_by");
             entity.Property(e => e.Description)
                 .HasMaxLength(256)
                 .HasColumnName("description");
@@ -282,6 +228,10 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Title)
                 .HasMaxLength(64)
                 .HasColumnName("title");
+
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.Events)
+                .HasForeignKey(d => d.CreatedBy)
+                .HasConstraintName("FK_Event_User");
         });
 
         modelBuilder.Entity<Item>(entity =>
@@ -327,8 +277,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.CatgName)
                 .HasMaxLength(128)
                 .HasColumnName("catg_name");
-            entity.Property(e => e.IsActive).HasDefaultValue(true).HasColumnName("is_active");
-
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
         });
 
         modelBuilder.Entity<ItemContact>(entity =>
@@ -364,7 +315,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.IdItemNavigation).WithMany(p => p.ItemImages)
                 .HasForeignKey(d => d.IdItem)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Item_Imag__id_it__634EBE90");
         });
 
@@ -373,6 +324,8 @@ public partial class AppDbContext : DbContext
             entity.HasKey(e => e.RequisitionId).HasName("PK__Item_Req__2B676C330815AC37");
 
             entity.ToTable("Item_Requisition");
+
+            entity.HasIndex(e => e.IdParent, "IX_ItemRequisition_Parent");
 
             entity.Property(e => e.RequisitionId).HasColumnName("requisition_id");
             entity.Property(e => e.ApprovedAt).HasColumnName("approved_at");
@@ -387,12 +340,12 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.IdParentNavigation).WithMany(p => p.ItemRequisitions)
                 .HasForeignKey(d => d.IdParent)
-                .OnDelete(DeleteBehavior.Restrict)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Item_Requ__id_pa__690797E6");
 
             entity.HasOne(d => d.ItemVariant).WithMany(p => p.ItemRequisitions)
                 .HasForeignKey(d => d.ItemVariantId)
-                .OnDelete(DeleteBehavior.Restrict)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Item_Requ__item___681373AD");
         });
 
@@ -407,6 +360,12 @@ public partial class AppDbContext : DbContext
                 .HasMaxLength(32)
                 .HasColumnName("color");
             entity.Property(e => e.IdItem).HasColumnName("id_item");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+            entity.Property(e => e.Price)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("price");
             entity.Property(e => e.Quantity).HasColumnName("quantity");
             entity.Property(e => e.Size)
                 .HasMaxLength(8)
@@ -414,7 +373,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.IdItemNavigation).WithMany(p => p.ItemVariants)
                 .HasForeignKey(d => d.IdItem)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Item_Vari__id_it__607251E5");
         });
 
@@ -425,11 +384,12 @@ public partial class AppDbContext : DbContext
             entity.ToTable("Modality");
 
             entity.Property(e => e.ModalityId).HasColumnName("modality_id");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
             entity.Property(e => e.Name)
                 .HasMaxLength(64)
                 .HasColumnName("name");
-            entity.Property(e => e.IsActive).HasDefaultValue(true).HasColumnName("is_active");
-
         });
 
         modelBuilder.Entity<NewsPost>(entity =>
@@ -440,6 +400,7 @@ public partial class AppDbContext : DbContext
 
             entity.Property(e => e.PostId).HasColumnName("post_id");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy).HasColumnName("created_by");
             entity.Property(e => e.Description)
                 .HasMaxLength(256)
                 .HasColumnName("description");
@@ -452,6 +413,10 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Title)
                 .HasMaxLength(64)
                 .HasColumnName("title");
+
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.NewsPosts)
+                .HasForeignKey(d => d.CreatedBy)
+                .HasConstraintName("FK_NewsPost_User");
         });
 
         modelBuilder.Entity<Notification>(entity =>
@@ -467,6 +432,9 @@ public partial class AppDbContext : DbContext
                 .HasMaxLength(32)
                 .HasColumnName("entity_type");
             entity.Property(e => e.IdUser).HasColumnName("id_user");
+            entity.Property(e => e.IsDeleted)
+                .HasDefaultValue(false)
+                .HasColumnName("is_deleted");
             entity.Property(e => e.IsSent).HasColumnName("is_sent");
             entity.Property(e => e.Message)
                 .HasMaxLength(256)
@@ -479,32 +447,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.IdUserNavigation).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.IdUser)
-                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK__Notificat__id_us__6EC0713C");
-        });
-
-        modelBuilder.Entity<Parent>(entity =>
-        {
-            entity.HasKey(e => e.ParentId).HasName("PK__Parent__F2A60819DD7BFCCE");
-
-            entity.ToTable("Parent");
-
-            entity.Property(e => e.ParentId)
-                .ValueGeneratedNever()
-                .HasColumnName("parent_id");
-            entity.Property(e => e.PersonInfoId).HasColumnName("person_info_id");
-            entity.Property(e => e.IsActive).HasDefaultValue(true).HasColumnName("is_active");
-
-
-            entity.HasOne(d => d.ParentNavigation).WithOne(p => p.Parent)
-                .HasForeignKey<Parent>(d => d.ParentId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Parent__parent_i__236943A5");
-
-            entity.HasOne(d => d.PersonInfo).WithMany(p => p.Parents)
-                .HasForeignKey(d => d.PersonInfoId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Parent__person_i__245D67DE");
         });
 
         modelBuilder.Entity<Participant>(entity =>
@@ -512,6 +455,12 @@ public partial class AppDbContext : DbContext
             entity.HasKey(e => e.ParticipantId).HasName("PK__Particip__4E037806202033BE");
 
             entity.ToTable("Participant");
+
+            entity.HasIndex(e => e.IdCoachClass, "IX_Participant_Class");
+
+            entity.HasIndex(e => e.IdStudent, "IX_Participant_Student");
+
+            entity.HasIndex(e => new { e.IdCoachClass, e.IdStudent }, "UQ_ClassStudent").IsUnique();
 
             entity.Property(e => e.ParticipantId).HasColumnName("participant_id");
             entity.Property(e => e.ClassPrice)
@@ -525,12 +474,12 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.IdCoachClassNavigation).WithMany(p => p.Participants)
                 .HasForeignKey(d => d.IdCoachClass)
-                .OnDelete(DeleteBehavior.Restrict)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Participa__id_co__489AC854");
 
             entity.HasOne(d => d.IdStudentNavigation).WithMany(p => p.Participants)
                 .HasForeignKey(d => d.IdStudent)
-                .OnDelete(DeleteBehavior.Restrict)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Participa__id_st__498EEC8D");
         });
 
@@ -545,9 +494,6 @@ public partial class AppDbContext : DbContext
                 .HasMaxLength(128)
                 .HasColumnName("address");
             entity.Property(e => e.BirthDate).HasColumnName("birth_date");
-            entity.Property(e => e.Email)
-                .HasMaxLength(254)
-                .HasColumnName("email");
             entity.Property(e => e.FirstName)
                 .HasMaxLength(64)
                 .HasColumnName("first_name");
@@ -574,31 +520,6 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("role_name");
         });
 
-        modelBuilder.Entity<Staff>(entity =>
-        {
-            entity.HasKey(e => e.StaffId).HasName("PK__Staff__1963DD9C32965F32");
-
-            entity.Property(e => e.StaffId)
-                .ValueGeneratedNever()
-                .HasColumnName("staff_id");
-            entity.Property(e => e.PersonInfoId).HasColumnName("person_info_id");
-            entity.Property(e => e.Position)
-                .HasMaxLength(64)
-                .HasColumnName("position");
-            entity.Property(e => e.IsActive).HasDefaultValue(true).HasColumnName("is_active");
-
-
-            entity.HasOne(d => d.PersonInfo).WithMany(p => p.Staff)
-                .HasForeignKey(d => d.PersonInfoId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Staff__person_in__282DF8C2");
-
-            entity.HasOne(d => d.StaffNavigation).WithOne(p => p.Staff)
-                .HasForeignKey<Staff>(d => d.StaffId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Staff__staff_id__2739D489");
-        });
-
         modelBuilder.Entity<Student>(entity =>
         {
             entity.HasKey(e => e.StudentId).HasName("PK__Student__2A33069AE7BEF337");
@@ -606,20 +527,21 @@ public partial class AppDbContext : DbContext
             entity.ToTable("Student");
 
             entity.Property(e => e.StudentId).HasColumnName("student_id");
-            entity.Property(e => e.IdParent).HasColumnName("id_parent");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+            entity.Property(e => e.ParentUserId).HasColumnName("parent_user_id");
             entity.Property(e => e.PersonInfoId).HasColumnName("person_info_id");
-            entity.Property(e => e.IsActive).HasDefaultValue(true).HasColumnName("is_active");
 
-
-            entity.HasOne(d => d.IdParentNavigation).WithMany(p => p.Students)
-                .HasForeignKey(d => d.IdParent)
+            entity.HasOne(d => d.ParentUser).WithMany(p => p.Students)
+                .HasForeignKey(d => d.ParentUserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Student__id_pare__2EDAF651");
+                .HasConstraintName("FK_Student_UserParent");
 
             entity.HasOne(d => d.PersonInfo).WithMany(p => p.Students)
                 .HasForeignKey(d => d.PersonInfoId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Student__person___2FCF1A8A");
+                .HasConstraintName("FK_Student_PersonInfo");
         });
 
         modelBuilder.Entity<Studio>(entity =>
@@ -668,19 +590,31 @@ public partial class AppDbContext : DbContext
 
             entity.HasIndex(e => e.Username, "UQ__User__F3DBC572DCB225C8").IsUnique();
 
+            entity.HasIndex(e => e.Email, "UX_User_Email")
+                .IsUnique()
+                .HasFilter("([email] IS NOT NULL)");
+
             entity.Property(e => e.UserId).HasColumnName("user_id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("created_at");
+            entity.Property(e => e.Email)
+                .HasMaxLength(254)
+                .HasColumnName("email");
             entity.Property(e => e.IsActive)
                 .HasDefaultValue(true)
                 .HasColumnName("is_active");
             entity.Property(e => e.PasswordHash)
                 .HasMaxLength(256)
                 .HasColumnName("password_hash");
+            entity.Property(e => e.PersonInfoId).HasColumnName("person_info_id");
             entity.Property(e => e.Username)
                 .HasMaxLength(64)
                 .HasColumnName("username");
+
+            entity.HasOne(d => d.PersonInfo).WithMany(p => p.Users)
+                .HasForeignKey(d => d.PersonInfoId)
+                .HasConstraintName("FK_User_PersonInfo");
 
             entity.HasMany(d => d.IdRoles).WithMany(p => p.IdUsers)
                 .UsingEntity<Dictionary<string, object>>(
@@ -702,8 +636,13 @@ public partial class AppDbContext : DbContext
                     });
         });
 
-  
         OnModelCreatingPartial(modelBuilder);
+
+        modelBuilder.Entity<Role>().HasData(
+        new Role { RoleId = 0, RoleName = "admin" },
+        new Role { RoleId = 1, RoleName = "staff" },
+        new Role { RoleId = 2, RoleName = "coach" },
+        new Role { RoleId = 3, RoleName = "parent" });
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

@@ -52,6 +52,25 @@ namespace DanceSchoolApp.Server.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CreateUser([FromBody] UserCreateRequest request)
+        {
+            try
+            {
+                var result = await _userService.CreateUserAsync(request);
+
+                if (!result)
+                    return BadRequest("User failed to create");
+
+                return Ok("New user created");
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPut("{id}/activate")]
         public async Task<IActionResult> ActivateUser(int id)
         {

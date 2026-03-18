@@ -49,7 +49,7 @@ namespace DanceSchoolApp.Server.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
-
+        /*
         [HttpPost]
         public async Task<IActionResult> CreateStaff([FromBody] StaffCreateRequest request)
         {
@@ -104,6 +104,6 @@ namespace DanceSchoolApp.Server.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
-        }
+        }*/
     }
 }
