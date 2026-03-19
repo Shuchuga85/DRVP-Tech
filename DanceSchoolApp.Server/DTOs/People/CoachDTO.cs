@@ -1,5 +1,7 @@
-﻿namespace DanceSchoolApp.Server.DTOs
+﻿namespace DanceSchoolApp.Server.DTOs.People
 {
+    // ─── Responses ────────────────────────────────────────────────────────────
+
     public class CoachListResponse
     {
         public int CoachId { get; set; }
@@ -17,15 +19,4 @@
         public PersonDetailResponse? PersonInfo { get; set; }
     }
 
-    public class CoachActivationRequest
-    {
-        public int CoachId { get; set; }
-        public bool IsActive { get; set; }
-    }
-    public class CoachCreateRequest : PersonRequest
-    {
-        public int UserId { get; set; }
-        public string? Biography { get; set; }
-        public string? PhotoUrl { get; set; }
-    }
 }

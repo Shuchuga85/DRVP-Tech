@@ -1,11 +1,11 @@
 ﻿using BCrypt.Net;
 using DanceSchoolApp.Server.Data;
 using Microsoft.AspNetCore.Mvc;
-using DanceSchoolApp.Server.DTOs;
-using DanceSchoolApp.Server.Services;
+using DanceSchoolApp.Server.DTOs.People;
+using DanceSchoolApp.Server.Services.People;
 
 
-namespace DanceSchoolApp.Server.Controllers
+namespace DanceSchoolApp.Server.Controllers.People
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -30,7 +30,7 @@ namespace DanceSchoolApp.Server.Controllers
                 if (result is null || result.Success == false)
                     return BadRequest("User login failed");
                 
-                // result.Roles later
+                // result.Roles later for authentication roles
 
                 return Ok("User logged in");
             }
@@ -40,26 +40,5 @@ namespace DanceSchoolApp.Server.Controllers
             }
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register(LoginRequest request)
-        {
-            return BadRequest("disabled");
-
-            /*
-            try
-            {
-                var result = await _authService.RegisterAsync(request);
-
-                if (!result)
-                    return BadRequest("User failed to register");
-
-                return Ok("New user registered");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            */
-        }
     }
 }

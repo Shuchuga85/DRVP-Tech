@@ -1,6 +1,6 @@
 ﻿using DanceSchoolApp.Server.Models;
 
-namespace DanceSchoolApp.Server.DTOs
+namespace DanceSchoolApp.Server.DTOs.People
 {
     public class LoginRequest
     {

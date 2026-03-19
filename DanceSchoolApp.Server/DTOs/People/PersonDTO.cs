@@ -1,5 +1,6 @@
-﻿namespace DanceSchoolApp.Server.DTOs
+﻿namespace DanceSchoolApp.Server.DTOs.People
 {
+
     public class PersonRequest
     {
         public string? FirstName { get; set; } = null!;

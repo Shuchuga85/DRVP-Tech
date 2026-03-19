@@ -1,0 +1,101 @@
+﻿using DanceSchoolApp.Server.Data;
+using DanceSchoolApp.Server.Models;
+using Microsoft.EntityFrameworkCore;
+using DanceSchoolApp.Server.DTOs.School;
+
+namespace DanceSchoolApp.Server.Services.School
+{
+    public class ModalityService
+    {
+        private readonly AppDbContext _context;
+
+        public ModalityService(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        // ─── Queries ──────────────────────────────────────────────────────────
+
+        public async Task<List<ModalityListResponse>> GetModalitiesAsync()
+        {
+            return await _context.Modalities
+                .Select(m => new ModalityListResponse
+                {
+                    ModalityId = m.ModalityId,
+                    Name = m.Name,
+                    IsActive = m.IsActive
+                })
+                .ToListAsync();
+        }
+
+        public async Task<ModalityDetailResponse> GetModalityAsync(int id)
+        {
+            var modality = await _context.Modalities
+                .Include(m => m.IdStudios)
+                .Include(m => m.IdCoaches)
+                .FirstOrDefaultAsync(m => m.ModalityId == id);
+
+            if (modality is null)
+                throw new KeyNotFoundException($"Modality with id {id} was not found.");
+
+            return new ModalityDetailResponse
+            {
+                ModalityId = modality.ModalityId,
+                Name = modality.Name,
+                IsActive = modality.IsActive,
+                StudioCount = modality.IdStudios.Count,
+                CoachCount = modality.IdCoaches.Count
+            };
+        }
+
+        // ─── Commands ─────────────────────────────────────────────────────────
+
+        public async Task<int> CreateModalityAsync(ModalityCreateRequest request)
+        {
+            bool nameExists = await _context.Modalities
+                .AnyAsync(m => m.Name == request.Name);
+
+            if (nameExists)
+                throw new InvalidOperationException($"A modality named '{request.Name}' already exists.");
+
+            var modality = new Modality
+            {
+                Name = request.Name,
+                IsActive = true
+            };
+
+            _context.Modalities.Add(modality);
+            await _context.SaveChangesAsync();
+
+            return modality.ModalityId;
+        }
+
+        public async Task UpdateModalityAsync(int id, ModalityUpdateRequest request)
+        {
+            var modality = await _context.Modalities
+                .FirstOrDefaultAsync(m => m.ModalityId == id);
+
+            if (modality is null)
+                throw new KeyNotFoundException($"Modality with id {id} was not found.");
+
+            bool nameConflict = await _context.Modalities
+                .AnyAsync(m => m.Name == request.Name && m.ModalityId != id);
+
+            if (nameConflict)
+                throw new InvalidOperationException($"Another modality named '{request.Name}' already exists.");
+
+            modality.Name = request.Name;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task SetModalityStateAsync(int modalityId, bool isActive)
+        {
+            var rowsAffected = await _context.Modalities
+                .Where(m => m.ModalityId == modalityId)
+                .ExecuteUpdateAsync(m => m.SetProperty(x => x.IsActive, isActive));
+
+            if (rowsAffected == 0)
+                throw new KeyNotFoundException($"Modality with id {modalityId} was not found.");
+        }
+    }
+}

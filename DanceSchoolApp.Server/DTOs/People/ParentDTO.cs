@@ -1,5 +1,8 @@
-﻿namespace DanceSchoolApp.Server.DTOs
+﻿namespace DanceSchoolApp.Server.DTOs.People
 {
+
+    // ─── Responses ────────────────────────────────────────────────────────────
+
     public class ParentListResponse
     {
         public int ParentId { get; set; }
@@ -13,13 +16,4 @@
         public PersonDetailResponse? PersonInfo { get; set; }
     }
 
-    public class ParentActivationRequest
-    {
-        public int ParentId { get; set; }
-        public bool IsActive { get; set; }
-    }
-    public class ParentCreateRequest : PersonRequest
-    {
-        public int UserId { get; set; }
-    }
 }

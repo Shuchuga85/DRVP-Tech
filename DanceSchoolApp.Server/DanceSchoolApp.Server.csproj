@@ -24,6 +24,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,6 +34,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Controllers\Classes\" />
+    <Folder Include="Controllers\Inventory\" />
+    <Folder Include="Controllers\Scheduling\" />
+    <Folder Include="Controllers\Communication\" />
+    <Folder Include="DTOs\Classes\" />
+    <Folder Include="DTOs\Communication\" />
+    <Folder Include="DTOs\Inventory\" />
+    <Folder Include="DTOs\Scheduling\" />
     <Folder Include="Middleware\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>

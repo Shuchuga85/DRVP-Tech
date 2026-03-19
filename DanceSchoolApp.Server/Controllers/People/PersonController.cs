@@ -1,8 +1,8 @@
 ﻿using DanceSchoolApp.Server.DTOs;
-using DanceSchoolApp.Server.Services;
+using DanceSchoolApp.Server.Services.People;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DanceSchoolApp.Server.Controllers
+namespace DanceSchoolApp.Server.Controllers.People
 {
     [ApiController]
     [Route("api/[controller]")]

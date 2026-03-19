@@ -3,7 +3,7 @@ using DanceSchoolApp.Server.DTOs;
 using DanceSchoolApp.Server.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace DanceSchoolApp.Server.Services
+namespace DanceSchoolApp.Server.Services.People
 {
     public class PersonService
     {

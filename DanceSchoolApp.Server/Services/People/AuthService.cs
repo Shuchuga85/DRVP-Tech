@@ -1,16 +1,16 @@
 ﻿using Azure.Core;
 using DanceSchoolApp.Server.Data;
-using DanceSchoolApp.Server.DTOs;
+using DanceSchoolApp.Server.DTOs.People;
 using DanceSchoolApp.Server.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace DanceSchoolApp.Server.Services
+namespace DanceSchoolApp.Server.Services.People
 {
     public class AuthService
     {
 
-        public readonly AppDbContext _context;
+        private readonly AppDbContext _context;
 
         public AuthService(AppDbContext context) 
         {
@@ -38,26 +38,6 @@ namespace DanceSchoolApp.Server.Services
             };
             return response;
         }
-
-        public async Task<bool> RegisterAsync(LoginRequest request)
-        {
-            var hash = BCrypt.Net.BCrypt.HashPassword(request.Password);
-
-            var user = new User
-            {
-                Username = request.Username,
-                PasswordHash = hash,
-                IsActive = true,
-                CreatedAt = DateOnly.FromDateTime(DateTime.Now)
-            };
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            return true;
-        }
-
-
 
     }
 }
