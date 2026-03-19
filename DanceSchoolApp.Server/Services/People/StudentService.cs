@@ -64,8 +64,6 @@ namespace DanceSchoolApp.Server.Services.People
 
         public async Task<List<StudentListResponse>> GetStudentsByParentAsync(int parentId)
         {
-            // Verify the parent user exists first so we can return a
-            // meaningful 404 rather than just an empty list.
             bool parentExists = await _context.Users
                 .AnyAsync(u => u.UserId == parentId);
 
@@ -129,8 +127,6 @@ namespace DanceSchoolApp.Server.Services.People
             if (student is null)
                 throw new KeyNotFoundException($"Student with id {id} was not found.");
 
-            // PersonInfo is always created alongside the student, but guard
-            // defensively in case of data inconsistency.
             if (student.PersonInfo is null)
                 throw new InvalidOperationException($"Student with id {id} has no personal info record.");
 
