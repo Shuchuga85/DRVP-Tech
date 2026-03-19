@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DanceSchoolApp.Server")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2c812cce9d613ed115a464ece3a0eeb07e1baa15")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+299cdf19a6d3478a5cea4bfe5f7154d5c1174eec")]
 [assembly: System.Reflection.AssemblyProductAttribute("DanceSchoolApp.Server")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DanceSchoolApp.Server")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

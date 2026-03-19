@@ -3,12 +3,152 @@
   "WorkspaceRootPath": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\controllers\\scheduling\\blockedperiodcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\controllers\\scheduling\\blockedperiodcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\dtos\\scheduling\\blockedperioddto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\dtos\\scheduling\\blockedperioddto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\services\\scheduling\\blockedperiodservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\services\\scheduling\\blockedperiodservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\dtos\\scheduling\\coachavailabilitydto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\dtos\\scheduling\\coachavailabilitydto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\controllers\\scheduling\\coachavailabilitycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\controllers\\scheduling\\coachavailabilitycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\services\\scheduling\\coachavailabilityservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\services\\scheduling\\coachavailabilityservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\services\\people\\studentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\services\\people\\studentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\controllers\\people\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\controllers\\people\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\controllers\\people\\studentcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\controllers\\people\\studentcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\services\\people\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\services\\people\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\services\\people\\coachservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\services\\people\\coachservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\controllers\\people\\coachcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\controllers\\people\\coachcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\services\\people\\staffservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\services\\people\\staffservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\services\\people\\parentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\services\\people\\parentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\dtos\\people\\coachdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\dtos\\people\\coachdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\dtos\\people\\studentdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\dtos\\people\\studentdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\controllers\\people\\staffcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\controllers\\people\\staffcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\dtos\\people\\staffdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\dtos\\people\\staffdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\controllers\\people\\parentcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\controllers\\people\\parentcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\dtos\\people\\parentdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\dtos\\people\\parentdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\controllers\\school\\modalitycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\controllers\\school\\modalitycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\controllers\\school\\studiocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\controllers\\school\\studiocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\controllers\\people\\rolecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\controllers\\people\\rolecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\services\\school\\studioservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\services\\school\\studioservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\dtos\\school\\studiodto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\dtos\\school\\studiodto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\dtos\\school\\modalitydto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\dtos\\school\\modalitydto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\services\\school\\modalityservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\services\\school\\modalityservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\dtos\\people\\authdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\dtos\\people\\authdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\controllers\\people\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\controllers\\people\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\controllers\\people\\personcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\controllers\\people\\personcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\services\\people\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\services\\people\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\dtos\\people\\userdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\dtos\\people\\userdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\dtos\\people\\persondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\dtos\\people\\persondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\dtos\\people\\roledto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\dtos\\people\\roledto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\services\\people\\roleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\services\\people\\roleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\models\\modality.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\models\\modality.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -19,48 +159,36 @@
       "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\models\\userrole.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\models\\userrole.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\models\\role.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\models\\role.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\dtos\\loginrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\dtos\\loginrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\models\\roles.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\models\\roles.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\controllers\\weatherforecastcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\controllers\\weatherforecastcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\models\\userrole.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\models\\userrole.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\models\\newspost.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\models\\newspost.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\test.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}",
-      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\test.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{19A913B4-6355-4A76-C69B-90EDCFE64433}|danceschoolapp.client\\danceschoolapp.client.esproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.client\\src\\app.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{19A913B4-6355-4A76-C69B-90EDCFE64433}|danceschoolapp.client\\danceschoolapp.client.esproj|solutionrelative:danceschoolapp.client\\src\\app.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{19A913B4-6355-4A76-C69B-90EDCFE64433}|danceschoolapp.client\\danceschoolapp.client.esproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.client\\src\\main.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{19A913B4-6355-4A76-C69B-90EDCFE64433}|danceschoolapp.client\\danceschoolapp.client.esproj|solutionrelative:danceschoolapp.client\\src\\main.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{19A913B4-6355-4A76-C69B-90EDCFE64433}|danceschoolapp.client\\danceschoolapp.client.esproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.client\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{19A913B4-6355-4A76-C69B-90EDCFE64433}|danceschoolapp.client\\danceschoolapp.client.esproj|solutionrelative:danceschoolapp.client\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\weatherforecast.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\weatherforecast.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\danceschoolapp.server.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\danceschoolapp.server.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\models\\personinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\models\\personinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|c:\\users\\shuch\\source\\repos\\drvp-tech\\danceschoolapp.server\\models\\itemcategory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FBEA3FB-2F1D-53F3-25BF-1CB77790E809}|DanceSchoolApp.Server\\DanceSchoolApp.Server.csproj|solutionrelative:danceschoolapp.server\\models\\itemcategory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -69,31 +197,91 @@
       "VerticalTabListWidth": 256,
       "DocumentGroups": [
         {
-          "DockedWidth": 200,
-          "SelectedChildIndex": 14,
+          "DockedWidth": 204,
+          "SelectedChildIndex": 6,
           "Children": [
             {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "LoginRequest.cs",
-              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\LoginRequest.cs",
-              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\DTOs\\LoginRequest.cs",
-              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\LoginRequest.cs",
-              "RelativeToolTip": "DanceSchoolApp.Server\\DTOs\\LoginRequest.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 11,
+              "Title": "CoachController.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\People\\CoachController.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Controllers\\People\\CoachController.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\People\\CoachController.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Controllers\\People\\CoachController.cs",
+              "ViewState": "AgIAABMAAAAAAAAAAAAgwB0AAAAiAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-05T21:28:45.763Z",
+              "WhenOpened": "2026-03-09T20:54:16.615Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 16,
+              "Title": "StaffController.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\People\\StaffController.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Controllers\\People\\StaffController.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\People\\StaffController.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Controllers\\People\\StaffController.cs",
+              "ViewState": "AgIAAAcAAAAAAAAAAADwvyoAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T21:04:50.972Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "StudentController.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\People\\StudentController.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Controllers\\People\\StudentController.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\People\\StudentController.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Controllers\\People\\StudentController.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAowC4AAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T16:44:43.936Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "ParentController.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\People\\ParentController.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Controllers\\People\\ParentController.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\People\\ParentController.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Controllers\\People\\ParentController.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAAAiwCIAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T20:28:04.11Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "BlockedPeriodController.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\Scheduling\\BlockedPeriodController.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Controllers\\Scheduling\\BlockedPeriodController.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\Scheduling\\BlockedPeriodController.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Controllers\\Scheduling\\BlockedPeriodController.cs",
+              "ViewState": "AgIAALsAAAAAAAAAAAAYwKYAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-19T18:06:51.3Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
               "Title": "AuthController.cs",
-              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\AuthController.cs",
-              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Controllers\\AuthController.cs",
-              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\AuthController.cs",
-              "RelativeToolTip": "DanceSchoolApp.Server\\Controllers\\AuthController.cs",
-              "ViewState": "AgIAABEAAAAAAAAAAAAQwB4AAABgAAAAAAAAAA==",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\People\\AuthController.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Controllers\\People\\AuthController.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\People\\AuthController.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Controllers\\People\\AuthController.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-05T21:21:54.443Z",
               "EditorCaption": ""
@@ -101,164 +289,531 @@
             {
               "$type": "Document",
               "DocumentIndex": 4,
-              "Title": "UserRole.cs",
-              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\UserRole.cs",
-              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Models\\UserRole.cs",
-              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\UserRole.cs",
-              "RelativeToolTip": "DanceSchoolApp.Server\\Models\\UserRole.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Title": "CoachAvailabilityController.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\Scheduling\\CoachAvailabilityController.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Controllers\\Scheduling\\CoachAvailabilityController.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\Scheduling\\CoachAvailabilityController.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Controllers\\Scheduling\\CoachAvailabilityController.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAI8AAABEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-05T21:09:05.943Z",
+              "WhenOpened": "2026-03-19T17:36:14.953Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "Role.cs",
-              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\Role.cs",
-              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Models\\Role.cs",
-              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\Role.cs",
-              "RelativeToolTip": "DanceSchoolApp.Server\\Models\\Role.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAANAAAAAAAAAA==",
+              "DocumentIndex": 20,
+              "Title": "ModalityController.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\School\\ModalityController.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Controllers\\School\\ModalityController.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\School\\ModalityController.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Controllers\\School\\ModalityController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAGMAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-05T21:08:43.658Z",
+              "WhenOpened": "2026-03-18T13:38:07.002Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "User.cs",
-              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\User.cs",
-              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Models\\User.cs",
-              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\User.cs",
-              "RelativeToolTip": "DanceSchoolApp.Server\\Models\\User.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAABEAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 21,
+              "Title": "StudioController.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\School\\StudioController.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Controllers\\School\\StudioController.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\School\\StudioController.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Controllers\\School\\StudioController.cs",
+              "ViewState": "AgIAAJsAAAAAAAAAAAAAwLkAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-05T21:08:18.533Z",
+              "WhenOpened": "2026-03-19T12:53:58.211Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "AppDbContext.cs",
-              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Data\\AppDbContext.cs",
-              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Data\\AppDbContext.cs",
-              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Data\\AppDbContext.cs",
-              "RelativeToolTip": "DanceSchoolApp.Server\\Data\\AppDbContext.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACEAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 22,
+              "Title": "RoleController.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\People\\RoleController.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Controllers\\People\\RoleController.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\People\\RoleController.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Controllers\\People\\RoleController.cs",
+              "ViewState": "AgIAAEQAAAAAAAAAAAAIwFAAAABEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-05T21:05:49.418Z",
+              "WhenOpened": "2026-03-07T18:36:36.364Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "test.http",
-              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\test.http",
-              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\test.http",
-              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\test.http",
-              "RelativeToolTip": "DanceSchoolApp.Server\\test.http",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAA1AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
-              "WhenOpened": "2026-03-05T18:33:57.134Z"
+              "DocumentIndex": 28,
+              "Title": "UserController.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\People\\UserController.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Controllers\\People\\UserController.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\People\\UserController.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Controllers\\People\\UserController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADoAAAA9AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-07T22:15:02.524Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "WeatherForecast.cs",
-              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\WeatherForecast.cs",
-              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\WeatherForecast.cs",
-              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\WeatherForecast.cs",
-              "RelativeToolTip": "DanceSchoolApp.Server\\WeatherForecast.cs",
+              "DocumentIndex": 27,
+              "Title": "AuthDTO.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\People\\AuthDTO.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\DTOs\\People\\AuthDTO.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\People\\AuthDTO.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\DTOs\\People\\AuthDTO.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-05T17:07:48.243Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "main.jsx",
-              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\danceschoolapp.client\\src\\main.jsx",
-              "RelativeDocumentMoniker": "danceschoolapp.client\\src\\main.jsx",
-              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\danceschoolapp.client\\src\\main.jsx",
-              "RelativeToolTip": "danceschoolapp.client\\src\\main.jsx",
-              "ViewState": "AgIAAAoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2026-03-05T16:45:27.75Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 14,
-              "Title": "launchSettings.json",
-              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Properties\\launchSettings.json",
-              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Properties\\launchSettings.json",
-              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Properties\\launchSettings.json",
-              "RelativeToolTip": "DanceSchoolApp.Server\\Properties\\launchSettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-03-05T16:27:58.627Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\appsettings.json",
-              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\appsettings.json",
-              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\appsettings.json",
-              "RelativeToolTip": "DanceSchoolApp.Server\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAACAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-03-05T16:27:23.912Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "App.jsx",
-              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\danceschoolapp.client\\src\\App.jsx",
-              "RelativeDocumentMoniker": "danceschoolapp.client\\src\\App.jsx",
-              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\danceschoolapp.client\\src\\App.jsx",
-              "RelativeToolTip": "danceschoolapp.client\\src\\App.jsx",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAbAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2026-03-05T16:02:29.012Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "index.html",
-              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\danceschoolapp.client\\index.html",
-              "RelativeDocumentMoniker": "danceschoolapp.client\\index.html",
-              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\danceschoolapp.client\\index.html",
-              "RelativeToolTip": "danceschoolapp.client\\index.html",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2026-03-05T16:02:04.841Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "WeatherForecastController.cs",
-              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\WeatherForecastController.cs",
-              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Controllers\\WeatherForecastController.cs",
-              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\WeatherForecastController.cs",
-              "RelativeToolTip": "DanceSchoolApp.Server\\Controllers\\WeatherForecastController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-05T16:00:30.897Z",
+              "WhenOpened": "2026-03-19T15:42:37.284Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 29,
+              "Title": "PersonController.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\People\\PersonController.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Controllers\\People\\PersonController.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Controllers\\People\\PersonController.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Controllers\\People\\PersonController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAA1AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-07T19:48:30.24Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 35,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Program.cs",
               "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Program.cs",
               "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Program.cs",
               "RelativeToolTip": "DanceSchoolApp.Server\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAARAAAAAAAAAA==",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAQAAAAYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-05T15:56:18.622Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 44,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Properties\\launchSettings.json",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Properties\\launchSettings.json",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Properties\\launchSettings.json",
+              "ViewState": "AgIAABIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-03-10T19:37:38.64Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 43,
+              "Title": "DanceSchoolApp.Server.http",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DanceSchoolApp.Server.http",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\DanceSchoolApp.Server.http",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DanceSchoolApp.Server.http",
+              "RelativeToolTip": "DanceSchoolApp.Server\\DanceSchoolApp.Server.http",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
+              "WhenOpened": "2026-03-10T19:37:57.032Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 42,
+              "Title": "NewsPost.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\NewsPost.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Models\\NewsPost.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\NewsPost.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Models\\NewsPost.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-10T19:38:15.34Z"
+            }
+          ]
+        },
+        {
+          "DockedWidth": 196,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "BlockedPeriodService.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\Scheduling\\BlockedPeriodService.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Services\\Scheduling\\BlockedPeriodService.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\Scheduling\\BlockedPeriodService.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Services\\Scheduling\\BlockedPeriodService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-19T18:04:40.524Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "BlockedPeriodDTO.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\Scheduling\\BlockedPeriodDTO.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\DTOs\\Scheduling\\BlockedPeriodDTO.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\Scheduling\\BlockedPeriodDTO.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\DTOs\\Scheduling\\BlockedPeriodDTO.cs",
+              "ViewState": "AgIAADsAAAAAAAAAAAAmwDIAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-19T18:01:01.964Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "CoachAvailabilityService.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\Scheduling\\CoachAvailabilityService.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Services\\Scheduling\\CoachAvailabilityService.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\Scheduling\\CoachAvailabilityService.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Services\\Scheduling\\CoachAvailabilityService.cs",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAUwAwAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-19T17:25:08.588Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "CoachAvailabilityDTO.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\Scheduling\\CoachAvailabilityDTO.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\DTOs\\Scheduling\\CoachAvailabilityDTO.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\Scheduling\\CoachAvailabilityDTO.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\DTOs\\Scheduling\\CoachAvailabilityDTO.cs",
+              "ViewState": "AgIAACYAAAAAAAAAAAAqwDoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-19T17:16:36.405Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "StudentDTO.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\People\\StudentDTO.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\DTOs\\People\\StudentDTO.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\People\\StudentDTO.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\DTOs\\People\\StudentDTO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T16:48:56.724Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "StudentService.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\People\\StudentService.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Services\\People\\StudentService.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\People\\StudentService.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Services\\People\\StudentService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEwAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T16:45:08.008Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "CoachService.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\People\\CoachService.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Services\\People\\CoachService.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\People\\CoachService.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Services\\People\\CoachService.cs",
+              "ViewState": "AgIAACIAAAAAAAAAAAAqwDIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-19T16:33:04.033Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "StaffService.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\People\\StaffService.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Services\\People\\StaffService.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\People\\StaffService.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Services\\People\\StaffService.cs",
+              "ViewState": "AgIAAB4AAAAAAAAAAAAowDoAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T20:57:01.683Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "ParentService.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\People\\ParentService.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Services\\People\\ParentService.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\People\\ParentService.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Services\\People\\ParentService.cs",
+              "ViewState": "AgIAACEAAAAAAAAAAAAowDAAAABHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T20:28:52.608Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "AuthService.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\People\\AuthService.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Services\\People\\AuthService.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\People\\AuthService.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Services\\People\\AuthService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACkAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-07T21:32:45.561Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "CoachDTO.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\People\\CoachDTO.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\DTOs\\People\\CoachDTO.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\People\\CoachDTO.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\DTOs\\People\\CoachDTO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T20:42:38.485Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "ParentDTO.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\People\\ParentDTO.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\DTOs\\People\\ParentDTO.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\People\\ParentDTO.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\DTOs\\People\\ParentDTO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T20:28:29.666Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "StaffDTO.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\People\\StaffDTO.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\DTOs\\People\\StaffDTO.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\People\\StaffDTO.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\DTOs\\People\\StaffDTO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T20:57:19.81Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "StudioService.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\School\\StudioService.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Services\\School\\StudioService.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\School\\StudioService.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Services\\School\\StudioService.cs",
+              "ViewState": "AgIAAHoAAAAAAAAAAAAuwB8AAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-19T12:47:09.919Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "StudioDTO.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\School\\StudioDTO.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\DTOs\\School\\StudioDTO.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\School\\StudioDTO.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\DTOs\\School\\StudioDTO.cs",
+              "ViewState": "AgIAACcAAAAAAAAAAAAgwEIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-19T12:48:10.244Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "ModalityDTO.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\School\\ModalityDTO.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\DTOs\\School\\ModalityDTO.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\School\\ModalityDTO.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\DTOs\\School\\ModalityDTO.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAA5wA0AAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-19T15:43:07.05Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "UserDTO.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\People\\UserDTO.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\DTOs\\People\\UserDTO.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\People\\UserDTO.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\DTOs\\People\\UserDTO.cs",
+              "ViewState": "AgIAAB8AAAAAAAAAAAAQwDcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-07T22:24:46.482Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "UserService.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\People\\UserService.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Services\\People\\UserService.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\People\\UserService.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Services\\People\\UserService.cs",
+              "ViewState": "AgIAAIQAAAAAAAAAAAAAwFkAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-07T22:05:12.224Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "ModalityService.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\School\\ModalityService.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Services\\School\\ModalityService.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\School\\ModalityService.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Services\\School\\ModalityService.cs",
+              "ViewState": "AgIAAEQAAAAAAAAAAAAIwEAAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-19T11:53:27.074Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 32,
+              "Title": "PersonDTO.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\People\\PersonDTO.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\DTOs\\People\\PersonDTO.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\People\\PersonDTO.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\DTOs\\People\\PersonDTO.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAA5wA4AAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-19T13:33:06.141Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 33,
+              "Title": "RoleDTO.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\People\\RoleDTO.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\DTOs\\People\\RoleDTO.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\DTOs\\People\\RoleDTO.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\DTOs\\People\\RoleDTO.cs",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAmwCQAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-07T19:16:25.513Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 34,
+              "Title": "RoleService.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\People\\RoleService.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Services\\People\\RoleService.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Services\\People\\RoleService.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Services\\People\\RoleService.cs",
+              "ViewState": "AgIAABAAAAAAAAAAAAAgwEsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-07T21:45:30.864Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 36,
+              "Title": "Modality.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\Modality.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Models\\Modality.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\Modality.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Models\\Modality.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T19:04:55.647Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 37,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\User.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Models\\User.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\User.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Models\\User.cs",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAQwCkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-13T15:14:57.029Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 38,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Data\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Data\\AppDbContext.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Data\\AppDbContext.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Data\\AppDbContext.cs",
+              "ViewState": "AgIAAFQCAAAAAAAAAAAUwIcCAABDAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-10T19:38:32.421Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 39,
+              "Title": "Role.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\Role.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Models\\Role.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\Role.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Models\\Role.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-05T21:08:43.658Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 40,
+              "Title": "Roles.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\Roles.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Models\\Roles.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\Roles.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Models\\Roles.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-13T14:25:02.584Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 41,
+              "Title": "UserRole.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\UserRole.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Models\\UserRole.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\UserRole.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Models\\UserRole.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-05T21:09:05.943Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 46,
+              "Title": "ItemCategory.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\ItemCategory.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Models\\ItemCategory.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\ItemCategory.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Models\\ItemCategory.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T19:05:18.665Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 45,
+              "Title": "PersonInfo.cs",
+              "DocumentMoniker": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\PersonInfo.cs",
+              "RelativeDocumentMoniker": "DanceSchoolApp.Server\\Models\\PersonInfo.cs",
+              "ToolTip": "C:\\Users\\shuch\\source\\repos\\DRVP-Tech\\DanceSchoolApp.Server\\Models\\PersonInfo.cs",
+              "RelativeToolTip": "DanceSchoolApp.Server\\Models\\PersonInfo.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-07T20:08:44.042Z"
             }
           ]
         }
