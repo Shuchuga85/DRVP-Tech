@@ -30,4 +30,39 @@ Este repositório contém o desenvolvimento do trabalho realizado no âmbito do 
 
 ## 📂 Estrutura do Projeto
 
-...
+```
+DRVP-Tech/
+├───DanceSchoolApp.slnx
+├───danceschoolapp.client
+│   ├───node_modules
+│   ├───obj
+│   │   └───debug
+│   ├───public
+│   ├───src
+│   │   └───assets
+│   └───danceschoolapp.client.esproj
+│   
+├───danceschoolapp.client
+│   ├───bin
+│   │   └───debug
+│   │   │   └───net10.0
+│   ├───Controllers
+│   ├───Data
+│   ├───DTOs
+│   ├───Middleware
+│   ├───Models
+│   ├───Properties
+│   ├───Services
+│   ├───obg
+│   │   └───debug
+│   │   │   └───net10.0
+│   ├───wwwroot
+│   ├───appsettings.json
+│   ├───program.cs
+│   └───danceschoolapp.server.csproj
+│
+└───README.md
+
+```
+
+---

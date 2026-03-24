@@ -1,0 +1,150 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace DanceSchoolApp.Server.DTOs.Classes
+{
+    // ─── Status enum ──────────────────────────────────────────────────────────
+    public enum CoachClassStatus : byte
+    {
+        Requested = 0,
+        Approved = 1,
+        Rejected = 2,
+        Cancelled = 3,
+        Finished = 4,
+        Validated = 5,
+        Pending = 6   // validation issue: 48h expired or responses conflict
+    }
+
+    // ─── Responses ────────────────────────────────────────────────────────────
+
+    public class CoachClassListResponse
+    {
+        public int ClassId { get; set; }
+        public CoachClassStatus Status { get; set; }
+        public DateTime StartDatetime { get; set; }
+        public DateTime EndDatetime { get; set; }
+        public string ModalityName { get; set; } = null!;
+        public string StudioName { get; set; } = null!;
+        public string CoachName { get; set; } = null!;
+        public int MaxParticipants { get; set; }
+        public int CurrentParticipants { get; set; }
+        public DateOnly CreatedAt { get; set; }
+    }
+
+    public class CoachClassDetailResponse
+    {
+        public int ClassId { get; set; }
+        public CoachClassStatus Status { get; set; }
+        public DateTime StartDatetime { get; set; }
+        public DateTime EndDatetime { get; set; }
+
+        public int ModalityId { get; set; }
+        public string ModalityName { get; set; } = null!;
+
+        public int StudioId { get; set; }
+        public string StudioName { get; set; } = null!;
+
+        public int CoachId { get; set; }
+        public string CoachName { get; set; } = null!;
+
+        public int CreatedByUserId { get; set; }
+
+        public int MaxParticipants { get; set; }
+        public int CurrentParticipants { get; set; }
+        public DateOnly CreatedAt { get; set; }
+
+        public DateTime? CoachValidatedAt { get; set; }
+        public DateTime? StaffValidatedAt { get; set; }
+
+        public List<ClassParticipantSummary> Participants { get; set; } = new();
+    }
+
+    // Slim participant view embedded in class detail — full participant
+    // detail belongs in the Participant controller.
+    public class ClassParticipantSummary
+    {
+        public int ParticipantId { get; set; }
+        public int StudentId { get; set; }
+        public string StudentName { get; set; } = null!;
+        public DateOnly JoinedAt { get; set; }
+        public byte ValidationStatus { get; set; }
+    }
+
+    // Used by GET /open — only shows what a parent needs to decide to join.
+    public class OpenClassResponse
+    {
+        public int ClassId { get; set; }
+        public DateTime StartDatetime { get; set; }
+        public DateTime EndDatetime { get; set; }
+        public string ModalityName { get; set; } = null!;
+        public string StudioName { get; set; } = null!;
+        public string CoachName { get; set; } = null!;
+        public int MaxParticipants { get; set; }
+        public int SpotsAvailable { get; set; }
+    }
+
+    // ─── Requests ─────────────────────────────────────────────────────────────
+
+    public class CoachClassCreateRequest : IValidatableObject
+    {
+        [Required]
+        public int ModalityId { get; set; }
+
+        [Required]
+        public int StudioId { get; set; }
+
+        [Required]
+        public int CoachId { get; set; }
+
+        // CreatedBy is resolved from the authenticated user in the controller.
+        // Stored here for the service to write to the DB.
+        [Required]
+        public int CreatedByUserId { get; set; }
+
+        [Required]
+        public DateTime StartDatetime { get; set; }
+
+        [Required]
+        public DateTime EndDatetime { get; set; }
+
+        [Required]
+        [Range(1, 8, ErrorMessage = "MaxParticipants must be between 1 and 8.")]
+        public int MaxParticipants { get; set; }
+
+        // Must contain at least 1 student — a class cannot be created empty.
+        // Size is validated against MaxParticipants in IValidatableObject.
+        [Required]
+        [MinLength(1, ErrorMessage = "At least one student is required to create a class.")]
+        public List<int> StudentIds { get; set; } = new();
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (EndDatetime <= StartDatetime)
+                yield return new ValidationResult(
+                    "EndDatetime must be after StartDatetime.",
+                    new[] { nameof(EndDatetime) });
+
+            if (StartDatetime < DateTime.UtcNow)
+                yield return new ValidationResult(
+                    "StartDatetime cannot be in the past.",
+                    new[] { nameof(StartDatetime) });
+
+            if (StudentIds.Count > MaxParticipants)
+                yield return new ValidationResult(
+                    $"Number of students ({StudentIds.Count}) exceeds MaxParticipants ({MaxParticipants}).",
+                    new[] { nameof(StudentIds) });
+
+            if (StudentIds.Distinct().Count() != StudentIds.Count)
+                yield return new ValidationResult(
+                    "StudentIds contains duplicates.",
+                    new[] { nameof(StudentIds) });
+        }
+    }
+
+    // Staff-only reject request — reason is optional but useful for
+    // the notification sent back to the parent.
+    public class CoachClassRejectRequest
+    {
+        [MaxLength(256)]
+        public string? Reason { get; set; }
+    }
+}
