@@ -25,6 +25,10 @@ public partial class ItemRequisition
 
     public byte Status { get; set; }
 
+    public int? ReturnQuantity { get; set; }
+
+    public string? Note { get; set; }
+
     public virtual User IdParentNavigation { get; set; } = null!;
 
     public virtual ItemVariant ItemVariant { get; set; } = null!;

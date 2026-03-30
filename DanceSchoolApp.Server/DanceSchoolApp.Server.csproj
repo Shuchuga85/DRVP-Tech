@@ -33,13 +33,5 @@
     </ProjectReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Controllers\Inventory\" />
-    <Folder Include="Controllers\Communication\" />
-    <Folder Include="DTOs\Communication\" />
-    <Folder Include="DTOs\Inventory\" />
-    <Folder Include="Middleware\" />
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
 
 </Project>

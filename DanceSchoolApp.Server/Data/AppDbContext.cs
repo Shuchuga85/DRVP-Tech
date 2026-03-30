@@ -337,6 +337,11 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.RequestedAt).HasColumnName("requested_at");
             entity.Property(e => e.ReturnedAt).HasColumnName("returned_at");
             entity.Property(e => e.Status).HasColumnName("status");
+            entity.Property(e => e.Note).HasColumnName("note");
+            entity.Property(e => e.ReturnQuantity).HasColumnName("return_quantity");
+
+            entity.Property(e => e.Note).HasMaxLength(128);
+            entity.Property(e => e.ReturnQuantity).HasDefaultValue(0);
 
             entity.HasOne(d => d.IdParentNavigation).WithMany(p => p.ItemRequisitions)
                 .HasForeignKey(d => d.IdParent)
