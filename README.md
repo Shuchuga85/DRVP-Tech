@@ -29,7 +29,7 @@ Este repositório contém o desenvolvimento do trabalho realizado no âmbito do 
 ---
 
 ## 🔗 Ferramentas e Links
-Postman Collection -> [Postman](https://shuchuga-4035137.postman.co/workspace/Shuchuga-85's-Workspace~07c574b7-61d7-4018-8977-4d780a25bf64/collection/52952904-e344b92e-737d-4b60-b88d-9946a9896e4a?action=share&creator=52952904)  
+...
 
 ---
 
