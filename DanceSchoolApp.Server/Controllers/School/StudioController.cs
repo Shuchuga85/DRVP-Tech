@@ -1,6 +1,7 @@
 ﻿using DanceSchoolApp.Server.DTOs.School;
 using DanceSchoolApp.Server.Services.School;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DanceSchoolApp.Server.Controllers.School
 {
@@ -16,6 +17,7 @@ namespace DanceSchoolApp.Server.Controllers.School
         }
 
         // ─── GET /api/studios ──────────────────────────────────────────────────
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetStudios()
         {
@@ -35,6 +37,7 @@ namespace DanceSchoolApp.Server.Controllers.School
         }
 
         // ─── GET /api/studios/{id} ─────────────────────────────────────────────
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetStudio(int id)
         {
@@ -54,6 +57,7 @@ namespace DanceSchoolApp.Server.Controllers.School
         }
 
         // ─── POST /api/studios ─────────────────────────────────────────────────
+        [Authorize(Roles = "staff")]
         [HttpPost]
         public async Task<IActionResult> CreateStudio([FromBody] StudioCreateRequest request)
         {
@@ -76,6 +80,7 @@ namespace DanceSchoolApp.Server.Controllers.School
         }
 
         // ─── PATCH /api/studios/{id} ─────────────────────────────────────────────
+        [Authorize(Roles = "staff")]
         [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateStudio(int id, [FromBody] StudioUpdateRequest request)
         {
@@ -102,6 +107,7 @@ namespace DanceSchoolApp.Server.Controllers.School
         }
 
         // ─── PATCH /api/studios/{id}/activate ───────────────────────────────
+        [Authorize(Roles = "staff")]
         [HttpPatch("{id}/activate")]
         public async Task<IActionResult> ActivateStudio(int id)
         {
@@ -121,6 +127,7 @@ namespace DanceSchoolApp.Server.Controllers.School
         }
 
         // ─── PATCH /api/studios/{id}/deactivate ───────────────────────────────
+        [Authorize(Roles = "staff")]
         [HttpPatch("{id}/deactivate")]
         public async Task<IActionResult> DeactivateStudio(int id)
         {
@@ -140,6 +147,7 @@ namespace DanceSchoolApp.Server.Controllers.School
         }
 
         // ─── POST /api/studios/add/modality ────────────────────────────────
+        [Authorize(Roles = "staff")]
         [HttpPost("modality")]
         public async Task<IActionResult> AddModality([FromBody] StudioModalityRequest request)
         {
@@ -166,6 +174,7 @@ namespace DanceSchoolApp.Server.Controllers.School
         }
 
         // ─── DELETE /api/studios/remove/modality ─────────────────
+        [Authorize(Roles = "staff")]
         [HttpDelete("modality")]
         public async Task<IActionResult> RemoveModality([FromBody] StudioModalityRequest request)
         {

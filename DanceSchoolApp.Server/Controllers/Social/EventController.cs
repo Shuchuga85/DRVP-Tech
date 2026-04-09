@@ -1,6 +1,7 @@
 ﻿using DanceSchoolApp.Server.DTOs.Social;
 using DanceSchoolApp.Server.Services.Social;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DanceSchoolApp.Server.Controllers.Social
 {
@@ -17,6 +18,7 @@ namespace DanceSchoolApp.Server.Controllers.Social
 
         // ─── GET /api/events ───────────────────────────────────────────────────
         // Staff use — all events including inactive.
+        [Authorize(Roles = "staff")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -37,6 +39,7 @@ namespace DanceSchoolApp.Server.Controllers.Social
 
         // ─── GET /api/events/active ────────────────────────────────────────────
         // Parent/Coach use — only active events visible to all users.
+        [Authorize]
         [HttpGet("active")]
         public async Task<IActionResult> GetActive()
         {
@@ -56,6 +59,7 @@ namespace DanceSchoolApp.Server.Controllers.Social
         }
 
         // ─── GET /api/events/{id} ──────────────────────────────────────────────
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -76,6 +80,7 @@ namespace DanceSchoolApp.Server.Controllers.Social
 
         // ─── POST /api/events ──────────────────────────────────────────────────
         // Staff use — create a new event. Created as active by default.
+        [Authorize(Roles = "staff")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] EventCreateRequest request)
         {
@@ -100,6 +105,7 @@ namespace DanceSchoolApp.Server.Controllers.Social
 
         // ─── PUT /api/events/{id} ──────────────────────────────────────────────
         // Staff use — update event details. IsActive managed separately below.
+        [Authorize(Roles = "staff")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] EventUpdateRequest request)
         {
@@ -122,6 +128,7 @@ namespace DanceSchoolApp.Server.Controllers.Social
         }
 
         // ─── PATCH /api/events/{id}/activate ──────────────────────────────────
+        [Authorize(Roles = "staff")]
         [HttpPatch("{id}/activate")]
         public async Task<IActionResult> Activate(int id)
         {
@@ -141,6 +148,7 @@ namespace DanceSchoolApp.Server.Controllers.Social
         }
 
         // ─── PATCH /api/events/{id}/deactivate ────────────────────────────────
+        [Authorize(Roles = "staff")]
         [HttpPatch("{id}/deactivate")]
         public async Task<IActionResult> Deactivate(int id)
         {
@@ -161,6 +169,7 @@ namespace DanceSchoolApp.Server.Controllers.Social
 
         // ─── DELETE /api/events/{id} ───────────────────────────────────────────
         // Staff use — hard delete.
+        [Authorize(Roles = "staff")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

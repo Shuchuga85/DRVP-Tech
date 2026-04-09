@@ -261,58 +261,6 @@
           ]
         },
         {
-          "name": "Auth",
-          "item": [
-            {
-              "name": "Post Auth Login",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Successful POST request\", function () {",
-                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-                      "});",
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"username\": \"admino\",\n    \"password\": \"12333\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "http://localhost:5295/api/auth/login",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "auth",
-                    "login"
-                  ]
-                },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
-              },
-              "response": []
-            }
-          ]
-        },
-        {
           "name": "Staff",
           "item": [
             {
@@ -2852,6 +2800,41 @@
     {
       "name": "Inventory",
       "item": []
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Post Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"olamundo\",\n    \"password\": \"12349999\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5295/api/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5295",
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }

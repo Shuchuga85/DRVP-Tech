@@ -1,7 +1,6 @@
-﻿using DanceSchoolApp.Server.DTOs;
-using DanceSchoolApp.Server.Services.People;
-using Microsoft.AspNetCore.Http;
+﻿using DanceSchoolApp.Server.Services.People;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DanceSchoolApp.Server.Controllers.People
 {
@@ -16,6 +15,7 @@ namespace DanceSchoolApp.Server.Controllers.People
         }
 
         // ─── GET /api/parents ─────────────────────────────────────────────────
+        [Authorize(Roles = "staff")]
         [HttpGet]
         public async Task<IActionResult> GetParents()
         {

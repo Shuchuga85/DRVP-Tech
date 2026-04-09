@@ -639,15 +639,17 @@ public partial class AppDbContext : DbContext
                         j.IndexerProperty<int>("IdUser").HasColumnName("id_user");
                         j.IndexerProperty<byte>("IdRole").HasColumnName("id_role");
                     });
-        });
-
-        OnModelCreatingPartial(modelBuilder);
+        }); 
 
         modelBuilder.Entity<Role>().HasData(
         new Role { RoleId = 0, RoleName = "admin" },
         new Role { RoleId = 1, RoleName = "staff" },
         new Role { RoleId = 2, RoleName = "coach" },
         new Role { RoleId = 3, RoleName = "parent" });
+
+        OnModelCreatingPartial(modelBuilder);
+
+       
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

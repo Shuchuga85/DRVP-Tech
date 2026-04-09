@@ -2,6 +2,7 @@
 using DanceSchoolApp.Server.Services.People;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DanceSchoolApp.Server.Controllers.People
 {
@@ -17,6 +18,7 @@ namespace DanceSchoolApp.Server.Controllers.People
         }
 
         // ─── GET /api/coaches ──────────────────────────────────────────────────
+        [Authorize(Roles = "staff")]
         [HttpGet]
         public async Task<IActionResult> GetCoachs()
         {
@@ -36,6 +38,7 @@ namespace DanceSchoolApp.Server.Controllers.People
         }
 
         // ─── GET /api/coaches/{id} ─────────────────────────────────────────────
+        [Authorize(Roles = "staff")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCoach(int id)
         {

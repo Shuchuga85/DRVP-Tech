@@ -1,6 +1,7 @@
 ﻿using DanceSchoolApp.Server.DTOs.Social;
 using DanceSchoolApp.Server.Services.Social;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DanceSchoolApp.Server.Controllers.Social
 {
@@ -16,6 +17,7 @@ namespace DanceSchoolApp.Server.Controllers.Social
         }
 
         // ─── GET /api/newsposts ────────────────────────────────────────────────
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -35,6 +37,7 @@ namespace DanceSchoolApp.Server.Controllers.Social
         }
 
         // ─── GET /api/newsposts/{id} ───────────────────────────────────────────
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -55,6 +58,7 @@ namespace DanceSchoolApp.Server.Controllers.Social
 
         // ─── POST /api/newsposts ───────────────────────────────────────────────
         // Staff use — publish a new news post.
+        [Authorize(Roles = "staff")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] NewsPostCreateRequest request)
         {
@@ -79,6 +83,7 @@ namespace DanceSchoolApp.Server.Controllers.Social
 
         // ─── PUT /api/newsposts/{id} ───────────────────────────────────────────
         // Staff use — update post content. CreatedBy and CreatedAt are immutable.
+        [Authorize(Roles = "staff")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] NewsPostUpdateRequest request)
         {
@@ -102,6 +107,7 @@ namespace DanceSchoolApp.Server.Controllers.Social
 
         // ─── DELETE /api/newsposts/{id} ────────────────────────────────────────
         // Staff use — hard delete. News posts have no billing or audit dependency.
+        [Authorize(Roles = "staff")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

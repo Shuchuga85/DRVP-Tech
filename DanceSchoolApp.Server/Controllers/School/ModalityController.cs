@@ -1,7 +1,7 @@
 ﻿using DanceSchoolApp.Server.DTOs.School;
 using DanceSchoolApp.Server.Services.School;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.AspNetCore.Authorization;
 
 namespace DanceSchoolApp.Server.Controllers.School
 {
@@ -17,6 +17,7 @@ namespace DanceSchoolApp.Server.Controllers.School
         }
 
         // ─── GET /api/modalities ───────────────────────────────────────────────
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetModalities()
         {
@@ -36,6 +37,7 @@ namespace DanceSchoolApp.Server.Controllers.School
         }
 
         // ─── GET /api/modalities/{id} ──────────────────────────────────────────
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetModality(int id)
         {
@@ -55,6 +57,7 @@ namespace DanceSchoolApp.Server.Controllers.School
         }
 
         // ─── POST /api/modalities ──────────────────────────────────────────────
+        [Authorize(Roles = "staff")]
         [HttpPost]
         public async Task<IActionResult> CreateModality([FromBody] ModalityCreateRequest request)
         {
@@ -77,6 +80,7 @@ namespace DanceSchoolApp.Server.Controllers.School
         }
 
         // ─── PATCH /api/modalities/{id} ────────────────────────────────────────
+        [Authorize(Roles = "staff")]
         [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateModality(int id, [FromBody] ModalityUpdateRequest request)
         {
@@ -103,6 +107,7 @@ namespace DanceSchoolApp.Server.Controllers.School
         }
 
         // ─── PATCH /api/modalities/{id}/activate ──────────────────────────────
+        [Authorize(Roles = "staff")]
         [HttpPatch("{id}/activate")]
         public async Task<IActionResult> ActivateModality(int id)
         {
@@ -122,6 +127,7 @@ namespace DanceSchoolApp.Server.Controllers.School
         }
 
         // ─── PATCH /api/modalities/{id}/deactivate ────────────────────────────
+        [Authorize(Roles = "staff")]
         [HttpPatch("{id}/deactivate")]
         public async Task<IActionResult> DeactivateModality(int id)
         {

@@ -1,6 +1,7 @@
 ﻿using DanceSchoolApp.Server.DTOs.People;
 using DanceSchoolApp.Server.Services.People;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DanceSchoolApp.Server.Controllers.People
 {
@@ -17,6 +18,7 @@ namespace DanceSchoolApp.Server.Controllers.People
 
         // ─── GET /api/users ────────────────────────────────────────────────────
         [HttpGet]
+        [Authorize(Roles = "staff")]
         public async Task<IActionResult> GetUsers()
         {
             try
@@ -37,6 +39,7 @@ namespace DanceSchoolApp.Server.Controllers.People
 
         // ─── GET /api/users/{id} ───────────────────────────────────────────────
         [HttpGet("{id}")]
+        [Authorize(Roles = "staff")]
         public async Task<IActionResult> GetUser(int id)
         {
             try
@@ -56,6 +59,8 @@ namespace DanceSchoolApp.Server.Controllers.People
 
         // ─── GET /api/users/{id}/roles ──────────────────────────────────────────
         [HttpGet("{id}/roles")]
+        [Authorize(Roles = "staff")]
+
         public async Task<IActionResult> GetUserRoles(int id)
         {
             try
@@ -75,6 +80,7 @@ namespace DanceSchoolApp.Server.Controllers.People
 
         // ─── POST /api/users ───────────────────────────────────────────────────
         [HttpPost]
+        [Authorize(Roles = "staff")]
         public async Task<IActionResult> CreateUser([FromBody] UserCreateRequest request)
         {
             if (!ModelState.IsValid)
@@ -101,6 +107,7 @@ namespace DanceSchoolApp.Server.Controllers.People
 
         // ─── PATCH /api/users/{id}/activate ───────────────────────────────────
         [HttpPatch("{id}/activate")]
+        [Authorize(Roles = "staff")]
         public async Task<IActionResult> ActivateUser(int id)
         {
             try
@@ -119,6 +126,7 @@ namespace DanceSchoolApp.Server.Controllers.People
         }
 
         // ─── PATCH /api/users/{id}/deactivate ─────────────────────────────────
+        [Authorize(Roles = "staff")]
         [HttpPatch("{id}/deactivate")]
         public async Task<IActionResult> DeactivateUser(int id)
         {

@@ -1,6 +1,7 @@
 ﻿using DanceSchoolApp.Server.DTOs.Classes;
 using DanceSchoolApp.Server.Services.Classes;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DanceSchoolApp.Server.Controllers.Classes
 {
@@ -17,6 +18,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
 
         // ─── GET /api/coachclasses ─────────────────────────────────────────────
         // Staff use — returns all classes regardless of status.
+        [Authorize(Roles = "staff")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -36,6 +38,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
         }
 
         // ─── GET /api/coachclasses/{id} ────────────────────────────────────────
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -56,6 +59,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
 
         // ─── GET /api/coachclasses/open ────────────────────────────────────────
         // Parent use — returns Approved classes with available spots.
+        [Authorize(Roles = "staff,parent")]
         [HttpGet("open")]
         public async Task<IActionResult> GetOpenClasses()
         {
@@ -78,6 +82,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
         // Staff use — filter classes by status.
         // Status values: 0=Requested, 1=Approved, 2=Rejected,
         //                3=Cancelled, 4=Finished, 5=Validated, 6=Pending
+        [Authorize(Roles = "staff")]
         [HttpGet("status/{status}")]
         public async Task<IActionResult> GetByStatus(byte status)
         {
@@ -104,6 +109,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
 
         // ─── GET /api/coachclasses/parent/{parentUserId} ───────────────────────
         // Parent use — returns all classes where this parent's students are enrolled.
+        [Authorize(Roles = "staff,parent")]
         [HttpGet("parent/{parentUserId}")]
         public async Task<IActionResult> GetByParent(int parentUserId)
         {
@@ -129,6 +135,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
         // ─── POST /api/coachclasses ────────────────────────────────────────────
         // Parent use — creates a class request with at least one student.
         // Runs all conflict checks before inserting.
+        [Authorize(Roles = "staff,parent")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CoachClassCreateRequest request)
         {
@@ -157,6 +164,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
 
         // ─── PATCH /api/coachclasses/{id}/approve ─────────────────────────────
         // Staff use — transitions Requested → Approved.
+        [Authorize(Roles = "staff")]
         [HttpPatch("{id}/approve")]
         public async Task<IActionResult> Approve(int id)
         {
@@ -182,6 +190,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
         // ─── PATCH /api/coachclasses/{id}/reject ──────────────────────────────
         // Staff use — transitions Requested → Rejected.
         // Optional reason body is forwarded to notification (TODO).
+        [Authorize(Roles = "staff")]
         [HttpPatch("{id}/reject")]
         public async Task<IActionResult> Reject(int id,
             [FromBody] CoachClassRejectRequest? request)
@@ -207,6 +216,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
 
         // ─── PATCH /api/coachclasses/{id}/cancel ──────────────────────────────
         // Parent or staff use — transitions Requested or Approved → Cancelled.
+        [Authorize(Roles = "staff")]
         [HttpPatch("{id}/cancel")]
         public async Task<IActionResult> Cancel(int id)
         {
@@ -232,6 +242,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
         // ─── PATCH /api/coachclasses/{id}/finish ──────────────────────────────
         // Staff use — transitions Approved → Finished, triggering the
         // 48h validation window for coach and parent.
+        [Authorize(Roles = "staff")]
         [HttpPatch("{id}/finish")]
         public async Task<IActionResult> Finish(int id)
         {
