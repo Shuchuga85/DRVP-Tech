@@ -328,12 +328,12 @@ public partial class AppDbContext : DbContext
             entity.HasIndex(e => e.IdParent, "IX_ItemRequisition_Parent");
 
             entity.Property(e => e.RequisitionId).HasColumnName("requisition_id");
-            entity.Property(e => e.ApprovedAt).HasColumnName("approved_at");
+            entity.Property(e => e.NeedFrom).HasColumnName("need_from");
             entity.Property(e => e.ExpectedReturnDate).HasColumnName("expected_return_date");
             entity.Property(e => e.IdParent).HasColumnName("id_parent");
             entity.Property(e => e.ItemVariantId).HasColumnName("item_variant_id");
             entity.Property(e => e.Quantity).HasColumnName("quantity");
-            entity.Property(e => e.RejectedAt).HasColumnName("rejected_at");
+            entity.Property(e => e.NeedUntil).HasColumnName("need_until");
             entity.Property(e => e.RequestedAt).HasColumnName("requested_at");
             entity.Property(e => e.ReturnedAt).HasColumnName("returned_at");
             entity.Property(e => e.Status).HasColumnName("status");

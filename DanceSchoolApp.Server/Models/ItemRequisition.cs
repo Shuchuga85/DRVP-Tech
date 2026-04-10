@@ -15,9 +15,9 @@ public partial class ItemRequisition
 
     public DateTime RequestedAt { get; set; }
 
-    public DateTime? ApprovedAt { get; set; }
+    public DateTime? NeedFrom { get; set; }
 
-    public DateTime? RejectedAt { get; set; }
+    public DateTime? NeedUntil { get; set; }
 
     public DateOnly? ExpectedReturnDate { get; set; }
 
