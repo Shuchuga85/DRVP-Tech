@@ -1,0 +1,19 @@
+$kind: http-request
+url: http://localhost:5295/api/blockedperiods
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"scope\": 2,\r
+
+    \    \"startdatetime\": \"12:00:00\",\r
+
+    \    \"enddatetime\": \"13:59:59\",\r
+
+    \    \"reason\": \"studio closed\",\r
+
+    \    \"studioid\": 1\r
+
+    }"
+order: 7000

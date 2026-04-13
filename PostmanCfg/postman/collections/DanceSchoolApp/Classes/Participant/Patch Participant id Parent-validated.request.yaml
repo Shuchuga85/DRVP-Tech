@@ -1,0 +1,7 @@
+$kind: http-request
+url: http://localhost:5295/api/participants/1/parent-validated
+method: PATCH
+body:
+  type: text
+  content: ""
+order: 3000

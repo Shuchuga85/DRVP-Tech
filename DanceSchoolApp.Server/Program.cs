@@ -3,6 +3,7 @@ using System.Text;
 using System.Reflection;
 using DanceSchoolApp.Server.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.SqlServer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -18,32 +19,29 @@ foreach (var service in serviceTypes)
     builder.Services.AddScoped(service);
 }
 
-// ── Controllers ─────────────────────────────────────────────────────────────
+
+// ── Controllers ───────────────────────────────────────────────────────────
 builder.Services.AddControllers();
 
-// ── OpenAPI ─────────────────────────────────────────────────────────────────
+
+// ── OpenAPI ───────────────────────────────────────────────────────────────
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 
-// ── Database ────────────────────────────────────────────────────────────────
+
+
+// ── Database ──────────────────────────────────────────────────────────────
 var conn = Environment.GetEnvironmentVariable("DanceSchoolApp_DB");
-if (string.IsNullOrWhiteSpace(conn))
-{
-    Console.WriteLine("Warning - Failed to get Db environmental variable!");
-}
+if (conn == null) Console.WriteLine("Warning - Failed to get Db enviromental variable !");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(conn));
 
-// ── JWT Authentication ──────────────────────────────────────────────────────
+// ── JWT Authentication (cookie-based) ─────────────────────────────────────
 var jwtSecret = Environment.GetEnvironmentVariable("DanceSchoolApp_JWT_Secret");
-
 if (string.IsNullOrWhiteSpace(jwtSecret))
-{
-    throw new InvalidOperationException(
-        "A variável de ambiente 'DanceSchoolApp_JWT_Secret' não está definida."
-    );
-}
+    Console.WriteLine("Warning — DanceSchoolApp_JWT_Secret environment variable is not set.");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -57,34 +55,35 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = "DanceSchoolApp",
             ValidAudience = "DanceSchoolApp",
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSecret)),
+                Encoding.UTF8.GetBytes(jwtSecret ?? string.Empty)),
             RoleClaimType = System.Security.Claims.ClaimTypes.Role
+        };
+
+        // Tell the JWT middleware to read the token from the HttpOnly cookie
+        // instead of the Authorization: Bearer header.
+        // This is the key change that makes cookie-based JWT work.
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var token = context.Request.Cookies["jwt"];
+                if (!string.IsNullOrWhiteSpace(token))
+                    context.Token = token;
+                return Task.CompletedTask;
+            }
         };
     });
 
-// ── Authorization ───────────────────────────────────────────────────────────
 builder.Services.AddAuthorization();
 
-// ── CORS ────────────────────────────────────────────────────────────────────
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend", policy =>
-    {
-        policy
-            .WithOrigins(
-                "https://localhost:5173",
-                "http://localhost:5173",
-                "https://localhost:5174",
-                "http://localhost:5174"
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
-});
+// ─────────────────────────────────────────────────────────────────────────
 
 var app = builder.Build();
 
-// ── Pipeline ────────────────────────────────────────────────────────────────
+app.UseDefaultFiles();
+app.MapStaticAssets();
+
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -92,13 +91,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowFrontend");
-
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseDefaultFiles();
-app.MapStaticAssets();
 
 app.MapControllers();
 
