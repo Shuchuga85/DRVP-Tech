@@ -3,7 +3,6 @@ using System.Text;
 using System.Reflection;
 using DanceSchoolApp.Server.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.SqlServer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -19,30 +18,32 @@ foreach (var service in serviceTypes)
     builder.Services.AddScoped(service);
 }
 
-
-// ── Controllers ───────────────────────────────────────────────────────────
+// ── Controllers ─────────────────────────────────────────────────────────────
 builder.Services.AddControllers();
 
-
-// ── OpenAPI ───────────────────────────────────────────────────────────────
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// ── OpenAPI ─────────────────────────────────────────────────────────────────
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 
-
-
-// ── Database ──────────────────────────────────────────────────────────────
+// ── Database ────────────────────────────────────────────────────────────────
 var conn = Environment.GetEnvironmentVariable("DanceSchoolApp_DB");
-if (conn == null) Console.WriteLine("Warning - Failed to get Db enviromental variable !");
+if (string.IsNullOrWhiteSpace(conn))
+{
+    Console.WriteLine("Warning - Failed to get Db environmental variable!");
+}
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(conn));
 
-// ── JWT Authentication ─────────────────────────────────────────────────────
+// ── JWT Authentication ──────────────────────────────────────────────────────
 var jwtSecret = Environment.GetEnvironmentVariable("DanceSchoolApp_JWT_Secret");
 
 if (string.IsNullOrWhiteSpace(jwtSecret))
-    Console.WriteLine("Warning — JWT secret environment variable is not set.");
+{
+    throw new InvalidOperationException(
+        "A variável de ambiente 'DanceSchoolApp_JWT_Secret' não está definida."
+    );
+}
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -56,24 +57,34 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = "DanceSchoolApp",
             ValidAudience = "DanceSchoolApp",
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSecret ?? string.Empty)),
-
-            // Map JWT role claims to ASP.NET Core's ClaimTypes.Role so
-            // [Authorize(Roles = "staff")] works correctly out of the box.
+                Encoding.UTF8.GetBytes(jwtSecret)),
             RoleClaimType = System.Security.Claims.ClaimTypes.Role
         };
     });
 
+// ── Authorization ───────────────────────────────────────────────────────────
 builder.Services.AddAuthorization();
 
-// ─────────────────────────────────────────────────────────────────────────
+// ── CORS ────────────────────────────────────────────────────────────────────
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy
+            .WithOrigins(
+                "https://localhost:5173",
+                "http://localhost:5173",
+                "https://localhost:5174",
+                "http://localhost:5174"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
 
-app.UseDefaultFiles();
-app.MapStaticAssets();
-
-// Configure the HTTP request pipeline.
+// ── Pipeline ────────────────────────────────────────────────────────────────
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -81,8 +92,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("AllowFrontend");
+
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseDefaultFiles();
+app.MapStaticAssets();
 
 app.MapControllers();
 
