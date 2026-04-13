@@ -1,0 +1,4 @@
+$kind: http-request
+url: http://localhost:5295/api/coachavailability/coach/1
+method: GET
+order: 3000

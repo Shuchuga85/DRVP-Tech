@@ -1,0 +1,4 @@
+$kind: http-request
+url: http://localhost:5295/api/events/1/deactivate
+method: PATCH
+order: 7000
