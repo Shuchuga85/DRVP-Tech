@@ -8,7 +8,7 @@ namespace DanceSchoolApp.Server.Data;
 public partial class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options)
-    : base(options)
+        : base(options)
     {
     }
 
@@ -290,7 +290,7 @@ public partial class AppDbContext : DbContext
 
             entity.Property(e => e.IcontactId).HasColumnName("icontact_id");
             entity.Property(e => e.Address)
-                .HasMaxLength(128)
+                .HasMaxLength(256)
                 .HasColumnName("address");
             entity.Property(e => e.Email)
                 .HasMaxLength(254)
@@ -328,20 +328,21 @@ public partial class AppDbContext : DbContext
             entity.HasIndex(e => e.IdParent, "IX_ItemRequisition_Parent");
 
             entity.Property(e => e.RequisitionId).HasColumnName("requisition_id");
-            entity.Property(e => e.NeedFrom).HasColumnName("need_from");
             entity.Property(e => e.ExpectedReturnDate).HasColumnName("expected_return_date");
             entity.Property(e => e.IdParent).HasColumnName("id_parent");
             entity.Property(e => e.ItemVariantId).HasColumnName("item_variant_id");
-            entity.Property(e => e.Quantity).HasColumnName("quantity");
+            entity.Property(e => e.NeedFrom).HasColumnName("need_from");
             entity.Property(e => e.NeedUntil).HasColumnName("need_until");
+            entity.Property(e => e.Note)
+                .HasMaxLength(128)
+                .HasColumnName("note");
+            entity.Property(e => e.Quantity).HasColumnName("quantity");
             entity.Property(e => e.RequestedAt).HasColumnName("requested_at");
+            entity.Property(e => e.ReturnQuantity)
+                .HasDefaultValue(0)
+                .HasColumnName("return_quantity");
             entity.Property(e => e.ReturnedAt).HasColumnName("returned_at");
             entity.Property(e => e.Status).HasColumnName("status");
-            entity.Property(e => e.Note).HasColumnName("note");
-            entity.Property(e => e.ReturnQuantity).HasColumnName("return_quantity");
-
-            entity.Property(e => e.Note).HasMaxLength(128);
-            entity.Property(e => e.ReturnQuantity).HasDefaultValue(0);
 
             entity.HasOne(d => d.IdParentNavigation).WithMany(p => p.ItemRequisitions)
                 .HasForeignKey(d => d.IdParent)
@@ -505,6 +506,10 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.LastName)
                 .HasMaxLength(64)
                 .HasColumnName("last_name");
+            entity.Property(e => e.Nif)
+                .HasMaxLength(9)
+                .IsUnicode(false)
+                .HasColumnName("nif");
             entity.Property(e => e.Phone)
                 .HasMaxLength(20)
                 .IsUnicode(false)
@@ -639,7 +644,7 @@ public partial class AppDbContext : DbContext
                         j.IndexerProperty<int>("IdUser").HasColumnName("id_user");
                         j.IndexerProperty<byte>("IdRole").HasColumnName("id_role");
                     });
-        }); 
+        });
 
         modelBuilder.Entity<Role>().HasData(
         new Role { RoleId = 0, RoleName = "admin" },
@@ -647,9 +652,8 @@ public partial class AppDbContext : DbContext
         new Role { RoleId = 2, RoleName = "coach" },
         new Role { RoleId = 3, RoleName = "parent" });
 
-        OnModelCreatingPartial(modelBuilder);
 
-       
+        OnModelCreatingPartial(modelBuilder);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
