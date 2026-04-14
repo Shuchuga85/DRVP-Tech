@@ -1,4 +1,5 @@
 $kind: http-request
+name: Post BlockePeriod
 url: http://localhost:5295/api/blockedperiods
 method: POST
 body:
@@ -7,9 +8,9 @@ body:
 
     \    \"scope\": 2,\r
 
-    \    \"startdatetime\": \"12:00:00\",\r
+    \    \"startdatetime\": \"2026-04-23T18:25:43.511Z\",\r
 
-    \    \"enddatetime\": \"13:59:59\",\r
+    \    \"enddatetime\": \"2026-04-23T18:25:43.511Z\",\r
 
     \    \"reason\": \"studio closed\",\r
 

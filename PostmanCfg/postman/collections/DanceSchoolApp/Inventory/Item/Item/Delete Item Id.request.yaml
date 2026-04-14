@@ -1,0 +1,16 @@
+$kind: http-request
+name: Delete Item Id
+url: http://localhost:5295/api/items/1
+method: DELETE
+body:
+  type: json
+  content: "{\r
+
+    \    \"name\": \"Vestido\", \r
+
+    \    \"description\" : \"Vestido longo e vermelho com flores bordados.\",\r
+
+    \    \"idcategory\": 3\r
+
+    }"
+order: 4489959628290035

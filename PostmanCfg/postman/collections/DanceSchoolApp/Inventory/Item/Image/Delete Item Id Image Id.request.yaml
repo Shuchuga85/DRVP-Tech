@@ -1,0 +1,5 @@
+$kind: http-request
+name: Delete Item Id Image Id
+url: https://localhost:7003/api/items/1/images/1
+method: DELETE
+order: 3913387778457569

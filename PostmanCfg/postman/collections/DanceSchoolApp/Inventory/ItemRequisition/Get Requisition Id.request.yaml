@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Requisition Id
+url: https://localhost:7003/api/requisitions/1
+method: GET
+order: 2000
