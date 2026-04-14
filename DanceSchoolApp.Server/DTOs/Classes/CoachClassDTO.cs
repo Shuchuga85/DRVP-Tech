@@ -95,11 +95,6 @@ namespace DanceSchoolApp.Server.DTOs.Classes
         [Required]
         public int CoachId { get; set; }
 
-        // CreatedBy is resolved from the authenticated user in the controller.
-        // Stored here for the service to write to the DB.
-        [Required]
-        public int CreatedByUserId { get; set; }
-
         [Required]
         public DateTime StartDatetime { get; set; }
 

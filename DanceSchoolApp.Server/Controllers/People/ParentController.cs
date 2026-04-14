@@ -35,6 +35,7 @@ namespace DanceSchoolApp.Server.Controllers.People
         }
 
         // ─── GET /api/parents/{id} ─────────────────────────────────────────────────
+        [Authorize(Roles = "staff")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetParent(int id)
         {

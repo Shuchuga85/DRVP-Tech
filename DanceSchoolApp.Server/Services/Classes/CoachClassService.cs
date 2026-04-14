@@ -145,7 +145,7 @@ namespace DanceSchoolApp.Server.Services.Classes
 
         // ─── Commands ─────────────────────────────────────────────────────────
 
-        public async Task<int> CreateAsync(CoachClassCreateRequest request)
+        public async Task<int> CreateAsync(CoachClassCreateRequest request, int createdByUserId)
         {
             // ── 1. Validate all referenced entities exist ──────────────────────
             bool modalityActive = await _context.Modalities
@@ -212,7 +212,7 @@ namespace DanceSchoolApp.Server.Services.Classes
 
             // ── 6. Validate all student ids belong to this parent ──────────────
             var parentStudentIds = await _context.Students
-                .Where(s => s.ParentUserId == request.CreatedByUserId && s.IsActive)
+                .Where(s => s.ParentUserId == createdByUserId && s.IsActive)
                 .Select(s => s.StudentId)
                 .ToListAsync();
 
@@ -223,7 +223,7 @@ namespace DanceSchoolApp.Server.Services.Classes
             if (invalidStudents.Any())
                 throw new InvalidOperationException(
                     $"Student id(s) {string.Join(", ", invalidStudents)} do not belong " +
-                    $"to parent {request.CreatedByUserId} or are inactive.");
+                    $"to parent {createdByUserId} or are inactive.");
 
             // ── 7. Create class + participants atomically ──────────────────────
             var coachClass = new CoachClass
@@ -231,7 +231,7 @@ namespace DanceSchoolApp.Server.Services.Classes
                 IdModality = request.ModalityId,
                 IdStudio = request.StudioId,
                 IdCoach = request.CoachId,
-                CreatedBy = request.CreatedByUserId,
+                CreatedBy = createdByUserId,
                 StartDatetime = request.StartDatetime,
                 EndDatetime = request.EndDatetime,
                 MaxParticipants = request.MaxParticipants,

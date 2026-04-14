@@ -2,6 +2,7 @@
 using DanceSchoolApp.Server.Services.Classes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace DanceSchoolApp.Server.Controllers.Classes
 {
@@ -113,6 +114,9 @@ namespace DanceSchoolApp.Server.Controllers.Classes
         [HttpGet("parent/{parentUserId}")]
         public async Task<IActionResult> GetByParent(int parentUserId)
         {
+            if (!IsStaff() && parentUserId != GetUserId())
+                return Forbid();
+
             try
             {
                 var result = await _coachClassService.GetByParentAsync(parentUserId);
@@ -144,7 +148,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
 
             try
             {
-                var newId = await _coachClassService.CreateAsync(request);
+                var newId = await _coachClassService.CreateAsync(request, GetUserId());
                 return CreatedAtAction(nameof(GetById), new { id = newId },
                     new { classId = newId });
             }
@@ -161,6 +165,12 @@ namespace DanceSchoolApp.Server.Controllers.Classes
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
+        // ─── Helpers ──────────────────────────────────────────────────────────
+        private int GetUserId() =>
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        private bool IsStaff() => User.IsInRole("staff");
 
         // ─── PATCH /api/coachclasses/{id}/approve ─────────────────────────────
         // Staff use — transitions Requested → Approved.

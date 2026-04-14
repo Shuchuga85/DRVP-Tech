@@ -42,11 +42,6 @@ namespace DanceSchoolApp.Server.DTOs.Social
 
         [MaxLength(256)]
         public string? ImageUrl { get; set; }
-
-        // Resolved from authenticated user in controller.
-        // Kept explicit here until JWT auth is wired up.
-        [Required]
-        public int CreatedByUserId { get; set; }
     }
 
     public class NewsPostUpdateRequest

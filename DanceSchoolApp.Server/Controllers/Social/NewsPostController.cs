@@ -2,6 +2,7 @@
 using DanceSchoolApp.Server.Services.Social;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace DanceSchoolApp.Server.Controllers.Social
 {
@@ -67,7 +68,7 @@ namespace DanceSchoolApp.Server.Controllers.Social
 
             try
             {
-                var newId = await _newsPostService.CreateAsync(request);
+                var newId = await _newsPostService.CreateAsync(request, GetUserId());
                 return CreatedAtAction(nameof(GetById), new { id = newId },
                     new { postId = newId });
             }
@@ -104,6 +105,10 @@ namespace DanceSchoolApp.Server.Controllers.Social
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
+        // ─── Helpers ──────────────────────────────────────────────────────────
+        private int GetUserId() =>
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         // ─── DELETE /api/newsposts/{id} ────────────────────────────────────────
         // Staff use — hard delete. News posts have no billing or audit dependency.

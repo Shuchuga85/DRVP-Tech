@@ -51,9 +51,6 @@ namespace DanceSchoolApp.Server.DTOs.Social
         [MaxLength(256)]
         public string? ImageUrl { get; set; }
 
-        [Required]
-        public int CreatedByUserId { get; set; }
-
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (EndDatetime <= StartDatetime)

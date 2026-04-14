@@ -1,5 +1,6 @@
 ﻿using DanceSchoolApp.Server.DTOs.Classes;
 using DanceSchoolApp.Server.Services.Classes;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DanceSchoolApp.Server.Controllers.Classes
@@ -17,6 +18,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
 
         // ─── GET /api/participants/class/{classId} ─────────────────────────────
         // Staff use — full enrollment list for a class with validation statuses.
+        [Authorize(Roles = "staff,coach")]
         [HttpGet("class/{classId}")]
         public async Task<IActionResult> GetByClass(int classId)
         {
@@ -43,6 +45,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
         // Parent use — enroll a student in an open class.
         // Checks: class is Approved + has space, student is active,
         // no duplicate enrollment, no time conflict with other classes.
+        [Authorize(Roles = "parent")]
         [HttpPost]
         public async Task<IActionResult> JoinClass([FromBody] ParticipantJoinRequest request)
         {
@@ -77,6 +80,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
         // Sets ValidationStatus to ParentConfirmed (1) or Disputed (2).
         // Once all participants in the class have responded, the class is
         // automatically advanced to Pending for staff final review.
+        [Authorize(Roles = "parent")]
         [HttpPatch("{id}/parent-validate")]
         public async Task<IActionResult> ParentValidate(
             int id, [FromBody] ParticipantValidateRequest request)
@@ -108,6 +112,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
         // Only allowed when class is Requested or Approved.
         // Blocked if this would leave the class with zero participants —
         // cancel the class instead.
+        [Authorize(Roles = "staff,parent")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> RemoveParticipant(int id)
         {

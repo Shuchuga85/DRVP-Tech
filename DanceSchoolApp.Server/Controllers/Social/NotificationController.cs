@@ -2,6 +2,7 @@
 using DanceSchoolApp.Server.Services.Social;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace DanceSchoolApp.Server.Controllers.Social
 {
@@ -23,6 +24,9 @@ namespace DanceSchoolApp.Server.Controllers.Social
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetByUser(int userId)
         {
+            if (!IsStaff() && userId != GetUserId())
+                return Forbid();
+
             try
             {
                 var result = await _notificationService.GetByUserAsync(userId);
@@ -96,6 +100,9 @@ namespace DanceSchoolApp.Server.Controllers.Social
         [HttpPatch("user/{userId}/read-all")]
         public async Task<IActionResult> MarkAllAsRead(int userId)
         {
+            if (!IsStaff() && userId != GetUserId())
+                return Forbid();
+
             try
             {
                 await _notificationService.MarkAllAsReadAsync(userId);
@@ -110,6 +117,12 @@ namespace DanceSchoolApp.Server.Controllers.Social
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
+        // ─── Helpers ──────────────────────────────────────────────────────────
+        private int GetUserId() =>
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        private bool IsStaff() => User.IsInRole("staff");
 
         // ─── DELETE /api/notifications/{id} ────────────────────────────────────
         // Soft delete — sets IsDeleted = true.

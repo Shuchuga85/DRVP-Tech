@@ -2,9 +2,9 @@
 {
     public class Roles
     {
-        public const int Admin = 1;
-        public const int Staff = 2;
-        public const int Coach = 3;
-        public const int Parent = 4;
+        public const byte Admin = 0;
+        public const byte Staff = 1;
+        public const byte Coach = 2;
+        public const byte Parent = 3;
     }
 }
