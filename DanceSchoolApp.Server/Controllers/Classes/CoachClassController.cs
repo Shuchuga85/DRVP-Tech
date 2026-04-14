@@ -274,5 +274,38 @@ namespace DanceSchoolApp.Server.Controllers.Classes
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
+        // ─── PATCH /api/coachclasses/{id}/coach-validate ──────────────────────
+        // Coach use — confirms they taught the class. Only available on Finished classes.
+        [Authorize(Roles = "coach")]
+        [HttpPatch("{id}/coach-validate")]
+        public async Task<IActionResult> CoachValidate(int id)
+        {
+            try
+            {
+                await _coachClassService.CoachValidateAsync(id, GetUserId());
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            catch (UnauthorizedAccessException ex) { return Forbid(ex.Message); }
+            catch (InvalidOperationException ex) { return Conflict(ex.Message); }
+            catch (Exception ex) { return StatusCode(500, ex.Message); }
+        }
+
+        // ─── PATCH /api/coachclasses/{id}/staff-validate ──────────────────────
+        // Staff use — final sign-off. Transitions Pending → Validated.
+        [Authorize(Roles = "staff")]
+        [HttpPatch("{id}/staff-validate")]
+        public async Task<IActionResult> StaffValidate(int id)
+        {
+            try
+            {
+                await _coachClassService.StaffValidateAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            catch (InvalidOperationException ex) { return Conflict(ex.Message); }
+            catch (Exception ex) { return StatusCode(500, ex.Message); }
+        }
     }
 }

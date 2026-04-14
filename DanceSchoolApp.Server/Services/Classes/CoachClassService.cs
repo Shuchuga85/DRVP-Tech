@@ -1,6 +1,8 @@
-﻿using DanceSchoolApp.Server.Data;
+using DanceSchoolApp.Server.Data;
 using DanceSchoolApp.Server.DTOs.Classes;
+using DanceSchoolApp.Server.DTOs.Social;
 using DanceSchoolApp.Server.Models;
+using DanceSchoolApp.Server.Services.Social;
 using Microsoft.EntityFrameworkCore;
 
 namespace DanceSchoolApp.Server.Services.Classes
@@ -8,10 +10,13 @@ namespace DanceSchoolApp.Server.Services.Classes
     public class CoachClassService
     {
         private readonly AppDbContext _context;
+        private readonly NotificationService _notificationService;
 
-        public CoachClassService(AppDbContext context)
+        public CoachClassService(AppDbContext context,
+            NotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService;
         }
 
         // ─── Queries ──────────────────────────────────────────────────────────
@@ -272,6 +277,27 @@ namespace DanceSchoolApp.Server.Services.Classes
                 newStatus: CoachClassStatus.Approved,
                 errorMessage: "Only a Requested class can be approved."
             );
+
+            var coachClass = await _context.CoachClasses
+                .FirstOrDefaultAsync(c => c.ClassId == classId);
+
+            if (coachClass is null) return;
+
+            await _notificationService.SendAsync(
+                userId: coachClass.CreatedBy,
+                title: "Class Approved",
+                message: $"Your coaching class on {coachClass.StartDatetime:dd/MM/yyyy HH:mm} has been approved.",
+                type: NotificationType.Success,
+                entityType: "CoachClass",
+                entityId: classId);
+
+            await _notificationService.SendAsync(
+                userId: coachClass.IdCoach,
+                title: "New Class Assigned",
+                message: $"You have a new coaching class scheduled for {coachClass.StartDatetime:dd/MM/yyyy HH:mm}.",
+                type: NotificationType.ClassUpdate,
+                entityType: "CoachClass",
+                entityId: classId);
         }
 
         public async Task RejectAsync(int classId, string? reason)
@@ -282,8 +308,21 @@ namespace DanceSchoolApp.Server.Services.Classes
                 newStatus: CoachClassStatus.Rejected,
                 errorMessage: "Only a Requested class can be rejected."
             );
-            // TODO: persist reason to a notification for the parent
-            // once NotificationService is built.
+
+            var coachClass = await _context.CoachClasses
+                .FirstOrDefaultAsync(c => c.ClassId == classId);
+
+            if (coachClass is null) return;
+
+            await _notificationService.SendAsync(
+                userId: coachClass.CreatedBy,
+                title: "Class Rejected",
+                message: reason is not null
+                    ? $"Your class request was rejected. Reason: {reason}"
+                    : "Your class request was rejected.",
+                type: NotificationType.Warning,
+                entityType: "CoachClass",
+                entityId: classId);
         }
 
         public async Task CancelAsync(int classId)
@@ -294,6 +333,27 @@ namespace DanceSchoolApp.Server.Services.Classes
                 newStatus: CoachClassStatus.Cancelled,
                 errorMessage: "Only a Requested or Approved class can be cancelled."
             );
+
+            var coachClass = await _context.CoachClasses
+                .FirstOrDefaultAsync(c => c.ClassId == classId);
+
+            if (coachClass is null) return;
+
+            await _notificationService.SendAsync(
+                userId: coachClass.CreatedBy,
+                title: "Class Cancelled",
+                message: "A coaching class has been cancelled.",
+                type: NotificationType.Warning,
+                entityType: "CoachClass",
+                entityId: classId);
+
+            await _notificationService.SendAsync(
+                userId: coachClass.IdCoach,
+                title: "Class Cancelled",
+                message: "A coaching class has been cancelled.",
+                type: NotificationType.Warning,
+                entityType: "CoachClass",
+                entityId: classId);
         }
 
         public async Task FinishAsync(int classId)
@@ -304,6 +364,120 @@ namespace DanceSchoolApp.Server.Services.Classes
                 newStatus: CoachClassStatus.Finished,
                 errorMessage: "Only an Approved class can be marked as finished."
             );
+
+            var coachClass = await _context.CoachClasses
+                .Include(c => c.Participants)
+                    .ThenInclude(p => p.IdStudentNavigation)
+                .FirstOrDefaultAsync(c => c.ClassId == classId);
+
+            if (coachClass is null) return;
+
+            var distinctParentIds = coachClass.Participants
+                .Select(p => p.IdStudentNavigation.ParentUserId)
+                .Distinct();
+
+            foreach (var parentId in distinctParentIds)
+            {
+                await _notificationService.SendAsync(
+                    userId: parentId,
+                    title: "Class Validation Required",
+                    message: $"Please confirm attendance for the class on {coachClass.StartDatetime:dd/MM/yyyy HH:mm}. You have 48 hours to respond.",
+                    type: NotificationType.ValidationRequest,
+                    entityType: "CoachClass",
+                    entityId: classId);
+            }
+
+            await _notificationService.SendAsync(
+                userId: coachClass.IdCoach,
+                title: "Class Validation Required",
+                message: $"Please confirm you taught the class on {coachClass.StartDatetime:dd/MM/yyyy HH:mm}. You have 48 hours to respond.",
+                type: NotificationType.ValidationRequest,
+                entityType: "CoachClass",
+                entityId: classId);
+        }
+
+        // ─── Validation workflow ──────────────────────────────────────────────
+
+        public async Task CoachValidateAsync(int classId, int coachUserId)
+        {
+            var coachClass = await _context.CoachClasses
+                .FirstOrDefaultAsync(c => c.ClassId == classId);
+
+            if (coachClass is null)
+                throw new KeyNotFoundException($"Class with id {classId} was not found.");
+
+            if (coachClass.IdCoach != coachUserId)
+                throw new UnauthorizedAccessException("You are not the coach for this class.");
+
+            if (coachClass.Status != (byte)CoachClassStatus.Finished)
+                throw new InvalidOperationException(
+                    "Coach validation is only available for Finished classes.");
+
+            if (coachClass.CoachValidatedAt is not null)
+                throw new InvalidOperationException(
+                    "Coach has already validated this class.");
+
+            coachClass.CoachValidatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            var staffIds = await _context.Users
+                .Include(u => u.IdRoles)
+                .Where(u => u.IdRoles.Any(r => r.RoleId == 1) && u.IsActive)
+                .Select(u => u.UserId)
+                .ToListAsync();
+
+            foreach (var staffId in staffIds)
+            {
+                await _notificationService.SendAsync(
+                    userId: staffId,
+                    title: "Coach Confirmed Class",
+                    message: $"Coach has confirmed class id {classId} was taught.",
+                    type: NotificationType.ClassUpdate,
+                    entityType: "CoachClass",
+                    entityId: classId);
+            }
+        }
+
+        public async Task StaffValidateAsync(int classId)
+        {
+            var coachClass = await _context.CoachClasses
+                .Include(c => c.Participants)
+                    .ThenInclude(p => p.IdStudentNavigation)
+                .FirstOrDefaultAsync(c => c.ClassId == classId);
+
+            if (coachClass is null)
+                throw new KeyNotFoundException($"Class with id {classId} was not found.");
+
+            if (coachClass.Status != (byte)CoachClassStatus.Pending)
+                throw new InvalidOperationException(
+                    "Staff validation is only available for Pending classes.");
+
+            coachClass.StaffValidatedAt = DateTime.UtcNow;
+            coachClass.Status = (byte)CoachClassStatus.Validated;
+            await _context.SaveChangesAsync();
+
+            var parentIds = coachClass.Participants
+                .Select(p => p.IdStudentNavigation.ParentUserId)
+                .Distinct();
+
+            foreach (var parentId in parentIds)
+            {
+                await _notificationService.SendAsync(
+                    userId: parentId,
+                    title: "Class Validated",
+                    message: $"The class on {coachClass.StartDatetime:dd/MM/yyyy HH:mm} has been fully validated.",
+                    type: NotificationType.Success,
+                    entityType: "CoachClass",
+                    entityId: classId);
+            }
+
+            await _notificationService.SendAsync(
+                userId: coachClass.IdCoach,
+                title: "Class Validated",
+                message: $"Your class on {coachClass.StartDatetime:dd/MM/yyyy HH:mm} has been validated by staff.",
+                type: NotificationType.Success,
+                entityType: "CoachClass",
+                entityId: classId);
         }
 
         // ─── Private helpers ──────────────────────────────────────────────────
