@@ -62,7 +62,8 @@ namespace DanceSchoolApp.Server.Services.People
                     LastName = user.PersonInfo.LastName,
                     BirthDate = user.PersonInfo.BirthDate,
                     Phone = user.PersonInfo.Phone,
-                    Address = user.PersonInfo.Address
+                    Address = user.PersonInfo.Address,
+                    Nif = user.PersonInfo.Nif
                 },
                 Roles = user.IdRoles.Select(r => new RoleSummaryResponse
                 {
@@ -133,7 +134,9 @@ namespace DanceSchoolApp.Server.Services.People
                     LastName = request.PersonInfo.LastName,
                     BirthDate = request.PersonInfo.BirthDate,
                     Phone = request.PersonInfo.Phone,
-                    Address = request.PersonInfo.Address
+                    Address = request.PersonInfo.Address,
+                    Nif = request.PersonInfo.Nif
+
                 }
             };
 

@@ -66,7 +66,8 @@ namespace DanceSchoolApp.Server.Services.People
                     LastName = coach.PersonInfo.LastName,
                     BirthDate = coach.PersonInfo.BirthDate,
                     Phone = coach.PersonInfo.Phone,
-                    Address = coach.PersonInfo.Address
+                    Address = coach.PersonInfo.Address,
+                    Nif = coach.PersonInfo.Nif
                 }
             };
         }
