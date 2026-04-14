@@ -1,15 +1,15 @@
 const testimonials = [
     {
-        name: 'Maria Fernandes',
-        text: 'A plataforma tornou muito mais simples marcar aulas e acompanhar o meu progresso.',
+        name: 'Encarregado de educação',
+        text: 'Um espaço acolhedor, com acompanhamento atento e muito profissionalismo.',
     },
     {
-        name: 'João Silva',
-        text: 'Excelente escola, bons professores e uma comunidade muito acolhedora.',
+        name: 'Aluna',
+        text: 'Gosto do ambiente da escola e da forma como evoluí em cada aula.',
     },
     {
-        name: 'Ana Ruiz',
-        text: 'Sistema intuitivo e uma experiência muito positiva desde o início.',
+        name: 'Família Ent’Artes',
+        text: 'Uma escola onde a dança é vivida com dedicação, exigência e carinho.',
     },
 ]
 
@@ -17,7 +17,7 @@ function Testimonials() {
     return (
         <section className="testimonials" id="testemunhos">
             <div className="container">
-                <h2 className="section-title">O que dizem os nossos alunos</h2>
+                <h2 className="section-title">O que dizem sobre a escola</h2>
 
                 <div className="testimonials-grid">
                     {testimonials.map((item, index) => (

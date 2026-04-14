@@ -11,15 +11,18 @@ namespace DanceSchoolApp.Server.DTOs
         public string? Email { get; set; }
 
         [Required]
-        public string Password { get; set; } = null!;
+        public string Password { get; set; } = null!; 
     }
 
+    // Token is NOT returned in the response body — it is set as an
+    // HttpOnly Secure cookie by the controller. This prevents JavaScript
+    // from ever accessing the token, eliminating XSS token theft.
+    // The client receives only the user context it needs for the UI.
     public class LoginResponse
     {
-        public string Token { get; set; } = null!;
-        public DateTime ExpiresAt { get; set; }
         public int UserId { get; set; }
         public string Username { get; set; } = null!;
         public List<string> Roles { get; set; } = new();
+        public DateTime ExpiresAt { get; set; }
     }
 }

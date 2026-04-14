@@ -1,0 +1,7 @@
+$kind: http-request
+url: http://localhost:5295/api/blockedperiods/range?from=2025-03-01T00:00:00&to=2025-03-31T23:59:59
+method: GET
+queryParams:
+  from: 2025-03-01T00:00:00
+  to: 2025-03-31T23:59:59
+order: 4000

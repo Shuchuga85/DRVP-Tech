@@ -38,11 +38,10 @@ if (conn == null) Console.WriteLine("Warning - Failed to get Db enviromental var
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(conn));
 
-// ── JWT Authentication ─────────────────────────────────────────────────────
+// ── JWT Authentication (cookie-based) ─────────────────────────────────────
 var jwtSecret = Environment.GetEnvironmentVariable("DanceSchoolApp_JWT_Secret");
-
 if (string.IsNullOrWhiteSpace(jwtSecret))
-    Console.WriteLine("Warning — JWT secret environment variable is not set.");
+    Console.WriteLine("Warning — DanceSchoolApp_JWT_Secret environment variable is not set.");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -57,10 +56,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = "DanceSchoolApp",
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtSecret ?? string.Empty)),
-
-            // Map JWT role claims to ASP.NET Core's ClaimTypes.Role so
-            // [Authorize(Roles = "staff")] works correctly out of the box.
             RoleClaimType = System.Security.Claims.ClaimTypes.Role
+        };
+
+        // Tell the JWT middleware to read the token from the HttpOnly cookie
+        // instead of the Authorization: Bearer header.
+        // This is the key change that makes cookie-based JWT work.
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var token = context.Request.Cookies["jwt"];
+                if (!string.IsNullOrWhiteSpace(token))
+                    context.Token = token;
+                return Task.CompletedTask;
+            }
         };
     });
 

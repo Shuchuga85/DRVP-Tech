@@ -1,0 +1,4 @@
+$kind: http-request
+url: http://localhost:5295/api/events/active
+method: GET
+order: 2000

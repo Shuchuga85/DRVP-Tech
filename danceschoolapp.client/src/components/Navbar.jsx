@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 function Navbar() {
     return (
         <header className="navbar">
@@ -11,8 +13,9 @@ function Navbar() {
                     <a href="#footer">Contacto</a>
                 </nav>
 
-                <button className="btn btn-primary">Inscrever</button>
-            </div>
+                <Link to="/login" className="btn btn-primary">
+                    Login
+                </Link>            </div>
         </header>
     )
 }

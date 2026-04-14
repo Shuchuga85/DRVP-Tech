@@ -1,0 +1,4 @@
+$kind: http-request
+url: http://localhost:5295/api/students/1/activate
+method: PATCH
+order: 6000

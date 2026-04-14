@@ -1,3 +1,5 @@
+import heroImg from '../assets/hero-entartes.jpg'
+
 function Hero() {
     return (
         <section className="hero">
@@ -5,21 +7,19 @@ function Hero() {
                 <div className="hero-text">
                     <h1>Bem-vindo à Ent&apos;Artes</h1>
                     <p>
-                        A sua escola de dança de referência. Sistema integrado de gestão
-                        de aulas, inscrições e eventos para alunos, professores e staff.
+                        Escola de dança em Braga, com formação artística para crianças,
+                        jovens e adultos, num ambiente de aprendizagem, expressão e
+                        crescimento.
                     </p>
 
                     <div className="hero-buttons">
-                        <button className="btn btn-primary">Agendar aula</button>
-                        <button className="btn btn-secondary">Saber mais</button>
+                        <button className="btn btn-primary">Marcar aula</button>
+                        <button className="btn btn-secondary">Conhecer a escola</button>
                     </div>
                 </div>
 
                 <div className="hero-image">
-                    <img
-                        src="https://images.unsplash.com/photo-1515169067868-5387ec356754?q=80&w=1200&auto=format&fit=crop"
-                        alt="Escola de dança"
-                    />
+                    <img src={heroImg} alt="Ent'Artes Escola de Dança" />
                 </div>
             </div>
         </section>
