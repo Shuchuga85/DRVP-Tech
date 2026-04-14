@@ -1,4 +1,6 @@
-﻿namespace DanceSchoolApp.Server.DTOs.People
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace DanceSchoolApp.Server.DTOs.People
 {
 
     public class PersonRequest
@@ -9,6 +11,8 @@
         public string? Email { get; set; }
         public string? Phone { get; set; }
         public string? Address { get; set; }
+        [MaxLength(9)]
+        public string? Nif { get; set; }
     }
 
     public class PersonDetailResponse
@@ -20,6 +24,7 @@
         public string? Email { get; set; }
         public string? Phone { get; set; }
         public string? Address { get; set; }
+        public string? Nif { get; set; }
     }
     public class PersonListResponse
     {

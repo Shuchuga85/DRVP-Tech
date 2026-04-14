@@ -222,6 +222,9 @@ namespace DanceSchoolApp.Server.DTOs.Inventory
         [Required]
         [Range(1, int.MaxValue)]
         public int ReturnQuantity { get; set; }
+
+        [MaxLength(256)]
+        public string? ReturnNote { get; set; }  // describes condition/defects on return
     }
 
     // ─── ItemCategory Requests ───────────────────────────────────────────────────

@@ -140,6 +140,7 @@ namespace DanceSchoolApp.Server.Services.Inventory
             requisition.ReturnQuantity = request.ReturnQuantity;
             requisition.ReturnedAt = DateTime.UtcNow;
             requisition.Status = RequisitionStatus.Returned;
+            if (request.ReturnNote is not null) requisition.Note = request.ReturnNote;
 
             await _context.SaveChangesAsync();
         }

@@ -124,6 +124,26 @@ namespace DanceSchoolApp.Server.Services.Classes
                 .ToListAsync();
         }
 
+        public async Task<List<CoachClassListResponse>> GetByCoachAsync(int coachUserId)
+        {
+            bool coachExists = await _context.Coaches
+                .AnyAsync(c => c.CoachId == coachUserId);
+
+            if (!coachExists)
+                throw new KeyNotFoundException($"Coach with id {coachUserId} was not found.");
+
+            return await _context.CoachClasses
+                .Include(c => c.IdModalityNavigation)
+                .Include(c => c.IdStudioNavigation)
+                .Include(c => c.IdCoachNavigation)
+                    .ThenInclude(coach => coach.CoachNavigation)
+                        .ThenInclude(u => u.PersonInfo)
+                .Include(c => c.Participants)
+                .Where(c => c.IdCoach == coachUserId)
+                .Select(c => MapToListResponse(c))
+                .ToListAsync();
+        }
+
         public async Task<List<CoachClassListResponse>> GetByParentAsync(int parentUserId)
         {
             bool parentExists = await _context.Users

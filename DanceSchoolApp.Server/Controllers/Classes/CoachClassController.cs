@@ -136,6 +136,34 @@ namespace DanceSchoolApp.Server.Controllers.Classes
             }
         }
 
+        // ─── GET /api/coachclasses/coach/{coachId} ─────────────────────────────
+        // Coach use — view own schedule. Staff can view any coach's schedule.
+        [Authorize(Roles = "staff,coach")]
+        [HttpGet("coach/{coachId}")]
+        public async Task<IActionResult> GetByCoach(int coachId)
+        {
+            if (!IsStaff() && coachId != GetUserId())
+                return Forbid();
+
+            try
+            {
+                var result = await _coachClassService.GetByCoachAsync(coachId);
+
+                if (!result.Any())
+                    return NoContent();
+
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
         // ─── POST /api/coachclasses ────────────────────────────────────────────
         // Parent use — creates a class request with at least one student.
         // Runs all conflict checks before inserting.
