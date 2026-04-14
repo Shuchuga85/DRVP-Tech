@@ -1,6 +1,8 @@
 ﻿using DanceSchoolApp.Server.Data;
 using DanceSchoolApp.Server.DTOs.Inventory;
+using DanceSchoolApp.Server.DTOs.Social;
 using DanceSchoolApp.Server.Models;
+using DanceSchoolApp.Server.Services.Social;
 using Microsoft.EntityFrameworkCore;
 
 namespace DanceSchoolApp.Server.Services.Inventory
@@ -17,10 +19,12 @@ namespace DanceSchoolApp.Server.Services.Inventory
     public class ItemRequisitionService
     {
         private readonly AppDbContext _context;
+        private readonly NotificationService _notificationService;
 
-        public ItemRequisitionService(AppDbContext context)
+        public ItemRequisitionService(AppDbContext context, NotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService;
         }
 
         // ─── Queries ──────────────────────────────────────────────────────────────
@@ -72,7 +76,8 @@ namespace DanceSchoolApp.Server.Services.Inventory
                 IdParent = parentUserId,
                 Quantity = request.Quantity,
                 RequestedAt = DateTime.UtcNow,
-                ExpectedReturnDate = request.ExpectedReturnDate,
+                NeedFrom = request.NeedFrom,
+                NeedUntil = request.NeedUntil,
                 Note = request.Note,
                 Status = RequisitionStatus.Pending
             };
@@ -88,6 +93,7 @@ namespace DanceSchoolApp.Server.Services.Inventory
         {
             var requisition = await _context.ItemRequisitions
                 .Include(r => r.ItemVariant)
+                    .ThenInclude(v => v.IdItemNavigation)
                 .FirstOrDefaultAsync(r => r.RequisitionId == id);
 
             if (requisition is null)
@@ -104,18 +110,41 @@ namespace DanceSchoolApp.Server.Services.Inventory
 
                 requisition.ItemVariant.Quantity -= requisition.Quantity;
                 requisition.Status = RequisitionStatus.Approved;
-                requisition.NeedFrom = DateTime.UtcNow;
+                requisition.ExpectedReturnDate = request.ExpectedReturnDate;
+                // Note: NeedFrom already holds the parent's requested start date.
             }
             else
             {
                 requisition.Status = RequisitionStatus.Rejected;
-                requisition.NeedUntil = DateTime.UtcNow;
             }
 
             if (request.Note is not null)
                 requisition.Note = request.Note;
 
             await _context.SaveChangesAsync();
+
+            if (request.Approve)
+            {
+                await _notificationService.SendAsync(
+                    userId: requisition.IdParent,
+                    title: "Requisition Approved",
+                    message: request.ExpectedReturnDate.HasValue
+                        ? $"Your requisition for '{requisition.ItemVariant.IdItemNavigation.Name}' has been approved. Please return it by {request.ExpectedReturnDate.Value:dd/MM/yyyy}."
+                        : $"Your requisition for '{requisition.ItemVariant.IdItemNavigation.Name}' has been approved.",
+                    type: NotificationType.Success,
+                    entityType: "ItemRequisition",
+                    entityId: requisition.RequisitionId);
+            }
+            else
+            {
+                await _notificationService.SendAsync(
+                    userId: requisition.IdParent,
+                    title: "Requisition Rejected",
+                    message: $"Your requisition for '{requisition.ItemVariant.IdItemNavigation.Name}' was not approved.",
+                    type: NotificationType.Warning,
+                    entityType: "ItemRequisition",
+                    entityId: requisition.RequisitionId);
+            }
         }
 
         /// <summary>Parent registers the return of borrowed items.</summary>
@@ -180,8 +209,8 @@ namespace DanceSchoolApp.Server.Services.Inventory
                     IdParent = r.IdParent,
                     Quantity = r.Quantity,
                     RequestedAt = r.RequestedAt,
-                    ApprovedAt = r.NeedFrom,
-                    RejectedAt = r.NeedUntil,
+                    NeedFrom = r.NeedFrom,
+                    NeedUntil = r.NeedUntil,
                     ExpectedReturnDate = r.ExpectedReturnDate,
                     ReturnedAt = r.ReturnedAt,
                     Status = r.Status,
@@ -199,8 +228,8 @@ namespace DanceSchoolApp.Server.Services.Inventory
             IdParent = r.IdParent,
             Quantity = r.Quantity,
             RequestedAt = r.RequestedAt,
-            ApprovedAt = r.NeedFrom,
-            RejectedAt = r.NeedUntil,
+            NeedFrom = r.NeedFrom,
+            NeedUntil = r.NeedUntil,
             ExpectedReturnDate = r.ExpectedReturnDate,
             ReturnedAt = r.ReturnedAt,
             Status = r.Status,

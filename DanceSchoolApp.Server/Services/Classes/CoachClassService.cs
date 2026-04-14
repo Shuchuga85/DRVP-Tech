@@ -1,4 +1,5 @@
 using DanceSchoolApp.Server.Data;
+using DanceSchoolApp.Server.DTOs;
 using DanceSchoolApp.Server.DTOs.Classes;
 using DanceSchoolApp.Server.DTOs.Social;
 using DanceSchoolApp.Server.Models;
@@ -21,17 +22,32 @@ namespace DanceSchoolApp.Server.Services.Classes
 
         // ─── Queries ──────────────────────────────────────────────────────────
 
-        public async Task<List<CoachClassListResponse>> GetAllAsync()
+        public async Task<PagedResult<CoachClassListResponse>> GetAllAsync(PagedQuery query)
         {
-            return await _context.CoachClasses
+            var dbQuery = _context.CoachClasses
                 .Include(c => c.IdModalityNavigation)
                 .Include(c => c.IdStudioNavigation)
                 .Include(c => c.IdCoachNavigation)
                     .ThenInclude(coach => coach.CoachNavigation)
                         .ThenInclude(u => u.PersonInfo)
                 .Include(c => c.Participants)
-                .Select(c => MapToListResponse(c))
+                .AsQueryable();
+
+            var total = await dbQuery.CountAsync();
+
+            var items = await dbQuery
+                .OrderByDescending(c => c.StartDatetime)
+                .Skip((query.Page - 1) * query.PageSize)
+                .Take(query.PageSize)
                 .ToListAsync();
+
+            return new PagedResult<CoachClassListResponse>
+            {
+                Items = items.Select(MapToListResponse).ToList(),
+                TotalCount = total,
+                Page = query.Page,
+                PageSize = query.PageSize
+            };
         }
 
         public async Task<CoachClassDetailResponse> GetByIdAsync(int id)

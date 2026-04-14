@@ -1,4 +1,5 @@
-﻿using DanceSchoolApp.Server.DTOs.Social;
+﻿using DanceSchoolApp.Server.DTOs;
+using DanceSchoolApp.Server.DTOs.Social;
 using DanceSchoolApp.Server.Services.Social;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
@@ -22,18 +23,14 @@ namespace DanceSchoolApp.Server.Controllers.Social
         // Includes both read and unread — client filters by IsRead if needed.
         [Authorize]
         [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetByUser(int userId)
+        public async Task<IActionResult> GetByUser(int userId, [FromQuery] PagedQuery query)
         {
             if (!IsStaff() && userId != GetUserId())
                 return Forbid();
 
             try
             {
-                var result = await _notificationService.GetByUserAsync(userId);
-
-                if (!result.Any())
-                    return NoContent();
-
+                var result = await _notificationService.GetByUserAsync(userId, query);
                 return Ok(result);
             }
             catch (KeyNotFoundException ex)

@@ -1,4 +1,5 @@
-﻿using DanceSchoolApp.Server.DTOs.Classes;
+﻿using DanceSchoolApp.Server.DTOs;
+using DanceSchoolApp.Server.DTOs.Classes;
 using DanceSchoolApp.Server.Services.Classes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
@@ -21,13 +22,13 @@ namespace DanceSchoolApp.Server.Controllers.Classes
         // Staff use — returns all classes regardless of status.
         [Authorize(Roles = "staff")]
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] PagedQuery query)
         {
             try
             {
-                var result = await _coachClassService.GetAllAsync();
+                var result = await _coachClassService.GetAllAsync(query);
 
-                if (!result.Any())
+                if (result.TotalCount == 0)
                     return NoContent();
 
                 return Ok(result);

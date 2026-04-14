@@ -103,6 +103,9 @@ namespace DanceSchoolApp.Server.Controllers.People
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            if (!IsStaff() && request.ParentId != GetUserId())
+                return Forbid();
+
             try
             {
                 var newId = await _studentService.CreateStudentAsync(request);
@@ -128,6 +131,13 @@ namespace DanceSchoolApp.Server.Controllers.People
 
             try
             {
+                if (!IsStaff())
+                {
+                    var student = await _studentService.GetStudentAsync(id);
+                    if (student.ParentUserId != GetUserId())
+                        return Forbid();
+                }
+
                 await _studentService.UpdateStudentAsync(id, request);
                 return NoContent();
             }
