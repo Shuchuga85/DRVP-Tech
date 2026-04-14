@@ -38,6 +38,19 @@ if (conn == null) Console.WriteLine("Warning - Failed to get Db enviromental var
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(conn));
 
+// ── CORS ─────────────────────────────────────────────────────────────────
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins("https://localhost:5173")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        });
+});
+
 // ── JWT Authentication (cookie-based) ─────────────────────────────────────
 var jwtSecret = Environment.GetEnvironmentVariable("DanceSchoolApp_JWT_Secret");
 if (string.IsNullOrWhiteSpace(jwtSecret))
@@ -76,6 +89,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+
 // ─────────────────────────────────────────────────────────────────────────
 
 var app = builder.Build();
@@ -88,8 +102,9 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
 app.UseHttpsRedirection();
+
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
