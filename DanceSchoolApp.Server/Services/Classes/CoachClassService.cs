@@ -252,19 +252,28 @@ namespace DanceSchoolApp.Server.Services.Classes
                     "The coach is already booked during this time window.");
 
             // ── 6. Validate all student ids belong to this parent ──────────────
-            var parentStudentIds = await _context.Students
+            var parentStudents = await _context.Students
                 .Where(s => s.ParentUserId == createdByUserId && s.IsActive)
-                .Select(s => s.StudentId)
                 .ToListAsync();
 
-            var invalidStudents = request.StudentIds
-                .Except(parentStudentIds)
-                .ToList();
+            var parentStudentIds = parentStudents.Select(s => s.StudentId).ToList();
 
+            var invalidStudents = request.StudentIds.Except(parentStudentIds).ToList();
             if (invalidStudents.Any())
                 throw new InvalidOperationException(
                     $"Student id(s) {string.Join(", ", invalidStudents)} do not belong " +
                     $"to parent {createdByUserId} or are inactive.");
+
+            var notAccepted = parentStudents
+                .Where(s => request.StudentIds.Contains(s.StudentId)
+                         && s.AcceptanceStatus != 1)
+                .Select(s => s.StudentId)
+                .ToList();
+
+            if (notAccepted.Any())
+                throw new InvalidOperationException(
+                    $"Student id(s) {string.Join(", ", notAccepted)} have not been " +
+                    $"accepted by staff yet and cannot be enrolled in classes.");
 
             // ── 7. Create class + participants atomically ──────────────────────
             var coachClass = new CoachClass

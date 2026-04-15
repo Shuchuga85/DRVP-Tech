@@ -1,6 +1,8 @@
 ﻿using DanceSchoolApp.Server.Data;
 using DanceSchoolApp.Server.DTOs.People;
+using DanceSchoolApp.Server.DTOs.Social;
 using DanceSchoolApp.Server.Models;
+using DanceSchoolApp.Server.Services.Social;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -9,10 +11,12 @@ namespace DanceSchoolApp.Server.Services.People
     public class StudentService
     {
         private readonly AppDbContext _context;
+        private readonly NotificationService _notificationService;
 
-        public StudentService(AppDbContext context)
+        public StudentService(AppDbContext context, NotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService;
         }
 
         // ─── Queries ──────────────────────────────────────────────────────────
@@ -26,6 +30,7 @@ namespace DanceSchoolApp.Server.Services.People
                     StudentId = s.StudentId,
                     ParentUserId = s.ParentUserId,
                     IsActive = s.IsActive,
+                    AcceptanceStatus = (StudentAcceptanceStatus)s.AcceptanceStatus,
                     PersonInfo = s.PersonInfo == null ? null : new PersonListResponse
                     {
                         PersonId = s.PersonInfo.PersonId,
@@ -50,6 +55,7 @@ namespace DanceSchoolApp.Server.Services.People
                 StudentId = student.StudentId,
                 ParentUserId = student.ParentUserId,
                 IsActive = student.IsActive,
+                AcceptanceStatus = (StudentAcceptanceStatus)student.AcceptanceStatus,
                 PersonInfo = student.PersonInfo is null ? null : new PersonDetailResponse
                 {
                     PersonId = student.PersonInfo.PersonId,
@@ -79,6 +85,7 @@ namespace DanceSchoolApp.Server.Services.People
                     StudentId = s.StudentId,
                     ParentUserId = s.ParentUserId,
                     IsActive = s.IsActive,
+                    AcceptanceStatus = (StudentAcceptanceStatus)s.AcceptanceStatus,
                     PersonInfo = s.PersonInfo == null ? null : new PersonListResponse
                     {
                         PersonId = s.PersonInfo.PersonId,
@@ -139,6 +146,9 @@ namespace DanceSchoolApp.Server.Services.People
             student.PersonInfo.Address = request.Address;
             student.PersonInfo.Nif = request.Nif;
 
+            // When parent corrects data, reset to Pending so staff re-reviews
+            student.AcceptanceStatus = (byte)StudentAcceptanceStatus.Pending;
+
             await _context.SaveChangesAsync();
         }
 
@@ -150,6 +160,52 @@ namespace DanceSchoolApp.Server.Services.People
 
             if (rowsAffected == 0)
                 throw new KeyNotFoundException($"Student with id {studentId} was not found.");
+        }
+
+        public async Task AcceptStudentAsync(int studentId)
+        {
+            var student = await _context.Students
+                .FirstOrDefaultAsync(s => s.StudentId == studentId);
+
+            if (student is null)
+                throw new KeyNotFoundException($"Student with id {studentId} was not found.");
+
+            if (student.AcceptanceStatus == (byte)StudentAcceptanceStatus.Accepted)
+                throw new InvalidOperationException("Student is already accepted.");
+
+            student.AcceptanceStatus = (byte)StudentAcceptanceStatus.Accepted;
+            await _context.SaveChangesAsync();
+
+            await _notificationService.SendAsync(
+                userId: student.ParentUserId,
+                title: "Student Accepted",
+                message: $"Your student has been accepted and can now join classes.",
+                type: NotificationType.Success,
+                entityType: "Student",
+                entityId: studentId);
+        }
+
+        public async Task RejectStudentAsync(int studentId, string? reason)
+        {
+            var student = await _context.Students
+                .Include(s => s.ParentUser)
+                .FirstOrDefaultAsync(s => s.StudentId == studentId);
+
+            if (student is null)
+                throw new KeyNotFoundException($"Student with id {studentId} was not found.");
+
+            student.AcceptanceStatus = (byte)StudentAcceptanceStatus.Rejected;
+            await _context.SaveChangesAsync();
+
+            await _notificationService.SendAsync(
+                userId: student.ParentUserId,
+                title: "Student Data Requires Correction",
+                message: reason is not null
+                    ? $"Your student registration was not accepted. Reason: {reason}. Please update the student information."
+                    : "Your student registration was not accepted. Please review and update the student information.",
+                type: NotificationType.Warning,
+                entityType: "Student",
+                entityId: studentId);
         }
 
     }

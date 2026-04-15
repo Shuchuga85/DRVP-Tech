@@ -81,7 +81,7 @@ namespace DanceSchoolApp.Server.Controllers.People
 
         // ─── POST /api/users ───────────────────────────────────────────────────
         [HttpPost]
-        [Authorize(Roles = "staff, admin")]
+        [Authorize(Roles = "staff,admin")]
         public async Task<IActionResult> CreateUser([FromBody] UserCreateRequest request)
         {
             if (!ModelState.IsValid)

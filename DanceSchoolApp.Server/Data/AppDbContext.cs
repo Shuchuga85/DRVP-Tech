@@ -542,6 +542,9 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("is_active");
             entity.Property(e => e.ParentUserId).HasColumnName("parent_user_id");
             entity.Property(e => e.PersonInfoId).HasColumnName("person_info_id");
+            entity.Property(e => e.AcceptanceStatus)
+                .HasDefaultValue((byte)0)
+                .HasColumnName("acceptance_status");
 
             entity.HasOne(d => d.ParentUser).WithMany(p => p.Students)
                 .HasForeignKey(d => d.ParentUserId)

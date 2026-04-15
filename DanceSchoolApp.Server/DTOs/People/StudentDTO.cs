@@ -2,6 +2,12 @@
 
 namespace DanceSchoolApp.Server.DTOs.People
 {
+    public enum StudentAcceptanceStatus : byte
+    {
+        Pending  = 0,
+        Accepted = 1,
+        Rejected = 2
+    }
 
     // ─── Responses ────────────────────────────────────────────────────────────
 
@@ -10,6 +16,7 @@ namespace DanceSchoolApp.Server.DTOs.People
         public int StudentId { get; set; }
         public int ParentUserId { get; set; }
         public bool IsActive { get; set; }
+        public StudentAcceptanceStatus AcceptanceStatus { get; set; }
         public PersonListResponse? PersonInfo { get; set; }
     }
 
@@ -18,6 +25,7 @@ namespace DanceSchoolApp.Server.DTOs.People
         public int StudentId { get; set; }
         public int ParentUserId { get; set; }
         public bool IsActive { get; set; }
+        public StudentAcceptanceStatus AcceptanceStatus { get; set; }
         public PersonDetailResponse? PersonInfo { get; set; }
     }
 
@@ -68,6 +76,12 @@ namespace DanceSchoolApp.Server.DTOs.People
         public string? Address { get; set; }
         [MaxLength(9)]
         public string? Nif { get; set; }
+    }
+
+    public class StudentAcceptanceRejectRequest
+    {
+        [MaxLength(256)]
+        public string? Reason { get; set; }
     }
 
 }

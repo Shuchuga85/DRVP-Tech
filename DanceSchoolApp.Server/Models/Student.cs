@@ -13,6 +13,8 @@ public partial class Student
 
     public bool IsActive { get; set; }
 
+    public byte AcceptanceStatus { get; set; }
+
     public virtual User ParentUser { get; set; } = null!;
 
     public virtual ICollection<Participant> Participants { get; set; } = new List<Participant>();

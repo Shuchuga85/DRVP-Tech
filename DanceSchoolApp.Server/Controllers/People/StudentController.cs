@@ -195,5 +195,35 @@ namespace DanceSchoolApp.Server.Controllers.People
             }
         }
 
+        // ─── PATCH /api/students/{id}/accept ──────────────────────────────────
+        [Authorize(Roles = "staff")]
+        [HttpPatch("{id}/accept")]
+        public async Task<IActionResult> AcceptStudent(int id)
+        {
+            try
+            {
+                await _studentService.AcceptStudentAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            catch (InvalidOperationException ex) { return Conflict(ex.Message); }
+            catch (Exception ex) { return StatusCode(500, ex.Message); }
+        }
+
+        // ─── PATCH /api/students/{id}/reject ──────────────────────────────────
+        [Authorize(Roles = "staff")]
+        [HttpPatch("{id}/reject")]
+        public async Task<IActionResult> RejectStudent(int id,
+            [FromBody] StudentAcceptanceRejectRequest? request)
+        {
+            try
+            {
+                await _studentService.RejectStudentAsync(id, request?.Reason);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            catch (Exception ex) { return StatusCode(500, ex.Message); }
+        }
+
     }
 }

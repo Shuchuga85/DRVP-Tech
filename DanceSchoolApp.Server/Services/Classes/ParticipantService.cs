@@ -97,6 +97,10 @@ namespace DanceSchoolApp.Server.Services.Classes
                 throw new KeyNotFoundException(
                     $"Student with id {request.StudentId} was not found or is inactive.");
 
+            if (student.AcceptanceStatus != 1)
+                throw new InvalidOperationException(
+                    "This student has not been accepted by staff yet and cannot join classes.");
+
             // ── 3. Student must belong to the requesting parent ───────────────
             // NOTE: once auth is in, replace request.ParentUserId with the
             // authenticated user id from the JWT claims. For now the parent
