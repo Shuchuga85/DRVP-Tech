@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+string YELLOW = Console.IsOutputRedirected ? "" : "\x1b[93m";
+string NORMAL = Console.IsOutputRedirected ? "" : "\x1b[39m";
 
 // ── Auto-register all services via reflection ──────────────────────────────
 var serviceTypes = Assembly.GetExecutingAssembly()
@@ -33,7 +35,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 // ── Database ──────────────────────────────────────────────────────────────
 var conn = Environment.GetEnvironmentVariable("DanceSchoolApp_DB");
-if (conn == null) Console.WriteLine("Warning - Failed to get Db enviromental variable !");
+if (conn == null) Console.WriteLine($"{YELLOW}Warning{NORMAL} - DanceSchoolApp_DB environment variable is not set.!");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(conn));
@@ -54,7 +56,7 @@ builder.Services.AddCors(options =>
 // ── JWT Authentication (cookie-based) ─────────────────────────────────────
 var jwtSecret = Environment.GetEnvironmentVariable("DanceSchoolApp_JWT_Secret");
 if (string.IsNullOrWhiteSpace(jwtSecret))
-    Console.WriteLine("Warning — DanceSchoolApp_JWT_Secret environment variable is not set.");
+    Console.WriteLine($"{YELLOW}Warning{NORMAL} — DanceSchoolApp_JWT_Secret environment variable is not set.");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -88,6 +90,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
+
+// ── Email Service ─────────────────────────────────────────────────────────
+var email = Environment.GetEnvironmentVariable("DanceSchoolApp_Email_Password");
+if (email == null) Console.WriteLine($"{YELLOW}Warning{NORMAL} - DanceSchoolApp_Email_Password environment variable is not set!");
+
+
 
 
 // ─────────────────────────────────────────────────────────────────────────

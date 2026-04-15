@@ -30,9 +30,37 @@ public class EmailService
               </table>
               <p style="margin-top:16px;">
                 Após o primeiro login, poderá alterar a sua password e preencher os seus dados pessoais.
+                Pode também usar a opção 'Esqueci a password' na página de login para definir uma nova password.
               </p>
               <p style="color:#888; font-size:0.85em;">
                 Se não estava à espera deste email, pode ignorá-lo.
+              </p>
+            </body>
+            </html>
+            """;
+
+        await SendEmailAsync(toEmail, subject, body);
+    }
+
+    public async Task SendPasswordResetEmailAsync(string toEmail, string resetLink)
+    {
+        var subject = "Redefinir Password — Dance School App";
+
+        var body = $"""
+            <html>
+            <body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto;">
+              <h2 style="color: #7b2d8b;">Redefinir a sua Password</h2>
+              <p>Recebemos um pedido para redefinir a sua password.</p>
+              <p>Clique no botão abaixo para criar uma nova password.
+                 O link é válido por <strong>24 horas</strong>.</p>
+              <a href="{resetLink}"
+                 style="display:inline-block; padding:12px 24px; background:#7b2d8b;
+                        color:#fff; text-decoration:none; border-radius:6px; margin:16px 0;">
+                Redefinir Password
+              </a>
+              <p>Se não pediu esta alteração, pode ignorar este email.</p>
+              <p style="color:#888; font-size:0.85em;">
+                O link expira em 24 horas.
               </p>
             </body>
             </html>

@@ -25,4 +25,21 @@ namespace DanceSchoolApp.Server.DTOs
         public List<string> Roles { get; set; } = new();
         public DateTime ExpiresAt { get; set; }
     }
+
+    public class ForgotPasswordRequest
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = null!;
+    }
+
+    public class ResetPasswordRequest
+    {
+        [Required]
+        public string Token { get; set; } = null!;
+
+        [Required]
+        [MinLength(8, ErrorMessage = "Password must be at least 8 characters.")]
+        public string NewPassword { get; set; } = null!;
+    }
 }

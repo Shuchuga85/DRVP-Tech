@@ -11,10 +11,12 @@ namespace DanceSchoolApp.Server.Services
     public class AuthService
     {
         private readonly AppDbContext _context;
+        private readonly EmailService _emailService;
 
-        public AuthService(AppDbContext context)
+        public AuthService(AppDbContext context, EmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         // Returns both the raw token string (for the cookie) and the
@@ -69,6 +71,99 @@ namespace DanceSchoolApp.Server.Services
             };
 
             return (token, response);
+        }
+
+        public async Task SendPasswordResetAsync(string email)
+        {
+            // Always return success — don't reveal whether email exists (security)
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user is null) return; // silently do nothing
+
+            var token = GeneratePasswordResetToken(user.UserId, user.Email!);
+
+            // The frontend URL — adjust to match your actual reset page route
+            var resetLink = $"https://localhost:5173/reset-password?token={token}";
+
+            await _emailService.SendPasswordResetEmailAsync(user.Email!, resetLink);
+        }
+
+        public async Task ResetPasswordAsync(string token, string newPassword)
+        {
+            var principal = ValidatePasswordResetToken(token);
+
+            if (principal is null)
+                throw new UnauthorizedAccessException("Invalid or expired reset token.");
+
+            var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var purposeClaim = principal.FindFirst("purpose")?.Value;
+
+            if (userIdClaim is null || purposeClaim != "pwd_reset")
+                throw new UnauthorizedAccessException("Invalid reset token.");
+
+            int userId = int.Parse(userIdClaim);
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user is null)
+                throw new KeyNotFoundException("User not found.");
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            await _context.SaveChangesAsync();
+        }
+
+        private static string GeneratePasswordResetToken(int userId, string email)
+        {
+            var secret = Environment.GetEnvironmentVariable("DanceSchoolApp_JWT_Secret")!;
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, userId.ToString()),
+                new("purpose", "pwd_reset"),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: "DanceSchoolApp",
+                audience: "DanceSchoolApp",
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(24),
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        private static ClaimsPrincipal? ValidatePasswordResetToken(string token)
+        {
+            var secret = Environment.GetEnvironmentVariable("DanceSchoolApp_JWT_Secret")!;
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+
+            var validationParams = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = "DanceSchoolApp",
+                ValidAudience = "DanceSchoolApp",
+                IssuerSigningKey = key
+            };
+
+            try
+            {
+                var principal = new JwtSecurityTokenHandler()
+                    .ValidateToken(token, validationParams, out _);
+                return principal;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private static string GenerateToken(

@@ -78,6 +78,55 @@ namespace DanceSchoolApp.Server.Controllers
             return NoContent();
         }
 
+        // ─── POST /api/auth/forgot-password ───────────────────────────────────
+        // Public. Always returns 200 regardless of whether email exists.
+        // Sends a 24h reset link to the address if it belongs to a user.
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(
+            [FromBody] ForgotPasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                await _authService.SendPasswordResetAsync(request.Email);
+                return Ok("If that email is registered, a reset link has been sent.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        // ─── POST /api/auth/reset-password ────────────────────────────────────
+        // Public. Validates the reset token and updates the password.
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(
+            [FromBody] ResetPasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                await _authService.ResetPasswordAsync(request.Token, request.NewPassword);
+                return NoContent();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
         // ─── GET /api/auth/me ──────────────────────────────────────────────────
         // Returns the current authenticated user's context from JWT claims.
         // Useful for React to restore session state on page refresh without
