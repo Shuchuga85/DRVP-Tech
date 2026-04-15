@@ -304,8 +304,9 @@ img {
 
 .modalities-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-    gap: 1.4rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1.5rem;
+    align-items: stretch;
 }
 
 .modality-card {
@@ -314,22 +315,28 @@ img {
     background: var(--surface);
     border: 0.0625rem solid var(--border);
     box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
     .modality-card img {
         width: 100%;
-        height: auto;
         aspect-ratio: 4 / 3;
         object-fit: cover;
     }
 
 .modality-card-body {
     padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
 }
 
     .modality-card-body h3 {
-        margin: 0 0 0.5rem;
-        font-size: 1.12rem;
+        margin: 0;
+        font-size: 1.1rem;
         font-weight: 700;
         line-height: 1.35;
     }
@@ -337,8 +344,8 @@ img {
     .modality-card-body p {
         margin: 0;
         color: var(--muted);
-        line-height: 1.65;
-        font-size: 0.98rem;
+        line-height: 1.6;
+        font-size: 0.97rem;
     }
 
 /* TESTIMONIALS */
