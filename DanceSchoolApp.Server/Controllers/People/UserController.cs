@@ -2,6 +2,7 @@
 using DanceSchoolApp.Server.Services.People;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using DanceSchoolApp.Server.Models;
 
 namespace DanceSchoolApp.Server.Controllers.People
 {
@@ -80,11 +81,14 @@ namespace DanceSchoolApp.Server.Controllers.People
 
         // ─── POST /api/users ───────────────────────────────────────────────────
         [HttpPost]
-        [Authorize(Roles = "staff")]
+        [Authorize(Roles = "staff, admin")]
         public async Task<IActionResult> CreateUser([FromBody] UserCreateRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            if(User.IsInRole("staff") && (request.FirstRole == Roles.Admin || request.FirstRole == Roles.Staff))
+                return Forbid("Staff cannot create users with Admin or Staff roles.");
 
             try
             {
