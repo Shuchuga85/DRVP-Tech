@@ -2,6 +2,7 @@
 using DanceSchoolApp.Server.Services.Social;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace DanceSchoolApp.Server.Controllers.Social
 {
@@ -89,7 +90,7 @@ namespace DanceSchoolApp.Server.Controllers.Social
 
             try
             {
-                var newId = await _eventService.CreateAsync(request);
+                var newId = await _eventService.CreateAsync(request, GetUserId());
                 return CreatedAtAction(nameof(GetById), new { id = newId },
                     new { eventId = newId });
             }
@@ -166,6 +167,10 @@ namespace DanceSchoolApp.Server.Controllers.Social
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
+        // ─── Helpers ──────────────────────────────────────────────────────────
+        private int GetUserId() =>
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         // ─── DELETE /api/events/{id} ───────────────────────────────────────────
         // Staff use — hard delete.

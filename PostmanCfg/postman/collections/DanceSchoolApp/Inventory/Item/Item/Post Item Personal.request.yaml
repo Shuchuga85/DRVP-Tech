@@ -1,0 +1,26 @@
+$kind: http-request
+name: Post Item Personal
+url: http://localhost:5295/api/items/personal
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"name\": \"Vestido\", \r
+
+    \    \"description\" : \"Vestido longo e vermelho com flores bordados.\",\r
+
+    \    \"idcategory\": 2,\r
+
+    \    \"contact\": {\r
+
+    \        \"phonenumber\" : \"+351 991123003\",\r
+
+    \        \"email\": \"olamundo@gmail.com\",\r
+
+    \        \"address\" : \"Rua torta de avocado\"\r
+
+    \    }\r
+
+    }"
+order: 4364906140981522

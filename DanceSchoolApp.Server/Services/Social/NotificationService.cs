@@ -1,4 +1,5 @@
 ﻿using DanceSchoolApp.Server.Data;
+using DanceSchoolApp.Server.DTOs;
 using DanceSchoolApp.Server.DTOs.Social;
 using DanceSchoolApp.Server.Models;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +17,7 @@ namespace DanceSchoolApp.Server.Services.Social
 
         // ─── Queries ──────────────────────────────────────────────────────────
 
-        public async Task<List<NotificationResponse>> GetByUserAsync(int userId)
+        public async Task<PagedResult<NotificationResponse>> GetByUserAsync(int userId, PagedQuery query)
         {
             bool userExists = await _context.Users
                 .AnyAsync(u => u.UserId == userId);
@@ -24,13 +25,25 @@ namespace DanceSchoolApp.Server.Services.Social
             if (!userExists)
                 throw new KeyNotFoundException($"User with id {userId} was not found.");
 
-            return await _context.Notifications
-                .Where(n =>
-                    n.IdUser == userId &&
-                    (n.IsDeleted == null || n.IsDeleted == false))
+            var dbQuery = _context.Notifications
+                .Where(n => n.IdUser == userId && (n.IsDeleted == null || n.IsDeleted == false));
+
+            var total = await dbQuery.CountAsync();
+
+            var items = await dbQuery
                 .OrderByDescending(n => n.CreatedAt)
+                .Skip((query.Page - 1) * query.PageSize)
+                .Take(query.PageSize)
                 .Select(n => MapToResponse(n))
                 .ToListAsync();
+
+            return new PagedResult<NotificationResponse>
+            {
+                Items = items,
+                TotalCount = total,
+                Page = query.Page,
+                PageSize = query.PageSize
+            };
         }
 
         // ─── Commands ─────────────────────────────────────────────────────────

@@ -17,6 +17,8 @@ public partial class PersonInfo
 
     public string? Address { get; set; }
 
+    public string? Nif { get; set; }
+
     public virtual ICollection<Student> Students { get; set; } = new List<Student>();
 
     public virtual ICollection<User> Users { get; set; } = new List<User>();

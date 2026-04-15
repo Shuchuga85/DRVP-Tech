@@ -178,8 +178,8 @@ namespace DanceSchoolApp.Server.DTOs.Inventory
         public int IdParent { get; set; }
         public int Quantity { get; set; }
         public DateTime RequestedAt { get; set; }
-        public DateTime? ApprovedAt { get; set; }
-        public DateTime? RejectedAt { get; set; }
+        public DateTime? NeedFrom { get; set; }
+        public DateTime? NeedUntil { get; set; }
         public DateOnly? ExpectedReturnDate { get; set; }
         public DateTime? ReturnedAt { get; set; }
         public byte Status { get; set; }
@@ -202,7 +202,11 @@ namespace DanceSchoolApp.Server.DTOs.Inventory
         [Range(1, int.MaxValue)]
         public int Quantity { get; set; }
 
-        public DateOnly? ExpectedReturnDate { get; set; }
+        // When the parent wants the item from
+        public DateTime? NeedFrom { get; set; }
+
+        // When the parent wants the item until
+        public DateTime? NeedUntil { get; set; }
 
         [MaxLength(256)]
         public string? Note { get; set; }
@@ -213,6 +217,9 @@ namespace DanceSchoolApp.Server.DTOs.Inventory
         [Required]
         public bool Approve { get; set; }
 
+        // Staff sets the return deadline only on approval
+        public DateOnly? ExpectedReturnDate { get; set; }
+
         [MaxLength(256)]
         public string? Note { get; set; }
     }
@@ -222,6 +229,9 @@ namespace DanceSchoolApp.Server.DTOs.Inventory
         [Required]
         [Range(1, int.MaxValue)]
         public int ReturnQuantity { get; set; }
+
+        [MaxLength(256)]
+        public string? ReturnNote { get; set; }  // describes condition/defects on return
     }
 
     // ─── ItemCategory Requests ───────────────────────────────────────────────────

@@ -1,0 +1,8 @@
+$kind: http-request
+name: Patch Requisition Id Return
+url: https://localhost:7003/api/requisitions/1/return
+method: PATCH
+body:
+  type: json
+  content: "{\r\n    \"returnquantity\": 1\r\n}"
+order: 4425

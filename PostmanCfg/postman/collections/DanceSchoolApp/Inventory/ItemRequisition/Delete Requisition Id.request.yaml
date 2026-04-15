@@ -1,0 +1,5 @@
+$kind: http-request
+name: Delete Requisition Id
+url: https://localhost:7003/api/requisitions/1
+method: DELETE
+order: 2849392200517420

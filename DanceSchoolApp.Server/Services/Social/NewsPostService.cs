@@ -58,14 +58,14 @@ namespace DanceSchoolApp.Server.Services.Social
 
         // ─── Commands ─────────────────────────────────────────────────────────
 
-        public async Task<int> CreateAsync(NewsPostCreateRequest request)
+        public async Task<int> CreateAsync(NewsPostCreateRequest request, int createdByUserId)
         {
             bool userExists = await _context.Users
-                .AnyAsync(u => u.UserId == request.CreatedByUserId);
+                .AnyAsync(u => u.UserId == createdByUserId);
 
             if (!userExists)
                 throw new KeyNotFoundException(
-                    $"User with id {request.CreatedByUserId} was not found.");
+                    $"User with id {createdByUserId} was not found.");
 
             var post = new NewsPost
             {
@@ -74,7 +74,7 @@ namespace DanceSchoolApp.Server.Services.Social
                 Description = request.Description,
                 ImageUrl = request.ImageUrl,
                 CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow),
-                CreatedBy = request.CreatedByUserId
+                CreatedBy = createdByUserId
             };
 
             _context.NewsPosts.Add(post);

@@ -1,0 +1,12 @@
+$kind: http-request
+name: Post Item-Categories
+url: https://localhost:7003/api/item-categories
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"catgname\": \"uniform\"\r
+
+    }"
+order: 3816787476431192

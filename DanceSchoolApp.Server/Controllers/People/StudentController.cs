@@ -3,6 +3,7 @@ using DanceSchoolApp.Server.Services.People;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace DanceSchoolApp.Server.Controllers.People
 {
@@ -45,6 +46,10 @@ namespace DanceSchoolApp.Server.Controllers.People
             try
             {
                 var result = await _studentService.GetStudentAsync(id);
+
+                if (!IsStaff() && result.ParentUserId != GetUserId())
+                    return Forbid();
+
                 return Ok(result);
             }
             catch (KeyNotFoundException ex)
@@ -62,6 +67,9 @@ namespace DanceSchoolApp.Server.Controllers.People
         [HttpGet("parent/{parentId}")]
         public async Task<IActionResult> GetStudentsByParent(int parentId)
         {
+            if (!IsStaff() && parentId != GetUserId())
+                return Forbid();
+
             try
             {
                 var result = await _studentService.GetStudentsByParentAsync(parentId);
@@ -81,6 +89,12 @@ namespace DanceSchoolApp.Server.Controllers.People
             }
         }
 
+        // ─── Helpers ──────────────────────────────────────────────────────────
+        private int GetUserId() =>
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        private bool IsStaff() => User.IsInRole("staff");
+
         // ─── POST /api/students ────────────────────────────────────────────────
         [Authorize(Roles = "staff,parent")]
         [HttpPost]
@@ -88,6 +102,9 @@ namespace DanceSchoolApp.Server.Controllers.People
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            if (!IsStaff() && request.ParentId != GetUserId())
+                return Forbid();
 
             try
             {
@@ -114,6 +131,13 @@ namespace DanceSchoolApp.Server.Controllers.People
 
             try
             {
+                if (!IsStaff())
+                {
+                    var student = await _studentService.GetStudentAsync(id);
+                    if (student.ParentUserId != GetUserId())
+                        return Forbid();
+                }
+
                 await _studentService.UpdateStudentAsync(id, request);
                 return NoContent();
             }

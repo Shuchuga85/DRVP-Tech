@@ -1,7 +1,9 @@
-﻿using DanceSchoolApp.Server.DTOs.Social;
+﻿using DanceSchoolApp.Server.DTOs;
+using DanceSchoolApp.Server.DTOs.Social;
 using DanceSchoolApp.Server.Services.Social;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace DanceSchoolApp.Server.Controllers.Social
 {
@@ -21,15 +23,14 @@ namespace DanceSchoolApp.Server.Controllers.Social
         // Includes both read and unread — client filters by IsRead if needed.
         [Authorize]
         [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetByUser(int userId)
+        public async Task<IActionResult> GetByUser(int userId, [FromQuery] PagedQuery query)
         {
+            if (!IsStaff() && userId != GetUserId())
+                return Forbid();
+
             try
             {
-                var result = await _notificationService.GetByUserAsync(userId);
-
-                if (!result.Any())
-                    return NoContent();
-
+                var result = await _notificationService.GetByUserAsync(userId, query);
                 return Ok(result);
             }
             catch (KeyNotFoundException ex)
@@ -96,6 +97,9 @@ namespace DanceSchoolApp.Server.Controllers.Social
         [HttpPatch("user/{userId}/read-all")]
         public async Task<IActionResult> MarkAllAsRead(int userId)
         {
+            if (!IsStaff() && userId != GetUserId())
+                return Forbid();
+
             try
             {
                 await _notificationService.MarkAllAsReadAsync(userId);
@@ -110,6 +114,12 @@ namespace DanceSchoolApp.Server.Controllers.Social
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
+        // ─── Helpers ──────────────────────────────────────────────────────────
+        private int GetUserId() =>
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        private bool IsStaff() => User.IsInRole("staff");
 
         // ─── DELETE /api/notifications/{id} ────────────────────────────────────
         // Soft delete — sets IsDeleted = true.

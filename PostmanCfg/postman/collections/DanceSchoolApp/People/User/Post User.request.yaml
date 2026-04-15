@@ -1,4 +1,5 @@
 $kind: http-request
+name: Post User
 description: >-
   This is a POST request, submitting data to an API via the request body. This
   request submits JSON data, and the data is reflected in the response.
@@ -22,7 +23,8 @@ body:
             "birthDate": "1990-05-10",
             "email": "john@test.com",
             "phone": "123456",
-            "address": "Street 1"
+            "address": "Street 1",
+            "niff": "300023212"
         }
     }
 scripts:

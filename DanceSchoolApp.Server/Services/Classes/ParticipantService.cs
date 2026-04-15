@@ -1,6 +1,8 @@
-﻿using DanceSchoolApp.Server.Data;
+using DanceSchoolApp.Server.Data;
 using DanceSchoolApp.Server.DTOs.Classes;
+using DanceSchoolApp.Server.DTOs.Social;
 using DanceSchoolApp.Server.Models;
+using DanceSchoolApp.Server.Services.Social;
 using Microsoft.EntityFrameworkCore;
 
 namespace DanceSchoolApp.Server.Services.Classes
@@ -8,10 +10,13 @@ namespace DanceSchoolApp.Server.Services.Classes
     public class ParticipantService
     {
         private readonly AppDbContext _context;
+        private readonly NotificationService _notificationService;
 
-        public ParticipantService(AppDbContext context)
+        public ParticipantService(AppDbContext context,
+            NotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService;
         }
 
         // ─── Queries ──────────────────────────────────────────────────────────
@@ -210,16 +215,32 @@ namespace DanceSchoolApp.Server.Services.Classes
             if (!allResponded) return;
 
             // All participants have responded — move class to Pending for
-            // staff to review. Staff will then call the final validate endpoint
-            // (to be built on CoachClassService when validation workflow is added).
+            // staff to review. Staff will then call the final validate endpoint.
             var coachClass = await _context.CoachClasses
                 .FirstOrDefaultAsync(c => c.ClassId == classId);
 
-            if (coachClass is not null &&
-                coachClass.Status == (byte)CoachClassStatus.Finished)
+            if (coachClass is null ||
+                coachClass.Status != (byte)CoachClassStatus.Finished)
+                return;
+
+            coachClass.Status = (byte)CoachClassStatus.Pending;
+            await _context.SaveChangesAsync();
+
+            var staffIds = await _context.Users
+                .Include(u => u.IdRoles)
+                .Where(u => u.IdRoles.Any(r => r.RoleId == 1) && u.IsActive)
+                .Select(u => u.UserId)
+                .ToListAsync();
+
+            foreach (var staffId in staffIds)
             {
-                coachClass.Status = (byte)CoachClassStatus.Pending;
-                await _context.SaveChangesAsync();
+                await _notificationService.SendAsync(
+                    userId: staffId,
+                    title: "Class Ready for Validation",
+                    message: $"All participants have responded for class id {classId}. Final staff sign-off required.",
+                    type: NotificationType.ValidationRequest,
+                    entityType: "CoachClass",
+                    entityId: classId);
             }
         }
     }

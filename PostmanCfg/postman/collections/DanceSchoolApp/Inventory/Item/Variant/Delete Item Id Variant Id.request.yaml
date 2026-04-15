@@ -1,0 +1,5 @@
+$kind: http-request
+name: Delete Item Id Variant Id
+url: https://localhost:7003/api/items/{{id}}/variants/{{sid}}
+method: DELETE
+order: 4471895189618708
