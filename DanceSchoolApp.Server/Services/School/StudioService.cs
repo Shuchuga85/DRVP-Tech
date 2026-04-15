@@ -1,4 +1,5 @@
 ﻿using DanceSchoolApp.Server.Data;
+using DanceSchoolApp.Server.DTOs.Classes;
 using DanceSchoolApp.Server.DTOs.School;
 using DanceSchoolApp.Server.Models;
 using Microsoft.EntityFrameworkCore;
@@ -102,6 +103,21 @@ namespace DanceSchoolApp.Server.Services.School
 
         public async Task SetStudioStateAsync(int id, bool state)
         {
+            if (!state)
+            {
+                bool hasActiveClasses = await _context.CoachClasses
+                    .AnyAsync(c => c.IdStudio == id &&
+                                   c.Status != (byte)CoachClassStatus.Rejected &&
+                                   c.Status != (byte)CoachClassStatus.Cancelled &&
+                                   c.Status != (byte)CoachClassStatus.Validated &&
+                                   c.Status != (byte)CoachClassStatus.Finished);
+
+                if (hasActiveClasses)
+                    throw new InvalidOperationException(
+                        "Cannot deactivate a studio that has active or pending classes. " +
+                        "Finish or cancel those classes first.");
+            }
+
             var rowsAffected = await _context.Studios
                 .Where(s => s.StudioId == id)
                 .ExecuteUpdateAsync(s => s.SetProperty(x => x.IsActive, state));

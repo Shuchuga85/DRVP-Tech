@@ -225,5 +225,32 @@ namespace DanceSchoolApp.Server.Controllers.People
             catch (Exception ex) { return StatusCode(500, ex.Message); }
         }
 
+        // ─── GET /api/students/{id}/classes ───────────────────────────────────
+        // Returns full class history for a student.
+        // Staff: any student. Parent: only their own students.
+        [Authorize(Roles = "staff,parent")]
+        [HttpGet("{id}/classes")]
+        public async Task<IActionResult> GetStudentClasses(int id)
+        {
+            try
+            {
+                if (!IsStaff())
+                {
+                    var student = await _studentService.GetStudentAsync(id);
+                    if (student.ParentUserId != GetUserId())
+                        return Forbid();
+                }
+
+                var result = await _studentService.GetStudentClassesAsync(id);
+
+                if (!result.Any())
+                    return NoContent();
+
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            catch (Exception ex) { return StatusCode(500, ex.Message); }
+        }
+
     }
 }

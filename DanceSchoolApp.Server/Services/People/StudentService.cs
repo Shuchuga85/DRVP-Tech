@@ -1,4 +1,5 @@
 ﻿using DanceSchoolApp.Server.Data;
+using DanceSchoolApp.Server.DTOs.Classes;
 using DanceSchoolApp.Server.DTOs.People;
 using DanceSchoolApp.Server.DTOs.Social;
 using DanceSchoolApp.Server.Models;
@@ -206,6 +207,54 @@ namespace DanceSchoolApp.Server.Services.People
                 type: NotificationType.Warning,
                 entityType: "Student",
                 entityId: studentId);
+        }
+
+        public async Task<List<StudentClassHistoryResponse>> GetStudentClassesAsync(int studentId)
+        {
+            bool studentExists = await _context.Students
+                .AnyAsync(s => s.StudentId == studentId);
+
+            if (!studentExists)
+                throw new KeyNotFoundException($"Student with id {studentId} was not found.");
+
+            var participants = await _context.Participants
+                .Include(p => p.IdCoachClassNavigation)
+                    .ThenInclude(c => c.IdModalityNavigation)
+                .Include(p => p.IdCoachClassNavigation)
+                    .ThenInclude(c => c.IdStudioNavigation)
+                .Include(p => p.IdCoachClassNavigation)
+                    .ThenInclude(c => c.IdCoachNavigation)
+                        .ThenInclude(coach => coach.CoachNavigation)
+                            .ThenInclude(u => u.PersonInfo)
+                .Where(p => p.IdStudent == studentId)
+                .OrderByDescending(p => p.IdCoachClassNavigation.StartDatetime)
+                .ToListAsync();
+
+            return participants.Select(p => new StudentClassHistoryResponse
+            {
+                ParticipantId     = p.ParticipantId,
+                ClassId           = p.IdCoachClass,
+                Status            = (CoachClassStatus)p.IdCoachClassNavigation.Status,
+                StartDatetime     = p.IdCoachClassNavigation.StartDatetime,
+                EndDatetime       = p.IdCoachClassNavigation.EndDatetime,
+                ModalityName      = p.IdCoachClassNavigation.IdModalityNavigation.Name,
+                StudioName        = p.IdCoachClassNavigation.IdStudioNavigation.Name,
+                CoachName         = ResolveCoachName(p.IdCoachClassNavigation.IdCoachNavigation),
+                JoinedAt          = p.JoinedAt,
+                ValidationStatus  = (ParticipantValidationStatus)p.ValidationStatus,
+                ParentValidatedAt = p.ParentValidatedAt,
+                ClassPrice        = p.ClassPrice
+            }).ToList();
+        }
+
+        // ─── Private helpers ──────────────────────────────────────────────────
+
+        private static string ResolveCoachName(Coach coach)
+        {
+            var person = coach.CoachNavigation?.PersonInfo;
+            return person is not null
+                ? $"{person.FirstName} {person.LastName}".Trim()
+                : coach.CoachNavigation?.Username ?? $"Coach {coach.CoachId}";
         }
 
     }

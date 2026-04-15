@@ -1,7 +1,8 @@
 ﻿using DanceSchoolApp.Server.Data;
+using DanceSchoolApp.Server.DTOs.Classes;
+using DanceSchoolApp.Server.DTOs.School;
 using DanceSchoolApp.Server.Models;
 using Microsoft.EntityFrameworkCore;
-using DanceSchoolApp.Server.DTOs.School;
 
 namespace DanceSchoolApp.Server.Services.School
 {
@@ -90,6 +91,21 @@ namespace DanceSchoolApp.Server.Services.School
 
         public async Task SetModalityStateAsync(int modalityId, bool isActive)
         {
+            if (!isActive)
+            {
+                bool hasActiveClasses = await _context.CoachClasses
+                    .AnyAsync(c => c.IdModality == modalityId &&
+                                   c.Status != (byte)CoachClassStatus.Rejected &&
+                                   c.Status != (byte)CoachClassStatus.Cancelled &&
+                                   c.Status != (byte)CoachClassStatus.Validated &&
+                                   c.Status != (byte)CoachClassStatus.Finished);
+
+                if (hasActiveClasses)
+                    throw new InvalidOperationException(
+                        "Cannot deactivate a modality that has active or pending classes. " +
+                        "Finish or cancel those classes first.");
+            }
+
             var rowsAffected = await _context.Modalities
                 .Where(m => m.ModalityId == modalityId)
                 .ExecuteUpdateAsync(m => m.SetProperty(x => x.IsActive, isActive));

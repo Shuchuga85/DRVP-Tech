@@ -128,7 +128,7 @@ namespace DanceSchoolApp.Server.Services.Classes
 
         public async Task<List<CoachClassListResponse>> GetByStatusAsync(CoachClassStatus status)
         {
-            return await _context.CoachClasses
+            var classes = await _context.CoachClasses
                 .Include(c => c.IdModalityNavigation)
                 .Include(c => c.IdStudioNavigation)
                 .Include(c => c.IdCoachNavigation)
@@ -136,8 +136,9 @@ namespace DanceSchoolApp.Server.Services.Classes
                         .ThenInclude(u => u.PersonInfo)
                 .Include(c => c.Participants)
                 .Where(c => c.Status == (byte)status)
-                .Select(c => MapToListResponse(c))
                 .ToListAsync();
+
+            return classes.Select(MapToListResponse).ToList();
         }
 
         public async Task<List<CoachClassListResponse>> GetByCoachAsync(int coachUserId)
