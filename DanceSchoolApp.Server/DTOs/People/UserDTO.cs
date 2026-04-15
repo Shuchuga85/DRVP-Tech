@@ -45,6 +45,7 @@ namespace DanceSchoolApp.Server.DTOs.People
         [MaxLength(254)]
         public string Email { get; set; } = null!;
 
+        [Required]
         public byte? FirstRole { get; set; } = null;
 
         public PersonRequest? PersonInfo { get; set; } = null;

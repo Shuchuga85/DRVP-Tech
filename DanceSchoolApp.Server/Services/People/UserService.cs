@@ -1,7 +1,9 @@
 ﻿using DanceSchoolApp.Server.Data;
 using DanceSchoolApp.Server.DTOs.People;
 using DanceSchoolApp.Server.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 
 namespace DanceSchoolApp.Server.Services.People
@@ -116,7 +118,7 @@ namespace DanceSchoolApp.Server.Services.People
 
             Role? role = null;
 
-            if (request.FirstRole is not null)
+            if (request.FirstRole is not null) 
             {
                 role = await _context.Roles
                     .FirstOrDefaultAsync(r => r.RoleId == request.FirstRole);

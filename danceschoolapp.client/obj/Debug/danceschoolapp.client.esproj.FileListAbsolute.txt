@@ -1,3 +1,4 @@
 C:\Users\shuch\source\repos\DRVP-Tech\danceschoolapp.client\obj\Debug\danceschoolapp.client.esproj.CoreCompileInputs.cache
 C:\temp\drvp\DRVP-Tech\danceschoolapp.client\obj\Debug\danceschoolapp.client.esproj.CoreCompileInputs.cache
+C:\Users\rafae\source\repos\DRVP-Tech\danceschoolapp.client\obj\Debug\danceschoolapp.client.esproj.CoreCompileInputs.cache
 C:\Users\David\Documents\50+10\DRVP-Tech\danceschoolapp.client\obj\Debug\danceschoolapp.client.esproj.CoreCompileInputs.cache
