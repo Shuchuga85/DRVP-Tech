@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import '../styles/LoginPage.css'
 import logo from '../assets/logo-entartes.png'
+import { useAuth } from '../context/AuthContext'
 function LoginPage() {
     const [login, setLogin] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
-
+    const { refreshSession } = useAuth()
     const navigate = useNavigate()
 
     const handleSubmit = async (e) => {
@@ -21,6 +22,7 @@ function LoginPage() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
                 body: JSON.stringify({
                     email: login.includes('@') ? login : null,
                     username: login.includes('@') ? null : login,
@@ -35,6 +37,8 @@ function LoginPage() {
             const data = await response.json()
 
             console.log('Login OK:', data)
+            await refreshSession()
+            navigate('/')
 
             // guardar token
             localStorage.setItem('token', data.Token)

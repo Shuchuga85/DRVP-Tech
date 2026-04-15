@@ -1,4 +1,4 @@
-import aboutImg from '../assets/sobre-entartes.jpg'
+import aboutImg from '../assets/logo-entartes.png'
 
 function About() {
     return (
@@ -23,7 +23,7 @@ function About() {
                     </ul>
                 </div>
 
-                <div className="about-image">
+                <div className="">
                     <img src={aboutImg} alt="Aulas na Ent'Artes" />
                 </div>
             </div>
