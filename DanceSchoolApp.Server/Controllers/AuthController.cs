@@ -2,6 +2,7 @@
 using DanceSchoolApp.Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace DanceSchoolApp.Server.Controllers
 {
@@ -85,13 +86,10 @@ namespace DanceSchoolApp.Server.Controllers
         [Authorize]
         public IActionResult Me()
         {
-            var userIdClaim = User.FindFirst(
-                System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
 
-            var username = User.FindFirst(
-                System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.UniqueName)?.Value;
-
-            var roles = User.FindAll(System.Security.Claims.ClaimTypes.Role)
+            var roles = User.FindAll(ClaimTypes.Role)
                 .Select(c => c.Value)
                 .ToList();
 

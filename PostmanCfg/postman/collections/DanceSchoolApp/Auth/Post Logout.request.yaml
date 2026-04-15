@@ -1,5 +1,5 @@
 $kind: http-request
 name: Post Logout
-url: ""
-method: GET
+url: https://localhost:7003/api/auth/logout
+method: POST
 order: 1157358611858150

@@ -1,5 +1,6 @@
 $kind: http-request
-url: http://localhost:5295/api/auth/login
+name: Post Login
+url: https://localhost:7003/api/auth/login
 method: POST
 body:
   type: json
