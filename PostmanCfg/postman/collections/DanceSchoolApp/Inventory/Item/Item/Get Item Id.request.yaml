@@ -1,5 +1,0 @@
-$kind: http-request
-name: Get Item Id
-url: http://localhost:5295/api/items/1
-method: GET
-order: 4021885501090009

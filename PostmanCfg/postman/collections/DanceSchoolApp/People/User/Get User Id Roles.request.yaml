@@ -1,4 +1,0 @@
-$kind: http-request
-url: http://localhost:5295/api/users/4/roles
-method: GET
-order: 3000

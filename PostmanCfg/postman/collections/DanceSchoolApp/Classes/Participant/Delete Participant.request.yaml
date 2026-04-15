@@ -1,7 +1,0 @@
-$kind: http-request
-url: http://localhost:5295/api/participants/1
-method: DELETE
-body:
-  type: text
-  content: ""
-order: 4000

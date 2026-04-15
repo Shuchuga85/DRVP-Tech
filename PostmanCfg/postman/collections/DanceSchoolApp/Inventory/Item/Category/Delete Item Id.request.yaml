@@ -1,5 +1,0 @@
-$kind: http-request
-name: Delete Item Id
-url: https://localhost:7003/api/item-categories/id
-method: DELETE
-order: 4379148474066892

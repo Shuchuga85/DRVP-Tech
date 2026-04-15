@@ -1,5 +1,0 @@
-$kind: http-request
-name: Get Item-Categories
-url: https://localhost:7003/api/item-categories
-method: GET
-order: 1776188481456

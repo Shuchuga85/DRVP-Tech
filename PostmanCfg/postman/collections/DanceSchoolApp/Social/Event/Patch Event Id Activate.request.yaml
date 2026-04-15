@@ -1,4 +1,0 @@
-$kind: http-request
-url: http://localhost:5295/api/events/1/activate
-method: PATCH
-order: 6000

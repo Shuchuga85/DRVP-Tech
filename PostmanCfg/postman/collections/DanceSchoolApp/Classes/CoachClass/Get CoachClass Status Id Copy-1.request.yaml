@@ -1,5 +1,0 @@
-$kind: http-request
-name: Get CoachClass Status Id Copy
-url: http://localhost:5295/api/coachclasses/status/1
-method: GET
-order: 7000

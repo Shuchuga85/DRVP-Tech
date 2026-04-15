@@ -1,4 +1,0 @@
-$kind: http-request
-url: http://localhost:5295/api/newsposts/1
-method: DELETE
-order: 5000

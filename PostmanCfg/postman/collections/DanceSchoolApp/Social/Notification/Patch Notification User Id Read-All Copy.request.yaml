@@ -1,7 +1,0 @@
-$kind: http-request
-url: http://localhost:5295/api/notifications/user/1/read-all
-method: PATCH
-body:
-  type: text
-  content: ""
-order: 4000

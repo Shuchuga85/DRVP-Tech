@@ -1,7 +1,0 @@
-$kind: http-request
-url: http://localhost:5295/api/coachclasses/parent/1
-method: GET
-body:
-  type: text
-  content: ""
-order: 5000

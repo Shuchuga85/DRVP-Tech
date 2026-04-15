@@ -1,12 +1,194 @@
 {
   "info": {
     "_postman_id": "e344b92e-737d-4b60-b88d-9946a9896e4a",
-    "name": "DanceSchoolApp",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "52952904",
-    "_collection_link": "https://go.postman.co/collection/52952904-e344b92e-737d-4b60-b88d-9946a9896e4a?source=collection_link"
+    "name": "DanceSchoolApp v2",
+    "description": "FlowArtes / Ent'Artes Dance School API\n\n## Setup\n1. Select the **DanceSchoolApp** environment\n2. Set `base_url` if needed (default: https://localhost:7003)\n3. Run **POST Login** — the test script auto-saves `userId`, `roles`, and `expiresAt`\n4. All requests use the shared cookie jar automatically (JWT is HttpOnly cookie)\n\n## Variables\n- `base_url` — server base (change to switch between local/staging)\n- `userId` — auto-set by Login\n- `roles` — auto-set by Login\n- `user_id`, `student_id`, `coach_id`, `class_id`, `participant_id`, `studio_id`, `modality_id`, `item_id` — set manually or auto-captured by POST scripts\n\n## Status values\n- CoachClass: 0=Requested, 1=Approved, 2=Rejected, 3=Cancelled, 4=Finished, 5=Validated, 6=Pending, 7=StaffApproved\n- StudentAcceptance: 0=Pending, 1=Accepted, 2=Rejected\n- Roles: 0=Admin, 1=Staff, 2=Coach, 3=Parent",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    { "key": "base_url", "value": "https://localhost:7003", "type": "string" },
+    { "key": "userId", "value": "", "type": "string" },
+    { "key": "roles", "value": "", "type": "string" },
+    { "key": "user_id", "value": "1", "type": "string" },
+    { "key": "student_id", "value": "1", "type": "string" },
+    { "key": "parent_id", "value": "2", "type": "string" },
+    { "key": "coach_id", "value": "1", "type": "string" },
+    { "key": "class_id", "value": "1", "type": "string" },
+    { "key": "participant_id", "value": "1", "type": "string" },
+    { "key": "studio_id", "value": "1", "type": "string" },
+    { "key": "modality_id", "value": "1", "type": "string" },
+    { "key": "item_id", "value": "1", "type": "string" },
+    { "key": "item_variant_id", "value": "1", "type": "string" },
+    { "key": "requisition_id", "value": "1", "type": "string" },
+    { "key": "notification_id", "value": "1", "type": "string" },
+    { "key": "event_id", "value": "1", "type": "string" },
+    { "key": "post_id", "value": "1", "type": "string" },
+    { "key": "blocked_period_id", "value": "1", "type": "string" },
+    { "key": "coachav_id", "value": "1", "type": "string" },
+    { "key": "reset_token", "value": "", "type": "string" }
+  ],
   "item": [
+    {
+      "name": "Auth",
+      "description": "Authentication endpoints. Login sets the JWT as an HttpOnly cookie — no manual token handling needed.",
+      "item": [
+        {
+          "name": "POST Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Login successful\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set(\"userId\", body.userId);",
+                  "    pm.collectionVariables.set(\"roles\", JSON.stringify(body.roles));",
+                  "    pm.test(\"Response has userId\", () => pm.expect(body.userId).to.be.a(\"number\"));",
+                  "    pm.test(\"Response has roles\", () => pm.expect(body.roles).to.be.an(\"array\"));",
+                  "    console.log(\"Logged in as userId:\", body.userId, \"| Roles:\", body.roles.join(\", \"));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"admin\",\n    \"password\": \"admin1234\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login with username OR email + password. JWT cookie is set automatically. The test script captures userId and roles into collection variables."
+          },
+          "response": []
+        },
+        {
+          "name": "GET Me (session check)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Session is valid\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.test(\"Has userId\", () => pm.expect(body.userId).to.be.a(\"number\"));",
+                  "    console.log(\"Current session:\", body.userId, body.roles);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Returns current user context from JWT cookie. Use this to verify session is active."
+          },
+          "response": []
+        },
+        {
+          "name": "POST Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Logout successful\", () => pm.response.to.have.status(204));",
+                  "pm.collectionVariables.set(\"userId\", \"\");",
+                  "pm.collectionVariables.set(\"roles\", \"\");"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Clears the JWT cookie. Subsequent requests will be unauthenticated."
+          },
+          "response": []
+        },
+        {
+          "name": "POST Forgot Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Always returns 200 (security)\", () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"user@example.com\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/forgot-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "forgot-password"]
+            },
+            "description": "Always returns 200 — does not reveal whether email exists. Sends a 24h reset link if the email is registered."
+          },
+          "response": []
+        },
+        {
+          "name": "POST Reset Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Password reset successful\", () => pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"token\": \"{{reset_token}}\",\n    \"newPassword\": \"NewPassword123!\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "reset-password"]
+            },
+            "description": "Validates the signed JWT reset token and updates the password. Token is valid for 24h. Paste the token from the reset link email into the reset_token variable."
+          },
+          "response": []
+        }
+      ]
+    },
     {
       "name": "People",
       "item": [
@@ -14,431 +196,149 @@
           "name": "User",
           "item": [
             {
-              "name": "Get Users",
+              "name": "GET Users",
               "event": [
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
-                      ""
+                      "pm.test(\"Status 200 or 204\", () => pm.expect(pm.response.code).to.be.oneOf([200, 204]));"
                     ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
+                    "type": "text/javascript"
                   }
                 }
               ],
               "request": {
                 "method": "GET",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/users",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "users"
-                  ]
+                  "raw": "{{base_url}}/api/users",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "users"]
                 },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                "description": "[staff] Returns all users."
               },
               "response": []
             },
             {
-              "name": "Get User Id",
+              "name": "GET User by Id",
               "event": [
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
-                      ""
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                      "const body = pm.response.json();",
+                      "pm.test(\"Has userId\", () => pm.expect(body.userId).to.be.a(\"number\"));"
                     ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
+                    "type": "text/javascript"
                   }
                 }
               ],
               "request": {
                 "method": "GET",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/users/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "users",
-                    "1"
-                  ]
+                  "raw": "{{base_url}}/api/users/{{user_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "users", "{{user_id}}"]
                 },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                "description": "[staff] Returns a single user by ID."
               },
               "response": []
             },
             {
-              "name": "Get User Id Roles",
+              "name": "GET User Roles",
               "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/users/4/roles",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "users",
-                    "4",
-                    "roles"
-                  ]
-                }
+                  "raw": "{{base_url}}/api/users/{{user_id}}/roles",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "users", "{{user_id}}", "roles"]
+                },
+                "description": "[staff] Returns roles assigned to a user."
               },
               "response": []
             },
             {
-              "name": "Post User",
+              "name": "POST User",
               "event": [
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "pm.test(\"Successful POST request\", function () {",
-                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-                      "});",
-                      ""
+                      "pm.test(\"User created\", () => pm.response.to.have.status(201));",
+                      "if (pm.response.code === 201) {",
+                      "    const body = pm.response.json();",
+                      "    pm.collectionVariables.set(\"user_id\", body.userId);",
+                      "    console.log(\"Created userId:\", body.userId);",
+                      "}"
                     ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
+                    "type": "text/javascript"
                   }
                 }
               ],
               "request": {
                 "method": "POST",
-                "header": [],
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"email\": \"ddda@gmail\",\n    \"username\": \"olamundo\",\n    \"password\": \"12349999\",\n    \"firstrole\" : 2,\n    \"personinfo\": {\n        \"firstName\": \"John\",\n        \"lastName\": \"Smith\",\n        \"birthDate\": \"1990-05-10\",\n        \"email\": \"john@test.com\",\n        \"phone\": \"123456\",\n        \"address\": \"Street 1\"\n    }\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
+                  "raw": "{\n    \"email\": \"newuser@entartes.pt\",\n    \"username\": \"newuser\",\n    \"firstRole\": 3,\n    \"personInfo\": {\n        \"firstName\": \"Maria\",\n        \"lastName\": \"Silva\",\n        \"birthDate\": \"1990-05-10\",\n        \"phone\": \"912345678\",\n        \"address\": \"Rua das Flores 12, Braga\",\n        \"nif\": \"123456789\"\n    }\n}",
+                  "options": { "raw": { "language": "json" } }
                 },
                 "url": {
-                  "raw": "http://localhost:5295/api/users",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "users"
-                  ]
+                  "raw": "{{base_url}}/api/users",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "users"]
                 },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                "description": "[staff,admin] Creates a user. Staff cannot create Admin/Staff roles. Welcome email with temp password is sent automatically. firstRole: 0=Admin, 1=Staff, 2=Coach, 3=Parent"
               },
               "response": []
             },
             {
-              "name": "Patch User Activate",
+              "name": "PATCH User Activate",
               "event": [
                 {
                   "listen": "test",
                   "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
+                    "exec": ["pm.test(\"Activated\", () => pm.response.to.have.status(204));"],
+                    "type": "text/javascript"
                   }
                 }
               ],
               "request": {
                 "method": "PATCH",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/users/1/activate",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "users",
-                    "1",
-                    "activate"
-                  ]
+                  "raw": "{{base_url}}/api/users/{{user_id}}/activate",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "users", "{{user_id}}", "activate"]
                 },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                "description": "[staff] Activates a user account."
               },
               "response": []
             },
             {
-              "name": "Patch User Deactivate",
+              "name": "PATCH User Deactivate",
               "event": [
                 {
                   "listen": "test",
                   "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
+                    "exec": ["pm.test(\"Deactivated\", () => pm.response.to.have.status(204));"],
+                    "type": "text/javascript"
                   }
                 }
               ],
               "request": {
                 "method": "PATCH",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/users/1/deactivate",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "users",
-                    "1",
-                    "deactivate"
-                  ]
+                  "raw": "{{base_url}}/api/users/{{user_id}}/deactivate",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "users", "{{user_id}}", "deactivate"]
                 },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
-              },
-              "response": []
-            }
-          ]
-        },
-        {
-          "name": "Staff",
-          "item": [
-            {
-              "name": "Get Staff Id",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "GET",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "http://localhost:5295/api/staff/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "staff",
-                    "1"
-                  ]
-                },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
-              },
-              "response": []
-            },
-            {
-              "name": "Get Staff",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "GET",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "http://localhost:5295/api/staff",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "staff"
-                  ]
-                },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
-              },
-              "response": []
-            }
-          ]
-        },
-        {
-          "name": "Parent",
-          "item": [
-            {
-              "name": "Get Parents",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "GET",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "http://localhost:5295/api/parents",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "parents"
-                  ]
-                },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
-              },
-              "response": []
-            },
-            {
-              "name": "Get Parent Id",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "GET",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "http://localhost:5295/api/parents/2",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "parents",
-                    "2"
-                  ]
-                },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                "description": "[staff] Deactivates a user account."
               },
               "response": []
             }
@@ -448,253 +348,289 @@
           "name": "Student",
           "item": [
             {
-              "name": "Get Students",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
+              "name": "GET Students",
               "request": {
                 "method": "GET",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/students",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "students"
-                  ]
+                  "raw": "{{base_url}}/api/students",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "students"]
                 },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                "description": "[staff] Returns all students. AcceptanceStatus: 0=Pending, 1=Accepted, 2=Rejected"
               },
               "response": []
             },
             {
-              "name": "Get Student Id",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
+              "name": "GET Student by Id",
               "request": {
                 "method": "GET",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/students/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "students",
-                    "1"
-                  ]
+                  "raw": "{{base_url}}/api/students/{{student_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "students", "{{student_id}}"]
                 },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                "description": "[staff,parent] Parent can only see own students."
               },
               "response": []
             },
             {
-              "name": "Get Student Parent Id",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
+              "name": "GET Students by Parent",
               "request": {
                 "method": "GET",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/students/parent/2",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "students",
-                    "parent",
-                    "2"
-                  ]
+                  "raw": "{{base_url}}/api/students/parent/{{parent_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "students", "parent", "{{parent_id}}"]
                 },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                "description": "[staff,parent] Parent can only view their own students."
               },
               "response": []
             },
             {
-              "name": "Post Student",
+              "name": "GET Student Class History",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/students/{{student_id}}/classes",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "students", "{{student_id}}", "classes"]
+                },
+                "description": "[staff,parent] Returns full class enrollment history for a student including validation status and class price."
+              },
+              "response": []
+            },
+            {
+              "name": "POST Student",
               "event": [
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "pm.test(\"Successful POST request\", function () {",
-                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-                      "});",
-                      ""
+                      "pm.test(\"Student created\", () => pm.response.to.have.status(201));",
+                      "if (pm.response.code === 201) {",
+                      "    const body = pm.response.json();",
+                      "    pm.collectionVariables.set(\"student_id\", body.studentId);",
+                      "    console.log(\"Created studentId:\", body.studentId);",
+                      "}"
                     ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
+                    "type": "text/javascript"
                   }
                 }
               ],
               "request": {
                 "method": "POST",
-                "header": [],
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"parentid\": 2,\n    \"firstName\": \"John\",\n    \"lastName\": \"Smith\",\n    \"birthDate\": \"1990-05-10\",\n    \"email\": \"john@test.com\",\n    \"phone\": \"123456\",\n    \"address\": \"Street 1\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
+                  "raw": "{\n    \"parentId\": {{parent_id}},\n    \"firstName\": \"Ana\",\n    \"lastName\": \"Costa\",\n    \"birthDate\": \"2015-03-20\",\n    \"phone\": \"913456789\",\n    \"address\": \"Rua Nova 5, Braga\",\n    \"nif\": \"987654321\"\n}",
+                  "options": { "raw": { "language": "json" } }
                 },
                 "url": {
-                  "raw": "http://localhost:5295/api/students",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "students"
-                  ]
+                  "raw": "{{base_url}}/api/students",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "students"]
                 },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                "description": "[staff,parent] Creates a student. Parent can only create for themselves. Student starts with AcceptanceStatus=Pending(0)."
               },
               "response": []
             },
             {
-              "name": "Patch Student",
+              "name": "PATCH Student",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"firstName\": \"Ana\",\n    \"lastName\": \"Costa\",\n    \"birthDate\": \"2015-03-20\",\n    \"phone\": \"913456789\",\n    \"address\": \"Rua Nova 5, Braga\",\n    \"nif\": \"987654321\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/students/{{student_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "students", "{{student_id}}"]
+                },
+                "description": "[staff,parent] Updates student info. NOTE: Updating resets AcceptanceStatus to Pending — staff must re-review."
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH Student Activate",
               "request": {
                 "method": "PATCH",
                 "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/students/{{student_id}}/activate",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "students", "{{student_id}}", "activate"]
+                },
+                "description": "[staff]"
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH Student Deactivate",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/students/{{student_id}}/deactivate",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "students", "{{student_id}}", "deactivate"]
+                },
+                "description": "[staff]"
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH Student Accept",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Student accepted\", () => pm.response.to.have.status(204));",
+                      "console.log(\"Student\", pm.collectionVariables.get(\"student_id\"), \"is now Accepted. Parent will receive notification.\");"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/students/{{student_id}}/accept",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "students", "{{student_id}}", "accept"]
+                },
+                "description": "[staff] Sets AcceptanceStatus=Accepted(1). Student can now join classes. Parent receives notification."
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH Student Reject",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Student rejected\", () => pm.response.to.have.status(204));",
+                      "console.log(\"Student rejected. Parent notified with reason.\");"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"firstName\": \"John\",\r\n    \"lastName\": \"Smith\",\r\n    \"birthDate\": \"1990-05-10\",\r\n    \"email\": \"john@test.com\",\r\n    \"phone\": \"123456\",\r\n    \"address\": \"Street 1\"\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
+                  "raw": "{\n    \"reason\": \"Missing NIF. Please provide a valid NIF number.\"\n}",
+                  "options": { "raw": { "language": "json" } }
                 },
                 "url": {
-                  "raw": "http://localhost:5295/api/students/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "students",
-                    "1"
-                  ]
+                  "raw": "{{base_url}}/api/students/{{student_id}}/reject",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "students", "{{student_id}}", "reject"]
+                },
+                "description": "[staff] Sets AcceptanceStatus=Rejected(2). Body is optional — reason is sent in notification to parent."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Coach",
+          "item": [
+            {
+              "name": "GET Coaches",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/coaches",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coaches"]
                 }
               },
               "response": []
             },
             {
-              "name": "Patch Student Activate",
+              "name": "GET Coach by Id",
               "request": {
-                "method": "PATCH",
+                "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/students/1/activate",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "students",
-                    "1",
-                    "activate"
-                  ]
+                  "raw": "{{base_url}}/api/coaches/{{coach_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coaches", "{{coach_id}}"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Staff",
+          "item": [
+            {
+              "name": "GET Staff",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/staff",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "staff"]
                 }
               },
               "response": []
             },
             {
-              "name": "Patch Student Deactivate",
+              "name": "GET Staff by Id",
               "request": {
-                "method": "PATCH",
+                "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/students/1/deactivate",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "students",
-                    "1",
-                    "deactivate"
-                  ]
+                  "raw": "{{base_url}}/api/staff/{{user_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "staff", "{{user_id}}"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Parent",
+          "item": [
+            {
+              "name": "GET Parents",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/parents",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "parents"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "GET Parent by Id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/parents/{{parent_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "parents", "{{parent_id}}"]
                 }
               },
               "response": []
@@ -705,57 +641,13 @@
           "name": "Role",
           "item": [
             {
-              "name": "Get Roles",
+              "name": "GET Roles",
               "event": [
                 {
                   "listen": "test",
                   "script": {
-                    "exec": [
-                      "pm.test(\"Status code is 200\", function () {",
-                      "    pm.response.to.have.status(200);",
-                      "});"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "GET",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": ""
-                },
-                "url": {
-                  "raw": "http://localhost:5295/api/roles",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "roles"
-                  ]
-                },
-                "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
-              },
-              "response": []
-            },
-            {
-              "name": "Get Role Id",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
+                    "exec": ["pm.test(\"Status 200\", () => pm.response.to.have.status(200));"],
+                    "type": "text/javascript"
                   }
                 }
               ],
@@ -763,171 +655,10 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/roles/3",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "roles",
-                    "3"
-                  ]
-                },
-                "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
-              },
-              "response": []
-            },
-            {
-              "name": "Post Role Add",
-              "request": {
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"userid\": 1,\n    \"roleid\": 1\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "http://localhost:5295/api/roles/add",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "roles",
-                    "add"
-                  ]
+                  "raw": "{{base_url}}/api/roles",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "roles"]
                 }
-              },
-              "response": []
-            },
-            {
-              "name": "Delete Role Remove",
-              "request": {
-                "method": "DELETE",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"userid\": 2,\n    \"roleid\": 0\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "http://localhost:5295/api/roles/remove",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "roles",
-                    "remove"
-                  ]
-                }
-              },
-              "response": []
-            }
-          ]
-        },
-        {
-          "name": "Coach",
-          "item": [
-            {
-              "name": "Get Coaches",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "GET",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "http://localhost:5295/api/coaches",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "coaches"
-                  ]
-                },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
-              },
-              "response": []
-            },
-            {
-              "name": "Get Coach Id",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "GET",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "http://localhost:5295/api/coaches/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "coaches",
-                    "1"
-                  ]
-                },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
               },
               "response": []
             }
@@ -936,373 +667,424 @@
       ]
     },
     {
-      "name": "Schedule",
+      "name": "Classes",
+      "description": "Coach class lifecycle:\nRequested(0) → StaffApproved(7) → Approved(1) → Finished(4) → Pending(6) → Validated(5)\n\nWorkflow:\n1. Parent POSTs a class (Requested). Studio is auto-assigned.\n2. Staff PATCH /staff-approve → StaffApproved. Coach notified.\n3. Coach PATCH /coach-accept → Approved. Parent + staff notified.\n   OR Coach PATCH /coach-reject → Rejected.\n4. Students join via Participants.\n5. Staff PATCH /finish → Finished. 48h validation window opens.\n6. Coach PATCH /coach-validate to confirm they taught.\n7. Parent PATCH participant/{id}/validate to confirm attendance.\n8. Once all participants respond → class auto-moves to Pending.\n9. Staff PATCH /staff-validate → Validated.",
       "item": [
         {
-          "name": "CoachAvailability",
+          "name": "CoachClass",
           "item": [
             {
-              "name": "Get CoachAvailability",
+              "name": "GET All Classes (paginated)",
               "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/coachavailability",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "coachavailability"
+                  "raw": "{{base_url}}/api/coachclasses?page=1&pageSize=10",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "pageSize", "value": "10" }
                   ]
-                }
+                },
+                "description": "[staff] Returns all classes with pagination. Adjust page/pageSize."
               },
               "response": []
             },
             {
-              "name": "Get CoachAvailability Id",
+              "name": "GET Class by Id",
               "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/coachavailability/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "coachavailability",
-                    "1"
-                  ]
-                }
+                  "raw": "{{base_url}}/api/coachclasses/{{class_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses", "{{class_id}}"]
+                },
+                "description": "[all] Returns class detail including participants."
               },
               "response": []
             },
             {
-              "name": "Get CoachAvailability Coach Id",
+              "name": "GET Open Classes (Approved + spots)",
               "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/coachavailability/coach/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "coachavailability",
-                    "coach",
-                    "1"
-                  ]
-                }
+                  "raw": "{{base_url}}/api/coachclasses/open",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses", "open"]
+                },
+                "description": "[staff,parent] Returns Approved classes with available spots. Use this to find classes a student can join."
               },
               "response": []
             },
             {
-              "name": "Post CoachAvailability",
+              "name": "GET Classes by Status",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/coachclasses/status/0",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses", "status", "0"]
+                },
+                "description": "[staff] Filter by status value:\n0=Requested, 1=Approved, 2=Rejected, 3=Cancelled, 4=Finished, 5=Validated, 6=Pending, 7=StaffApproved"
+              },
+              "response": []
+            },
+            {
+              "name": "GET Classes by Parent",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/coachclasses/parent/{{parent_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses", "parent", "{{parent_id}}"]
+                },
+                "description": "[staff,parent] Returns classes where this parent's students are enrolled."
+              },
+              "response": []
+            },
+            {
+              "name": "GET Classes by Coach",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/coachclasses/coach/{{coach_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses", "coach", "{{coach_id}}"]
+                },
+                "description": "[staff,coach] Coach can only view own schedule. Staff can view any coach."
+              },
+              "response": []
+            },
+            {
+              "name": "POST Create Class",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Class created\", () => pm.response.to.have.status(201));",
+                      "if (pm.response.code === 201) {",
+                      "    const body = pm.response.json();",
+                      "    pm.collectionVariables.set(\"class_id\", body.classId);",
+                      "    console.log(\"Created classId:\", body.classId, \"| Status: Requested(0) | Studio auto-assigned\");",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
               "request": {
                 "method": "POST",
-                "header": [],
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"coachid\": 1,\r\n    \"weekday\": 0,\r\n    \"startime\": \"12:00:00\",\r\n    \"endtime\": \"13:59:59\",\r\n    \"validfrom\": \"14-02-2026\",\r\n    \"validuntil\": \"14-03-2026\"\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
+                  "raw": "{\n    \"modalityId\": {{modality_id}},\n    \"coachId\": {{coach_id}},\n    \"startDatetime\": \"2026-05-10T10:00:00Z\",\n    \"endDatetime\": \"2026-05-10T11:00:00Z\",\n    \"maxParticipants\": 4,\n    \"studentIds\": [{{student_id}}]\n}",
+                  "options": { "raw": { "language": "json" } }
                 },
                 "url": {
-                  "raw": "http://localhost:5295/api/coachavailability",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "coachavailability"
-                  ]
-                }
+                  "raw": "{{base_url}}/api/coachclasses",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses"]
+                },
+                "description": "[staff,parent] Creates class request. NOTE: No studioId — backend auto-assigns using load-balancing. All students must be Accepted(1) and belong to the requesting parent. Status starts as Requested(0)."
               },
               "response": []
             },
             {
-              "name": "Put CoachAvailability",
-              "request": {
-                "method": "PUT",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"coachid\": 1,\r\n    \"weekday\": 0,\r\n    \"startime\": \"12:00:00\",\r\n    \"endtime\": \"13:59:59\",\r\n    \"validfrom\": \"14-02-2026\",\r\n    \"validuntil\": \"14-03-2026\"\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
+              "name": "PATCH Staff Approve → StaffApproved",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Staff approved\", () => pm.response.to.have.status(204));",
+                      "console.log(\"Class\", pm.collectionVariables.get(\"class_id\"), \"→ StaffApproved(7). Coach notified.\");"
+                    ],
+                    "type": "text/javascript"
                   }
-                },
-                "url": {
-                  "raw": "http://localhost:5295/api/coachavailability/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "coachavailability",
-                    "1"
-                  ]
                 }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/coachclasses/{{class_id}}/staff-approve",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses", "{{class_id}}", "staff-approve"]
+                },
+                "description": "[staff] Transitions Requested(0) → StaffApproved(7). Coach receives notification to accept or reject."
               },
               "response": []
             },
             {
-              "name": "Delete CoachAvailability",
+              "name": "PATCH Coach Accept → Approved",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Coach accepted\", () => pm.response.to.have.status(204));",
+                      "console.log(\"Class\", pm.collectionVariables.get(\"class_id\"), \"→ Approved(1). Parent + staff notified.\");"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
               "request": {
-                "method": "DELETE",
+                "method": "PATCH",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/coachavailability/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "coachavailability",
-                    "1"
-                  ]
+                  "raw": "{{base_url}}/api/coachclasses/{{class_id}}/coach-accept",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses", "{{class_id}}", "coach-accept"]
+                },
+                "description": "[coach] Transitions StaffApproved(7) → Approved(1). Must be the assigned coach. Parent + all staff notified."
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH Coach Reject → Rejected",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"reason\": \"Unavailable due to schedule conflict.\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/coachclasses/{{class_id}}/coach-reject",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses", "{{class_id}}", "coach-reject"]
+                },
+                "description": "[coach] Transitions StaffApproved(7) → Rejected(2). Must be the assigned coach. Parent + all staff notified with reason."
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH Staff Reject → Rejected",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"reason\": \"Requested time conflicts with school event.\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/coachclasses/{{class_id}}/reject",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses", "{{class_id}}", "reject"]
+                },
+                "description": "[staff] Transitions Requested(0) or StaffApproved(7) → Rejected(2). Parent notified."
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH Cancel → Cancelled",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/coachclasses/{{class_id}}/cancel",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses", "{{class_id}}", "cancel"]
+                },
+                "description": "[staff] Transitions Requested(0) or Approved(1) → Cancelled(3). Parent + coach notified."
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH Finish → Finished",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Class finished\", () => pm.response.to.have.status(204));",
+                      "console.log(\"Class\", pm.collectionVariables.get(\"class_id\"), \"→ Finished(4). 48h validation window open for coach and parents.\");"
+                    ],
+                    "type": "text/javascript"
+                  }
                 }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/coachclasses/{{class_id}}/finish",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses", "{{class_id}}", "finish"]
+                },
+                "description": "[staff] Transitions Approved(1) → Finished(4). Notifies coach and all parent participants to validate within 48h."
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH Coach Validate",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/coachclasses/{{class_id}}/coach-validate",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses", "{{class_id}}", "coach-validate"]
+                },
+                "description": "[coach] Confirms coach taught this class. Sets CoachValidatedAt. Only available on Finished(4) classes."
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH Staff Validate → Validated",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Class validated\", () => pm.response.to.have.status(204));",
+                      "console.log(\"Class\", pm.collectionVariables.get(\"class_id\"), \"→ Validated(5). Final state.\");"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/coachclasses/{{class_id}}/staff-validate",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses", "{{class_id}}", "staff-validate"]
+                },
+                "description": "[staff] Final sign-off. Transitions Pending(6) → Validated(5). Class reaches terminal state. Coach and parents notified."
               },
               "response": []
             }
           ]
         },
         {
-          "name": "BlockedPeriod",
+          "name": "Participant",
           "item": [
             {
-              "name": "Get BlockedPeriod",
+              "name": "GET Participants by Class (paginated)",
               "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/blockedperiods",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "blockedperiods"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Get BlockedPeriod Id",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "http://localhost:5295/api/blockedperiods/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "blockedperiods",
-                    "1"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Get BlockedPeriod Active",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "http://localhost:5295/api/blockedperiods/active",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "blockedperiods",
-                    "active"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Get BlockedPeriod Range",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "http://localhost:5295/api/blockedperiods/range?from=2025-03-01T00:00:00&to=2025-03-31T23:59:59",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "blockedperiods",
-                    "range"
-                  ],
+                  "raw": "{{base_url}}/api/participants/class/{{class_id}}?page=1&pageSize=10",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "participants", "class", "{{class_id}}"],
                   "query": [
-                    {
-                      "key": "from",
-                      "value": "2025-03-01T00:00:00"
-                    },
-                    {
-                      "key": "to",
-                      "value": "2025-03-31T23:59:59"
-                    }
+                    { "key": "page", "value": "1" },
+                    { "key": "pageSize", "value": "10" }
                   ]
-                }
+                },
+                "description": "[staff,coach] Returns participants for a class."
               },
               "response": []
             },
             {
-              "name": "Get BlockedPeriod Coach Id",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "http://localhost:5295/api/blockedperiods/coach/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "blockedperiods",
-                    "coach",
-                    "1"
-                  ]
+              "name": "POST Join Class",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Joined class\", () => pm.response.to.have.status(201));",
+                      "if (pm.response.code === 201) {",
+                      "    const body = pm.response.json();",
+                      "    pm.collectionVariables.set(\"participant_id\", body.participantId);",
+                      "    console.log(\"Participant created:\", body.participantId, \"| Coach notified.\");",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
                 }
-              },
-              "response": []
-            },
-            {
-              "name": "Get BlockedPeriod Studio Id",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "http://localhost:5295/api/blockedperiods/studio/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "blockedperiods",
-                    "studio",
-                    "1"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Post BlockePeriod",
+              ],
               "request": {
                 "method": "POST",
-                "header": [],
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"scope\": 2,\r\n    \"startdatetime\": \"12:00:00\",\r\n    \"enddatetime\": \"13:59:59\",\r\n    \"reason\": \"studio closed\",\r\n    \"studioid\": 1\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
+                  "raw": "{\n    \"classId\": {{class_id}},\n    \"studentId\": {{student_id}},\n    \"classPrice\": 15.00\n}",
+                  "options": { "raw": { "language": "json" } }
                 },
                 "url": {
-                  "raw": "http://localhost:5295/api/blockedperiods",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "blockedperiods"
-                  ]
-                }
+                  "raw": "{{base_url}}/api/participants/join",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "participants", "join"]
+                },
+                "description": "[parent] Joins an Approved class. Student must be Accepted(1) and not already enrolled. Class must have available spots. Coach receives notification."
               },
               "response": []
             },
             {
-              "name": "Put BlockedPeriod Id",
+              "name": "PATCH Parent Validate Participant (Attended)",
               "request": {
-                "method": "PUT",
-                "header": [],
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"scope\": 2,\r\n    \"startdatetime\": \"12:00:00\",\r\n    \"enddatetime\": \"13:59:59\",\r\n    \"reason\": \"studio closed\",\r\n    \"studioid\": 1\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
+                  "raw": "{\n    \"attended\": true\n}",
+                  "options": { "raw": { "language": "json" } }
                 },
                 "url": {
-                  "raw": "http://localhost:5295/api/blockedperiods/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "blockedperiods",
-                    "1"
-                  ]
-                }
+                  "raw": "{{base_url}}/api/participants/{{participant_id}}/validate",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "participants", "{{participant_id}}", "validate"]
+                },
+                "description": "[parent] Confirms student attended. Use attended=false to dispute. Only available on Finished(4) classes. When all participants respond, class auto-moves to Pending(6)."
               },
               "response": []
             },
             {
-              "name": "Delete BlockedPeriods",
+              "name": "PATCH Parent Validate Participant (Disputed)",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"attended\": false\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/participants/{{participant_id}}/validate",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "participants", "{{participant_id}}", "validate"]
+                },
+                "description": "[parent] Disputes attendance — student did not attend."
+              },
+              "response": []
+            },
+            {
+              "name": "DELETE Remove Participant",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Participant removed\", () => pm.response.to.have.status(204));",
+                      "console.log(\"Note: Cannot remove last participant — cancel class instead.\");"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
               "request": {
                 "method": "DELETE",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/blockedperiods/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "blockedperiods",
-                    "1"
-                  ]
-                }
+                  "raw": "{{base_url}}/api/participants/{{participant_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "participants", "{{participant_id}}"]
+                },
+                "description": "[staff,parent] Removes participant from a Requested or Approved class. Cannot remove last participant — cancel the class instead."
               },
               "response": []
             }
@@ -1317,272 +1099,124 @@
           "name": "Modality",
           "item": [
             {
-              "name": "Get Modalities",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
+              "name": "GET Modalities",
               "request": {
                 "method": "GET",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/modalities",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "modalities"
-                  ]
-                },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                  "raw": "{{base_url}}/api/modalities",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "modalities"]
+                }
               },
               "response": []
             },
             {
-              "name": "Get Modality Id",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
+              "name": "GET Modality by Id",
               "request": {
                 "method": "GET",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/modalities/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "modalities",
-                    "1"
-                  ]
-                },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                  "raw": "{{base_url}}/api/modalities/{{modality_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "modalities", "{{modality_id}}"]
+                }
               },
               "response": []
             },
             {
-              "name": "Post Modality",
+              "name": "POST Modality",
               "event": [
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "pm.test(\"Successful POST request\", function () {",
-                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-                      "});",
-                      ""
+                      "pm.test(\"Modality created\", () => pm.response.to.have.status(201));",
+                      "if (pm.response.code === 201) {",
+                      "    const body = pm.response.json();",
+                      "    pm.collectionVariables.set(\"modality_id\", body.modalityId);",
+                      "}"
                     ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
+                    "type": "text/javascript"
                   }
                 }
               ],
               "request": {
                 "method": "POST",
-                "header": [],
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"name\" : \"Ballet\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
+                  "raw": "{\n    \"name\": \"Ballet\"\n}",
+                  "options": { "raw": { "language": "json" } }
                 },
                 "url": {
-                  "raw": "http://localhost:5295/api/modalities",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "modalities"
-                  ]
+                  "raw": "{{base_url}}/api/modalities",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "modalities"]
                 },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                "description": "[staff]"
               },
               "response": []
             },
             {
-              "name": "Patch Modality",
+              "name": "PATCH Modality",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"name\": \"Classical Ballet\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/modalities/{{modality_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "modalities", "{{modality_id}}"]
+                },
+                "description": "[staff]"
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH Modality Activate",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/modalities/{{modality_id}}/activate",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "modalities", "{{modality_id}}", "activate"]
+                },
+                "description": "[staff]"
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH Modality Deactivate",
               "event": [
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "pm.test(\"Successful POST request\", function () {",
-                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-                      "});",
-                      ""
+                      "if (pm.response.code === 409) {",
+                      "    console.warn(\"Cannot deactivate — modality has active classes.\");",
+                      "} else {",
+                      "    pm.test(\"Deactivated\", () => pm.response.to.have.status(204));",
+                      "}"
                     ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
+                    "type": "text/javascript"
                   }
                 }
               ],
               "request": {
                 "method": "PATCH",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"name\" : \"ballet\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/modalities/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "modalities",
-                    "1"
-                  ]
+                  "raw": "{{base_url}}/api/modalities/{{modality_id}}/deactivate",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "modalities", "{{modality_id}}", "deactivate"]
                 },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
-              },
-              "response": []
-            },
-            {
-              "name": "Patch Modality Activate",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "PATCH",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "http://localhost:5295/api/modalities/1/activate",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "modalities",
-                    "1",
-                    "activate"
-                  ]
-                },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
-              },
-              "response": []
-            },
-            {
-              "name": "Patch Modality Deactivate",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "PATCH",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "http://localhost:5295/api/modalities/1/deactivate",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "modalities",
-                    "1",
-                    "deactivate"
-                  ]
-                },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                "description": "[staff] Returns 409 if modality has active/pending classes."
               },
               "response": []
             }
@@ -1592,368 +1226,152 @@
           "name": "Studio",
           "item": [
             {
-              "name": "Get Studios",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
+              "name": "GET Studios",
               "request": {
                 "method": "GET",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/studios",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "studios"
-                  ]
-                },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                  "raw": "{{base_url}}/api/studios",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "studios"]
+                }
               },
               "response": []
             },
             {
-              "name": "Get Studio Id",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
+              "name": "GET Studio by Id",
               "request": {
                 "method": "GET",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/studios/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "studios",
-                    "1"
-                  ]
-                },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                  "raw": "{{base_url}}/api/studios/{{studio_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "studios", "{{studio_id}}"]
+                }
               },
               "response": []
             },
             {
-              "name": "Post Studio",
+              "name": "POST Studio",
               "event": [
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "pm.test(\"Successful POST request\", function () {",
-                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-                      "});",
-                      ""
+                      "pm.test(\"Studio created\", () => pm.response.to.have.status(201));",
+                      "if (pm.response.code === 201) {",
+                      "    const body = pm.response.json();",
+                      "    pm.collectionVariables.set(\"studio_id\", body.studioId);",
+                      "}"
                     ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
+                    "type": "text/javascript"
                   }
                 }
               ],
               "request": {
                 "method": "POST",
-                "header": [],
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"name\" : \"casa da musica\",\n    \"capacity\" : 102,\n    \"address\" : \"Rua peixoto\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
+                  "raw": "{\n    \"name\": \"Sala A\",\n    \"capacity\": 10,\n    \"address\": \"Rua Principal 1, Braga\"\n}",
+                  "options": { "raw": { "language": "json" } }
                 },
                 "url": {
-                  "raw": "http://localhost:5295/api/studios",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "studios"
-                  ]
+                  "raw": "{{base_url}}/api/studios",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "studios"]
                 },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                "description": "[staff]"
               },
               "response": []
             },
             {
-              "name": "Patch Studio",
+              "name": "PATCH Studio",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"name\": \"Sala A - Principal\",\n    \"capacity\": 12,\n    \"address\": \"Rua Principal 1, Braga\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/studios/{{studio_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "studios", "{{studio_id}}"]
+                },
+                "description": "[staff]"
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH Studio Activate",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/studios/{{studio_id}}/activate",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "studios", "{{studio_id}}", "activate"]
+                },
+                "description": "[staff]"
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH Studio Deactivate",
               "event": [
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "pm.test(\"Successful POST request\", function () {",
-                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-                      "});",
-                      ""
+                      "if (pm.response.code === 409) {",
+                      "    console.warn(\"Cannot deactivate — studio has active classes.\");",
+                      "} else {",
+                      "    pm.test(\"Deactivated\", () => pm.response.to.have.status(204));",
+                      "}"
                     ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
+                    "type": "text/javascript"
                   }
                 }
               ],
               "request": {
                 "method": "PATCH",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"name\" : \"casa da musica\",\n    \"capacity\" : 102,\n    \"address\" : \"Rua peixoto\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/studios/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "studios",
-                    "1"
-                  ]
+                  "raw": "{{base_url}}/api/studios/{{studio_id}}/deactivate",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "studios", "{{studio_id}}", "deactivate"]
                 },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                "description": "[staff] Returns 409 if studio has active/pending classes."
               },
               "response": []
             },
             {
-              "name": "Patch Studio Activate",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "PATCH",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "http://localhost:5295/api/studios/1/activate",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "studios",
-                    "1",
-                    "activate"
-                  ]
-                },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
-              },
-              "response": []
-            },
-            {
-              "name": "Patch Studio Deactivate",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "PATCH",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "http://localhost:5295/api/studios/1/deactivate",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "studios",
-                    "1",
-                    "deactivate"
-                  ]
-                },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
-              },
-              "response": []
-            },
-            {
-              "name": "Post Studio Add Modality",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Successful POST request\", function () {",
-                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-                      "});",
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
+              "name": "POST Studio Add Modality",
               "request": {
                 "method": "POST",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"studioid\" : 1,\n    \"modalityid\" : 1\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/studios/add/modality",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "studios",
-                    "add",
-                    "modality"
-                  ]
+                  "raw": "{{base_url}}/api/studios/{{studio_id}}/modalities/{{modality_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "studios", "{{studio_id}}", "modalities", "{{modality_id}}"]
                 },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                "description": "[staff] Links a modality to a studio (studio supports this type of class). Required for auto studio-assignment to work."
               },
               "response": []
             },
             {
-              "name": "Delete Studio Remove Modality",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Successful POST request\", function () {",
-                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-                      "});",
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
+              "name": "DELETE Studio Remove Modality",
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"studioid\" : 1,\n    \"modalityid\" : 1\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/studios/remove/modality",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "studios",
-                    "remove",
-                    "modality"
-                  ]
+                  "raw": "{{base_url}}/api/studios/{{studio_id}}/modalities/{{modality_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "studios", "{{studio_id}}", "modalities", "{{modality_id}}"]
                 },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                "description": "[staff] Unlinks a modality from a studio."
               },
               "response": []
             }
@@ -1962,370 +1380,271 @@
       ]
     },
     {
-      "name": "Classes",
+      "name": "Schedule",
       "item": [
         {
-          "name": "CoachClass",
+          "name": "CoachAvailability",
           "item": [
             {
-              "name": "Get CoachClass",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "GET",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "http://localhost:5295/api/coachclasses",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "coachclasses"
-                  ]
-                },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
-              },
-              "response": []
-            },
-            {
-              "name": "Get CoachClass Id",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "GET",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "http://localhost:5295/api/coachclasses/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "coachclasses",
-                    "1"
-                  ]
-                },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
-              },
-              "response": []
-            },
-            {
-              "name": "Get CoachClass Open",
+              "name": "GET Coach Availabilities",
               "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/coachclasses/open",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "coachclasses",
-                    "open"
-                  ]
+                  "raw": "{{base_url}}/api/coachavailability",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachavailability"]
                 }
               },
               "response": []
             },
             {
-              "name": "Get CoachClass Status Id",
+              "name": "GET Coach Availability by Id",
               "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/coachclasses/status/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "coachclasses",
-                    "status",
-                    "1"
-                  ]
+                  "raw": "{{base_url}}/api/coachavailability/{{coachav_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachavailability", "{{coachav_id}}"]
                 }
               },
               "response": []
             },
             {
-              "name": "Get CoachClass Parent Id",
-              "protocolProfileBehavior": {
-                "disableBodyPruning": true
-              },
+              "name": "GET Availability by Coach",
               "request": {
                 "method": "GET",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": ""
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/coachclasses/parent/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "coachclasses",
-                    "parent",
-                    "1"
-                  ]
+                  "raw": "{{base_url}}/api/coachavailability/coach/{{coach_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachavailability", "coach", "{{coach_id}}"]
                 }
               },
               "response": []
             },
             {
-              "name": "Get CoachClass Status Id Copy",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "http://localhost:5295/api/coachclasses/status/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "coachclasses",
-                    "status",
-                    "1"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Get CoachClass Status Id Copy",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "http://localhost:5295/api/coachclasses/status/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "coachclasses",
-                    "status",
-                    "1"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Post CoachClass",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Successful POST request\", function () {",
-                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-                      "});",
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
+              "name": "POST Coach Availability",
               "request": {
                 "method": "POST",
-                "header": [],
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"modalityid\": 1,\n    \"studioid\": 1,\n    \"coachid\": 2,\n    \"createdbyuserid\": 3,\n    \"startdatetime\": \"\",\n    \"enddatetime\": \"\",\n    \"maxparticipants\": 4,\n    \"studentids\": [1]\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
+                  "raw": "{\n    \"coachId\": {{coach_id}},\n    \"weekday\": 1,\n    \"startTime\": \"09:00:00\",\n    \"endTime\": \"12:00:00\",\n    \"validFrom\": \"2026-05-01\",\n    \"validUntil\": \"2026-07-31\"\n}",
+                  "options": { "raw": { "language": "json" } }
                 },
                 "url": {
-                  "raw": "http://localhost:5295/api/coachclasses",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "coachclasses"
-                  ]
+                  "raw": "{{base_url}}/api/coachavailability",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachavailability"]
                 },
-                "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+                "description": "weekday: 0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday"
+              },
+              "response": []
+            },
+            {
+              "name": "PUT Coach Availability",
+              "request": {
+                "method": "PUT",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"coachId\": {{coach_id}},\n    \"weekday\": 1,\n    \"startTime\": \"10:00:00\",\n    \"endTime\": \"13:00:00\",\n    \"validFrom\": \"2026-05-01\",\n    \"validUntil\": \"2026-07-31\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/coachavailability/{{coachav_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachavailability", "{{coachav_id}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "DELETE Coach Availability",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/coachavailability/{{coachav_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachavailability", "{{coachav_id}}"]
+                }
               },
               "response": []
             }
           ]
         },
         {
-          "name": "Participant",
+          "name": "BlockedPeriod",
           "item": [
             {
-              "name": "Get Participants Class Id",
-              "protocolProfileBehavior": {
-                "disableBodyPruning": true
-              },
+              "name": "GET Blocked Periods",
               "request": {
                 "method": "GET",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": ""
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/participants/class/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "participants",
-                    "class",
-                    "1"
+                  "raw": "{{base_url}}/api/blockedperiods",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "blockedperiods"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "GET Blocked Period by Id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/blockedperiods/{{blocked_period_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "blockedperiods", "{{blocked_period_id}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "GET Active Blocked Periods",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/blockedperiods/active",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "blockedperiods", "active"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "GET Blocked Periods by Range",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/blockedperiods/range?from=2026-05-01T00:00:00&to=2026-05-31T23:59:59",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "blockedperiods", "range"],
+                  "query": [
+                    { "key": "from", "value": "2026-05-01T00:00:00" },
+                    { "key": "to", "value": "2026-05-31T23:59:59" }
                   ]
                 }
               },
               "response": []
             },
             {
-              "name": "Post Participant",
+              "name": "GET Blocked Periods by Coach",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/blockedperiods/coach/{{coach_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "blockedperiods", "coach", "{{coach_id}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "GET Blocked Periods by Studio",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/blockedperiods/studio/{{studio_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "blockedperiods", "studio", "{{studio_id}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "POST Blocked Period (Global)",
               "request": {
                 "method": "POST",
-                "header": [],
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"classid\" : 1,\n    \"studentid\" : 1,\n    \"classprice\" : 36.0\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
+                  "raw": "{\n    \"scope\": 4,\n    \"startDatetime\": \"2026-06-10T00:00:00\",\n    \"endDatetime\": \"2026-06-10T23:59:59\",\n    \"reason\": \"School end-of-year event\"\n}",
+                  "options": { "raw": { "language": "json" } }
                 },
                 "url": {
-                  "raw": "http://localhost:5295/api/participants",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "participants"
-                  ]
-                }
+                  "raw": "{{base_url}}/api/blockedperiods",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "blockedperiods"]
+                },
+                "description": "scope: 0=Undefined(global), 1=NormalClass(global), 2=Studio(studioId required), 3=Coach(coachId required), 4=Event(global), 5=Holiday(global)"
               },
               "response": []
             },
             {
-              "name": "Patch Participant id Parent-validated",
+              "name": "POST Blocked Period (Studio)",
               "request": {
-                "method": "PATCH",
-                "header": [],
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": ""
+                  "raw": "{\n    \"scope\": 2,\n    \"startDatetime\": \"2026-05-15T12:00:00\",\n    \"endDatetime\": \"2026-05-15T14:00:00\",\n    \"reason\": \"Floor maintenance\",\n    \"studioId\": {{studio_id}}\n}",
+                  "options": { "raw": { "language": "json" } }
                 },
                 "url": {
-                  "raw": "http://localhost:5295/api/participants/1/parent-validated",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "participants",
-                    "1",
-                    "parent-validated"
-                  ]
+                  "raw": "{{base_url}}/api/blockedperiods",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "blockedperiods"]
+                },
+                "description": "scope=2 requires studioId. This blocks studio auto-assignment for the window."
+              },
+              "response": []
+            },
+            {
+              "name": "POST Blocked Period (Coach)",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"scope\": 3,\n    \"startDatetime\": \"2026-05-20T09:00:00\",\n    \"endDatetime\": \"2026-05-20T18:00:00\",\n    \"reason\": \"Medical appointment\",\n    \"coachId\": {{coach_id}}\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/blockedperiods",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "blockedperiods"]
+                },
+                "description": "scope=3 requires coachId."
+              },
+              "response": []
+            },
+            {
+              "name": "PUT Blocked Period",
+              "request": {
+                "method": "PUT",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"scope\": 2,\n    \"startDatetime\": \"2026-05-15T12:00:00\",\n    \"endDatetime\": \"2026-05-15T15:00:00\",\n    \"reason\": \"Extended floor maintenance\",\n    \"studioId\": {{studio_id}}\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/blockedperiods/{{blocked_period_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "blockedperiods", "{{blocked_period_id}}"]
                 }
               },
               "response": []
             },
             {
-              "name": "Delete Participant",
+              "name": "DELETE Blocked Period",
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": ""
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/participants/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "participants",
-                    "1"
-                  ]
+                  "raw": "{{base_url}}/api/blockedperiods/{{blocked_period_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "blockedperiods", "{{blocked_period_id}}"]
                 }
               },
               "response": []
@@ -2338,267 +1657,114 @@
       "name": "Social",
       "item": [
         {
-          "name": "NewsPost",
+          "name": "Notification",
           "item": [
             {
-              "name": "Get NewsPosts",
+              "name": "GET Notifications by User (paginated)",
               "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/newsposts",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "newsposts"
+                  "raw": "{{base_url}}/api/notifications/user/{{userId}}?page=1&pageSize=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "notifications", "user", "{{userId}}"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "pageSize", "value": "20" }
                   ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Get NewsPostId",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "http://localhost:5295/api/newsposts/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "newsposts",
-                    "1"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Post NewsPost",
-              "request": {
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"title\" : \"Ballet Competition\",\r\n    \"subtitle\" : \"Schools from all around the country\",\r\n    \"description\" : \"Next tuesday in Braga\",\r\n    \"imageurl\" : \"/assets/images/newsposts/ballet2123.png\",\r\n    \"createdbyuserid\" : 1\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
                 },
-                "url": {
-                  "raw": "http://localhost:5295/api/newsposts",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "newsposts"
-                  ]
-                }
+                "description": "Returns paginated notifications for the current user. Uses {{userId}} set by Login."
               },
               "response": []
             },
             {
-              "name": "Put NewsPost Id",
+              "name": "PATCH Mark Notification Read",
               "request": {
-                "method": "PUT",
+                "method": "PATCH",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"title\" : \"Ballet Competition\",\r\n    \"subtitle\" : \"Schools from all around the country\",\r\n    \"description\" : \"Next tuesday in Braga\",\r\n    \"imageurl\" : \"/assets/images/newsposts/ballet2123.png\"\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/newsposts/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "newsposts",
-                    "1"
-                  ]
+                  "raw": "{{base_url}}/api/notifications/{{notification_id}}/read",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "notifications", "{{notification_id}}", "read"]
                 }
               },
               "response": []
             },
             {
-              "name": "Delete NewsPost Id",
+              "name": "DELETE Notification (soft delete)",
               "request": {
                 "method": "DELETE",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/newsposts/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "newsposts",
-                    "1"
-                  ]
-                }
+                  "raw": "{{base_url}}/api/notifications/{{notification_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "notifications", "{{notification_id}}"]
+                },
+                "description": "Soft deletes (sets is_deleted=true). Notification remains in DB."
               },
               "response": []
             }
           ]
         },
         {
-          "name": "Notification",
+          "name": "News Post",
           "item": [
             {
-              "name": "Get Notifications User Id",
-              "protocolProfileBehavior": {
-                "disableBodyPruning": true
-              },
+              "name": "GET News Posts",
               "request": {
                 "method": "GET",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": ""
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/notifications/user/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "notifications",
-                    "user",
-                    "1"
-                  ]
+                  "raw": "{{base_url}}/api/newsposts",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "newsposts"]
                 }
               },
               "response": []
             },
             {
-              "name": "Post Notification",
+              "name": "GET News Post by Id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/newsposts/{{post_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "newsposts", "{{post_id}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "POST News Post",
               "request": {
                 "method": "POST",
-                "header": [],
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"userid\" : 1,\r\n    \"title\": \"Class Validation Required\",\r\n    \"message\": \"Please confirm your child's participations.\",\r\n    \"type\": \"warning\",\r\n    \"entitytype\": \"class\",\r\n    \"entityid\": 1\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
+                  "raw": "{\n    \"title\": \"Nova temporada de Ballet\",\n    \"subtitle\": \"Inscrições abertas para 2026/2027\",\n    \"description\": \"A Ent'Artes tem o prazer de anunciar a abertura de inscrições para a nova temporada de Ballet.\",\n    \"imageUrl\": \"/assets/images/news/ballet2026.png\"\n}",
+                  "options": { "raw": { "language": "json" } }
                 },
                 "url": {
-                  "raw": "http://localhost:5295/api/notifications",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "notifications"
-                  ]
-                }
+                  "raw": "{{base_url}}/api/newsposts",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "newsposts"]
+                },
+                "description": "[staff]"
               },
               "response": []
             },
             {
-              "name": "Patch Notification Id Read",
-              "request": {
-                "method": "PATCH",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": ""
-                },
-                "url": {
-                  "raw": "http://localhost:5295/api/notifications/1/read",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "notifications",
-                    "1",
-                    "read"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Patch Notification User Id Read-All Copy",
-              "request": {
-                "method": "PATCH",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": ""
-                },
-                "url": {
-                  "raw": "http://localhost:5295/api/notifications/user/1/read-all",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "notifications",
-                    "user",
-                    "1",
-                    "read-all"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Delete Notification Id",
+              "name": "DELETE News Post",
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": ""
-                },
                 "url": {
-                  "raw": "http://localhost:5295/api/notifications/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "notifications",
-                    "1"
-                  ]
-                }
+                  "raw": "{{base_url}}/api/newsposts/{{post_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "newsposts", "{{post_id}}"]
+                },
+                "description": "[staff]"
               },
               "response": []
             }
@@ -2608,188 +1774,134 @@
           "name": "Event",
           "item": [
             {
-              "name": "Get Events",
+              "name": "GET Events",
               "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/events",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "events"
-                  ]
+                  "raw": "{{base_url}}/api/events",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "events"]
                 }
               },
               "response": []
             },
             {
-              "name": "Get Events Active",
+              "name": "GET Events Active",
               "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/events/active",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "events",
-                    "active"
-                  ]
+                  "raw": "{{base_url}}/api/events/active",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "events", "active"]
                 }
               },
               "response": []
             },
             {
-              "name": "Get Events Id",
+              "name": "GET Event by Id",
               "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/events/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "events",
-                    "1"
-                  ]
+                  "raw": "{{base_url}}/api/events/{{event_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "events", "{{event_id}}"]
                 }
               },
               "response": []
             },
             {
-              "name": "Post Event",
+              "name": "POST Event",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Event created\", () => pm.response.to.have.status(201));",
+                      "if (pm.response.code === 201) {",
+                      "    const body = pm.response.json();",
+                      "    pm.collectionVariables.set(\"event_id\", body.eventId);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
               "request": {
                 "method": "POST",
-                "header": [],
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"title\": \"Ballet Competition\",\r\n    \"description\": \"Schools from all country will attend to the next Ballet Competition in Braga\",\r\n    \"startdatetime\": \"2026-04-23T18:25:43.511Z\",\r\n    \"imageurl\": \"/assets/images/events/ballet2123.png\",\r\n    \"createdbyuserid\": 1\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
+                  "raw": "{\n    \"title\": \"Gala de Ballet 2026\",\n    \"description\": \"Annual ballet showcase. All students and parents welcome.\",\n    \"startDatetime\": \"2026-06-20T18:00:00Z\",\n    \"endDatetime\": \"2026-06-20T21:00:00Z\",\n    \"imageUrl\": \"/assets/images/events/gala2026.png\"\n}",
+                  "options": { "raw": { "language": "json" } }
                 },
                 "url": {
-                  "raw": "http://localhost:5295/api/events",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "events"
-                  ]
-                }
+                  "raw": "{{base_url}}/api/events",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "events"]
+                },
+                "description": "[staff]"
               },
               "response": []
             },
             {
-              "name": "Put Event Id",
+              "name": "PUT Event",
               "request": {
                 "method": "PUT",
-                "header": [],
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"title\": \"Ballet Competition\",\r\n    \"description\": \"Schools from all country will attend to the next Ballet Competition in Braga\",\r\n    \"startdatetime\": \"2026-04-23T18:25:43.511Z\",\r\n    \"imageurl\": \"/assets/images/events/ballet2123.png\"\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
+                  "raw": "{\n    \"title\": \"Gala de Ballet 2026 (updated)\",\n    \"description\": \"Updated description.\",\n    \"startDatetime\": \"2026-06-20T19:00:00Z\",\n    \"endDatetime\": \"2026-06-20T22:00:00Z\",\n    \"imageUrl\": \"/assets/images/events/gala2026.png\"\n}",
+                  "options": { "raw": { "language": "json" } }
                 },
                 "url": {
-                  "raw": "http://localhost:5295/api/events/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "events",
-                    "1"
-                  ]
-                }
+                  "raw": "{{base_url}}/api/events/{{event_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "events", "{{event_id}}"]
+                },
+                "description": "[staff]"
               },
               "response": []
             },
             {
-              "name": "Patch Event Id Activate",
+              "name": "PATCH Event Activate",
               "request": {
                 "method": "PATCH",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/events/1/activate",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "events",
-                    "1",
-                    "activate"
-                  ]
+                  "raw": "{{base_url}}/api/events/{{event_id}}/activate",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "events", "{{event_id}}", "activate"]
                 }
               },
               "response": []
             },
             {
-              "name": "Patch Event Id Deactivate",
+              "name": "PATCH Event Deactivate",
               "request": {
                 "method": "PATCH",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/events/1/deactivate",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "events",
-                    "1",
-                    "deactivate"
-                  ]
+                  "raw": "{{base_url}}/api/events/{{event_id}}/deactivate",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "events", "{{event_id}}", "deactivate"]
                 }
               },
               "response": []
             },
             {
-              "name": "Delete Event Id",
+              "name": "DELETE Event",
               "request": {
                 "method": "DELETE",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:5295/api/events/1",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "5295",
-                  "path": [
-                    "api",
-                    "events",
-                    "1"
-                  ]
-                }
+                  "raw": "{{base_url}}/api/events/{{event_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "events", "{{event_id}}"]
+                },
+                "description": "[staff]"
               },
               "response": []
             }
@@ -2799,40 +1911,527 @@
     },
     {
       "name": "Inventory",
-      "item": []
-    },
-    {
-      "name": "Auth",
       "item": [
         {
-          "name": "Post Login",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"username\": \"olamundo\",\n    \"password\": \"12349999\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+          "name": "Item",
+          "item": [
+            {
+              "name": "GET Items (paginated)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/items?page=1&pageSize=10",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "items"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "pageSize", "value": "10" }
+                  ]
                 }
-              }
+              },
+              "response": []
             },
-            "url": {
-              "raw": "http://localhost:5295/api/auth/login",
-              "protocol": "http",
-              "host": [
-                "localhost"
+            {
+              "name": "GET Item by Id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/items/{{item_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "items", "{{item_id}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "POST Item",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    pm.collectionVariables.set(\"item_id\", pm.response.json().itemId);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
               ],
-              "port": "5295",
-              "path": [
-                "api",
-                "auth",
-                "login"
-              ]
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"name\": \"Ballet Shoes\",\n    \"description\": \"Pink satin ballet shoes\",\n    \"idCategory\": 1,\n    \"fromSchool\": true\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/items",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "items"]
+                },
+                "description": "[staff]"
+              },
+              "response": []
             }
-          },
-          "response": []
+          ]
+        },
+        {
+          "name": "Item Requisition",
+          "item": [
+            {
+              "name": "GET Requisitions",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/itemrequisitions",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "itemrequisitions"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "GET Requisitions by Parent",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/itemrequisitions/parent/{{parent_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "itemrequisitions", "parent", "{{parent_id}}"]
+                },
+                "description": "[staff,parent] Parent can only see own requisitions."
+              },
+              "response": []
+            },
+            {
+              "name": "POST Requisition",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    pm.collectionVariables.set(\"requisition_id\", pm.response.json().requisitionId);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"itemVariantId\": {{item_variant_id}},\n    \"quantity\": 1,\n    \"needFrom\": \"2026-05-10\",\n    \"needUntil\": \"2026-05-20\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/itemrequisitions",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "itemrequisitions"]
+                },
+                "description": "[parent] Parent requests an item for a usage window. needFrom/needUntil = requested dates. Staff sets expectedReturnDate at review."
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH Requisition Approve",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"expectedReturnDate\": \"2026-05-21\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/itemrequisitions/{{requisition_id}}/approve",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "itemrequisitions", "{{requisition_id}}", "approve"]
+                },
+                "description": "[staff] Staff sets expectedReturnDate when approving."
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH Requisition Reject",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"reason\": \"Item not available during that period.\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/itemrequisitions/{{requisition_id}}/reject",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "itemrequisitions", "{{requisition_id}}", "reject"]
+                },
+                "description": "[staff]"
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH Requisition Return",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"returnQuantity\": 1,\n    \"note\": null\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/itemrequisitions/{{requisition_id}}/return",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "itemrequisitions", "{{requisition_id}}", "return"]
+                },
+                "description": "[staff] note field stores defect description if item returned damaged."
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🧪 Test Flows",
+      "description": "Pre-built end-to-end flows for testing the full lifecycle. Run each folder in order.",
+      "item": [
+        {
+          "name": "Flow A — Full Class Lifecycle",
+          "description": "Complete flow: Login as staff → Login as parent → Create student → Accept student → Create class → Staff approve → Login as coach → Coach accept → Finish → Validate\n\nRun in order. Each step auto-captures IDs into variables.",
+          "item": [
+            {
+              "name": "1. Login as Staff",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Staff login OK\", () => pm.response.to.have.status(200));",
+                      "if (pm.response.code === 200) {",
+                      "    pm.collectionVariables.set(\"userId\", pm.response.json().userId);",
+                      "    console.log(\"Staff session active | userId:\", pm.response.json().userId);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"username\": \"staff_user\",\n    \"password\": \"staff1234\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/auth/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "auth", "login"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2. Create Student (as staff)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Student created\", () => pm.response.to.have.status(201));",
+                      "if (pm.response.code === 201) {",
+                      "    pm.collectionVariables.set(\"student_id\", pm.response.json().studentId);",
+                      "    console.log(\"studentId:\", pm.response.json().studentId, \"| Status: Pending\");",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"parentId\": {{parent_id}},\n    \"firstName\": \"Test\",\n    \"lastName\": \"Student\",\n    \"birthDate\": \"2016-01-15\",\n    \"phone\": \"910000001\",\n    \"nif\": \"111111111\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/students",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "students"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "3. Accept Student",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Student accepted\", () => pm.response.to.have.status(204));",
+                      "console.log(\"Student\", pm.collectionVariables.get(\"student_id\"), \"→ Accepted. Can now join classes.\");"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/students/{{student_id}}/accept",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "students", "{{student_id}}", "accept"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "4. Create Class Request (as staff)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Class created\", () => pm.response.to.have.status(201));",
+                      "if (pm.response.code === 201) {",
+                      "    pm.collectionVariables.set(\"class_id\", pm.response.json().classId);",
+                      "    console.log(\"classId:\", pm.response.json().classId, \"| Status: Requested | Studio: auto-assigned\");",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"modalityId\": {{modality_id}},\n    \"coachId\": {{coach_id}},\n    \"startDatetime\": \"2026-06-15T10:00:00Z\",\n    \"endDatetime\": \"2026-06-15T11:00:00Z\",\n    \"maxParticipants\": 4,\n    \"studentIds\": [{{student_id}}]\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/coachclasses",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "5. Staff Approve → StaffApproved",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Staff approved\", () => pm.response.to.have.status(204));",
+                      "console.log(\"→ StaffApproved(7). Coach receives notification.\");"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/coachclasses/{{class_id}}/staff-approve",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses", "{{class_id}}", "staff-approve"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "6. Login as Coach",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Coach login OK\", () => pm.response.to.have.status(200));",
+                      "if (pm.response.code === 200) {",
+                      "    pm.collectionVariables.set(\"userId\", pm.response.json().userId);",
+                      "    console.log(\"Coach session active | userId:\", pm.response.json().userId);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"username\": \"coach_user\",\n    \"password\": \"coach1234\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/auth/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "auth", "login"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "7. Coach Accept → Approved",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Coach accepted\", () => pm.response.to.have.status(204));",
+                      "console.log(\"→ Approved(1). Parent + staff notified.\");"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/coachclasses/{{class_id}}/coach-accept",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses", "{{class_id}}", "coach-accept"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "8. Login as Staff (again)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Staff login OK\", () => pm.response.to.have.status(200));",
+                      "pm.collectionVariables.set(\"userId\", pm.response.json().userId);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"username\": \"staff_user\",\n    \"password\": \"staff1234\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/auth/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "auth", "login"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "9. Finish Class → Finished",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Finished\", () => pm.response.to.have.status(204));",
+                      "console.log(\"→ Finished(4). 48h validation window open.\");"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/coachclasses/{{class_id}}/finish",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses", "{{class_id}}", "finish"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "10. Coach Validate Class",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/coachclasses/{{class_id}}/coach-validate",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses", "{{class_id}}", "coach-validate"]
+                },
+                "description": "Login as the coach first, then call this."
+              },
+              "response": []
+            },
+            {
+              "name": "11. Parent Validate Participant",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"attended\": true\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/participants/{{participant_id}}/validate",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "participants", "{{participant_id}}", "validate"]
+                },
+                "description": "Login as parent first. When all participants respond, class auto-moves to Pending(6)."
+              },
+              "response": []
+            },
+            {
+              "name": "12. Staff Validate → Validated",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Class fully validated\", () => pm.response.to.have.status(204));",
+                      "console.log(\"→ Validated(5). Terminal state reached.\");"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/coachclasses/{{class_id}}/staff-validate",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "coachclasses", "{{class_id}}", "staff-validate"]
+                },
+                "description": "Login as staff first. Class must be in Pending(6) — happens automatically after all participants validate."
+              },
+              "response": []
+            }
+          ]
         }
       ]
     }

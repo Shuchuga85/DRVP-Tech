@@ -1,5 +1,0 @@
-$kind: http-request
-name: Get Item Id Variants
-url: https://localhost:7003/api/items/id/variants
-method: GET
-order: 3000

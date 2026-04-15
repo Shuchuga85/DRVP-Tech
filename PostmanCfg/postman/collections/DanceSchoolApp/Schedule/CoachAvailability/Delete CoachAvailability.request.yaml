@@ -1,4 +1,0 @@
-$kind: http-request
-url: http://localhost:5295/api/coachavailability/1
-method: DELETE
-order: 6000

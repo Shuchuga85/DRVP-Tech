@@ -1,8 +1,0 @@
-name: Variables
-values:
-  - key: id
-    value: ''
-    enabled: true
-  - key: sid
-    value: ''
-    enabled: true
