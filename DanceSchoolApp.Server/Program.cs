@@ -1,9 +1,7 @@
-using System;
 using System.Text;
 using System.Reflection;
 using DanceSchoolApp.Server.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.SqlServer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -19,21 +17,29 @@ foreach (var service in serviceTypes)
     builder.Services.AddScoped(service);
 }
 
-
-// ── Controllers ───────────────────────────────────────────────────────────
+// ── Controllers ────────────────────────────────────────────────────────────
 builder.Services.AddControllers();
 
-
-// ── OpenAPI ───────────────────────────────────────────────────────────────
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// ── OpenAPI ────────────────────────────────────────────────────────────────
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 
+// ── CORS ───────────────────────────────────────────────────────────────────
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy.WithOrigins("https://localhost:5173", "http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 
-
-// ── Database ──────────────────────────────────────────────────────────────
+// ── Database ───────────────────────────────────────────────────────────────
 var conn = Environment.GetEnvironmentVariable("DanceSchoolApp_DB");
-if (conn == null) Console.WriteLine("Warning - Failed to get Db enviromental variable !");
+if (string.IsNullOrWhiteSpace(conn))
+    Console.WriteLine("Warning - Failed to get DB environment variable!");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(conn));
@@ -41,7 +47,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // ── JWT Authentication (cookie-based) ─────────────────────────────────────
 var jwtSecret = Environment.GetEnvironmentVariable("DanceSchoolApp_JWT_Secret");
 if (string.IsNullOrWhiteSpace(jwtSecret))
-    Console.WriteLine("Warning — DanceSchoolApp_JWT_Secret environment variable is not set.");
+    Console.WriteLine("Warning - DanceSchoolApp_JWT_Secret environment variable is not set.");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -59,9 +65,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             RoleClaimType = System.Security.Claims.ClaimTypes.Role
         };
 
-        // Tell the JWT middleware to read the token from the HttpOnly cookie
-        // instead of the Authorization: Bearer header.
-        // This is the key change that makes cookie-based JWT work.
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
@@ -69,6 +72,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 var token = context.Request.Cookies["jwt"];
                 if (!string.IsNullOrWhiteSpace(token))
                     context.Token = token;
+
                 return Task.CompletedTask;
             }
         };
@@ -76,8 +80,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// ─────────────────────────────────────────────────────────────────────────
-
+// ── Build app ──────────────────────────────────────────────────────────────
 var app = builder.Build();
 
 app.UseDefaultFiles();
@@ -90,6 +93,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// CORS tem de vir antes de Authentication/Authorization
+app.UseCors("Frontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

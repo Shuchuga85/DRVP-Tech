@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import './LoginPage.css'
+import '../styles/LoginPage.css'
 import logo from '../assets/logo-entartes.png'
-
 function LoginPage() {
     const [login, setLogin] = useState('')
     const [password, setPassword] = useState('')
@@ -70,11 +69,11 @@ function LoginPage() {
                 <form onSubmit={handleSubmit} className="login-form">
                     {/* LOGIN (email ou username) */}
                     <div className="form-group">
-                        <label htmlFor="login">Email ou utilizador</label>
+                        <label htmlFor="login">Email ou username</label>
                         <input
                             id="login"
                             type="text"
-                            placeholder="Email ou nome de utilizador"
+                            placeholder="Email ou username"
                             value={login}
                             onChange={(e) => setLogin(e.target.value)}
                             required
@@ -93,8 +92,6 @@ function LoginPage() {
                             required
                         />
                     </div>
-
-                    {/* BOTÃO */}
                     <button
                         type="submit"
                         className="login-btn"
@@ -103,7 +100,6 @@ function LoginPage() {
                         {loading ? 'A entrar...' : 'Entrar'}
                     </button>
 
-                    {/* ERRO */}
                     {error && (
                         <p style={{ color: 'red', marginTop: '12px' }}>
                             {error}
