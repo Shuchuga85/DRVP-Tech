@@ -109,7 +109,8 @@ namespace DanceSchoolApp.Server.Services.People
                     LastName = request.LastName,
                     BirthDate = request.BirthDate,
                     Phone = request.Phone,
-                    Address = request.Address
+                    Address = request.Address,
+                    Nif = request.Nif
                 }
             };
 
@@ -136,6 +137,7 @@ namespace DanceSchoolApp.Server.Services.People
             student.PersonInfo.BirthDate = request.BirthDate;
             student.PersonInfo.Phone = request.Phone;
             student.PersonInfo.Address = request.Address;
+            student.PersonInfo.Nif = request.Nif;
 
             await _context.SaveChangesAsync();
         }

@@ -1,4 +1,5 @@
-﻿using DanceSchoolApp.Server.DTOs.Classes;
+﻿using DanceSchoolApp.Server.DTOs;
+using DanceSchoolApp.Server.DTOs.Classes;
 using DanceSchoolApp.Server.Services.Classes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,15 +21,11 @@ namespace DanceSchoolApp.Server.Controllers.Classes
         // Staff use — full enrollment list for a class with validation statuses.
         [Authorize(Roles = "staff,coach")]
         [HttpGet("class/{classId}")]
-        public async Task<IActionResult> GetByClass(int classId)
+        public async Task<IActionResult> GetByClass(int classId, [FromQuery] PagedQuery query)
         {
             try
             {
-                var result = await _participantService.GetByClassAsync(classId);
-
-                if (!result.Any())
-                    return NoContent();
-
+                var result = await _participantService.GetByClassAsync(classId, query);
                 return Ok(result);
             }
             catch (KeyNotFoundException ex)

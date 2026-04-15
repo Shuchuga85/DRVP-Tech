@@ -1,4 +1,5 @@
-﻿using DanceSchoolApp.Server.DTOs.Inventory;
+﻿using DanceSchoolApp.Server.DTOs;
+using DanceSchoolApp.Server.DTOs.Inventory;
 using DanceSchoolApp.Server.Services.Inventory;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -32,13 +33,15 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
         // ─── GET /api/items ───────────────────────────────────────────────────
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> GetItems([FromQuery] bool? fromSchool = null)
+        public async Task<IActionResult> GetItems(
+            [FromQuery] bool? fromSchool = null,
+            [FromQuery] PagedQuery? query = null)
         {
             try
             {
-                var result = await _itemService.GetItemsAsync(fromSchool);
+                var result = await _itemService.GetItemsAsync(fromSchool, query ?? new PagedQuery());
 
-                if (!result.Any())
+                if (result.TotalCount == 0)
                     return NoContent();
 
                 return Ok(result);

@@ -1,4 +1,5 @@
 using DanceSchoolApp.Server.Data;
+using DanceSchoolApp.Server.DTOs;
 using DanceSchoolApp.Server.DTOs.Classes;
 using DanceSchoolApp.Server.DTOs.Social;
 using DanceSchoolApp.Server.Models;
@@ -21,7 +22,7 @@ namespace DanceSchoolApp.Server.Services.Classes
 
         // ─── Queries ──────────────────────────────────────────────────────────
 
-        public async Task<List<ParticipantListResponse>> GetByClassAsync(int classId)
+        public async Task<PagedResult<ParticipantListResponse>> GetByClassAsync(int classId, PagedQuery query)
         {
             bool classExists = await _context.CoachClasses
                 .AnyAsync(c => c.ClassId == classId);
@@ -29,26 +30,41 @@ namespace DanceSchoolApp.Server.Services.Classes
             if (!classExists)
                 throw new KeyNotFoundException($"Class with id {classId} was not found.");
 
-            return await _context.Participants
+            var dbQuery = _context.Participants
                 .Include(p => p.IdStudentNavigation)
                     .ThenInclude(s => s.PersonInfo)
-                .Include(p => p.IdStudentNavigation)
-                .Where(p => p.IdCoachClass == classId)
+                .Where(p => p.IdCoachClass == classId);
+
+            var total = await dbQuery.CountAsync();
+
+            var items = await dbQuery
+                .OrderBy(p => p.JoinedAt)
+                .Skip((query.Page - 1) * query.PageSize)
+                .Take(query.PageSize)
                 .Select(p => new ParticipantListResponse
                 {
-                    ParticipantId = p.ParticipantId,
-                    ClassId = p.IdCoachClass,
-                    StudentId = p.IdStudent,
-                    StudentName = p.IdStudentNavigation.PersonInfo != null
-                        ? $"{p.IdStudentNavigation.PersonInfo.FirstName} {p.IdStudentNavigation.PersonInfo.LastName}".Trim()
-                        : $"Student {p.IdStudent}",
-                    ParentUserId = p.IdStudentNavigation.ParentUserId,
-                    JoinedAt = p.JoinedAt,
-                    ClassPrice = p.ClassPrice,  // decimal, never null
-                    ValidationStatus = (ParticipantValidationStatus)p.ValidationStatus,
+                    ParticipantId     = p.ParticipantId,
+                    ClassId           = p.IdCoachClass,
+                    StudentId         = p.IdStudent,
+                    StudentName       = p.IdStudentNavigation.PersonInfo != null
+                        ? (p.IdStudentNavigation.PersonInfo.FirstName + " " +
+                           p.IdStudentNavigation.PersonInfo.LastName).Trim()
+                        : "Student " + p.IdStudent.ToString(),
+                    ParentUserId      = p.IdStudentNavigation.ParentUserId,
+                    JoinedAt          = p.JoinedAt,
+                    ClassPrice        = p.ClassPrice,
+                    ValidationStatus  = (ParticipantValidationStatus)p.ValidationStatus,
                     ParentValidatedAt = p.ParentValidatedAt
                 })
                 .ToListAsync();
+
+            return new PagedResult<ParticipantListResponse>
+            {
+                Items     = items,
+                TotalCount = total,
+                Page      = query.Page,
+                PageSize  = query.PageSize
+            };
         }
 
         // ─── Commands ─────────────────────────────────────────────────────────
