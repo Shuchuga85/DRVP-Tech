@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import '../styles/LoginPage.css'
 import logo from '../assets/logo-entartes.png'
 import { useAuth } from '../context/AuthContext'
+
 function LoginPage() {
-    const [login, setLogin] = useState('')
+    const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
@@ -24,9 +25,8 @@ function LoginPage() {
                 },
                 credentials: 'include',
                 body: JSON.stringify({
-                    email: login.includes('@') ? login : null,
-                    username: login.includes('@') ? null : login,
-                    password,
+                    email: email,
+                    password: password,
                 }),
             })
 
@@ -37,13 +37,10 @@ function LoginPage() {
             const data = await response.json()
 
             console.log('Login OK:', data)
+
             await refreshSession()
-            navigate('/')
 
-            // guardar token
-            localStorage.setItem('token', data.Token)
-
-            // guardar user
+            // guardar user (opcional)
             localStorage.setItem(
                 'user',
                 JSON.stringify({
@@ -53,7 +50,6 @@ function LoginPage() {
                 })
             )
 
-            // redirecionar para homepage
             navigate('/')
         } catch (err) {
             console.error(err)
@@ -71,15 +67,16 @@ function LoginPage() {
                 <h1>Iniciar sessão</h1>
 
                 <form onSubmit={handleSubmit} className="login-form">
-                    {/* LOGIN (email ou username) */}
+
+                    {/* EMAIL */}
                     <div className="form-group">
-                        <label htmlFor="login">Email ou username</label>
+                        <label htmlFor="email">Email</label>
                         <input
-                            id="login"
-                            type="text"
-                            placeholder="Email ou username"
-                            value={login}
-                            onChange={(e) => setLogin(e.target.value)}
+                            id="email"
+                            type="email"
+                            placeholder="email@exemplo.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                         />
                     </div>
@@ -96,6 +93,7 @@ function LoginPage() {
                             required
                         />
                     </div>
+
                     <button
                         type="submit"
                         className="login-btn"
@@ -109,7 +107,7 @@ function LoginPage() {
                             {error}
                         </p>
                     )}
-                </form>              
+                </form>
             </div>
         </div>
     )
