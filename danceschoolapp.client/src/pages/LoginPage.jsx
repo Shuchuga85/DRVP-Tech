@@ -109,11 +109,7 @@ function LoginPage() {
                             {error}
                         </p>
                     )}
-                </form>
-
-                <a href="#" className="forgot-password">
-                    Recuperar palavra-passe
-                </a>
+                </form>              
             </div>
         </div>
     )
