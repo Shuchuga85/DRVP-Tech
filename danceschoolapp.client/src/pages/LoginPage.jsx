@@ -1,14 +1,15 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import './LoginPage.css'
+import '../styles/LoginPage.css'
 import logo from '../assets/logo-entartes.png'
+import { useAuth } from '../context/AuthContext'
 
 function LoginPage() {
-    const [login, setLogin] = useState('')
+    const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
-
+    const { refreshSession } = useAuth()
     const navigate = useNavigate()
 
     const handleSubmit = async (e) => {
@@ -22,10 +23,10 @@ function LoginPage() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
                 body: JSON.stringify({
-                    email: login.includes('@') ? login : null,
-                    username: login.includes('@') ? null : login,
-                    password,
+                    email: email,
+                    password: password,
                 }),
             })
 
@@ -37,10 +38,9 @@ function LoginPage() {
 
             console.log('Login OK:', data)
 
-            // guardar token
-            localStorage.setItem('token', data.Token)
+            await refreshSession()
 
-            // guardar user
+            // guardar user (opcional)
             localStorage.setItem(
                 'user',
                 JSON.stringify({
@@ -50,7 +50,6 @@ function LoginPage() {
                 })
             )
 
-            // redirecionar para homepage
             navigate('/')
         } catch (err) {
             console.error(err)
@@ -68,15 +67,16 @@ function LoginPage() {
                 <h1>Iniciar sessão</h1>
 
                 <form onSubmit={handleSubmit} className="login-form">
-                    {/* LOGIN (email ou username) */}
+
+                    {/* EMAIL */}
                     <div className="form-group">
-                        <label htmlFor="login">Email ou utilizador</label>
+                        <label htmlFor="email">Email</label>
                         <input
-                            id="login"
-                            type="text"
-                            placeholder="Email ou nome de utilizador"
-                            value={login}
-                            onChange={(e) => setLogin(e.target.value)}
+                            id="email"
+                            type="email"
+                            placeholder="email@exemplo.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                         />
                     </div>
@@ -94,7 +94,6 @@ function LoginPage() {
                         />
                     </div>
 
-                    {/* BOTÃO */}
                     <button
                         type="submit"
                         className="login-btn"
@@ -103,17 +102,12 @@ function LoginPage() {
                         {loading ? 'A entrar...' : 'Entrar'}
                     </button>
 
-                    {/* ERRO */}
                     {error && (
                         <p style={{ color: 'red', marginTop: '12px' }}>
                             {error}
                         </p>
                     )}
                 </form>
-
-                <a href="#" className="forgot-password">
-                    Recuperar palavra-passe
-                </a>
             </div>
         </div>
     )

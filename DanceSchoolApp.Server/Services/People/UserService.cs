@@ -1,7 +1,9 @@
 ﻿using DanceSchoolApp.Server.Data;
 using DanceSchoolApp.Server.DTOs.People;
 using DanceSchoolApp.Server.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 
 namespace DanceSchoolApp.Server.Services.People
@@ -9,10 +11,14 @@ namespace DanceSchoolApp.Server.Services.People
     public class UserService
     {
         private readonly AppDbContext _context;
+        private readonly EmailService _emailService;
+        private readonly ILogger<UserService> _logger;
 
-        public UserService(AppDbContext context)
+        public UserService(AppDbContext context, EmailService emailService, ILogger<UserService> logger)
         {
             _context = context;
+            _emailService = emailService;
+            _logger = logger;
         }
 
         // ─── Queries ──────────────────────────────────────────────────────────
@@ -112,7 +118,7 @@ namespace DanceSchoolApp.Server.Services.People
 
             Role? role = null;
 
-            if (request.FirstRole is not null)
+            if (request.FirstRole is not null) 
             {
                 role = await _context.Roles
                     .FirstOrDefaultAsync(r => r.RoleId == request.FirstRole);
@@ -121,11 +127,13 @@ namespace DanceSchoolApp.Server.Services.People
                     throw new KeyNotFoundException($"Role with id {request.FirstRole} was not found.");
             }
 
+            string generatedPassword = Guid.NewGuid().ToString("N")[..8];
+
             var user = new User
             {
                 Username = request.Username,
                 Email = request.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(generatedPassword),
                 IsActive = true,
                 CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow),
                 PersonInfo = request.PersonInfo is null ? null : new PersonInfo
@@ -146,6 +154,16 @@ namespace DanceSchoolApp.Server.Services.People
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
+            try
+            {
+                string roleName = role?.RoleName ?? "Utilizador";
+                await _emailService.SendWelcomeEmailAsync(user.Email, roleName, generatedPassword);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "O utilizador {Email} foi criado com ID {Id}, mas o email de boas-vindas falhou. Pass: {Pass}", user.Email, user.UserId, generatedPassword);
+            }
+
             return user.UserId;
         }
 
@@ -158,5 +176,8 @@ namespace DanceSchoolApp.Server.Services.People
             if (rowsAffected == 0)
                 throw new KeyNotFoundException($"User with id {userId} was not found.");
         }
+
+
+
     }
 }

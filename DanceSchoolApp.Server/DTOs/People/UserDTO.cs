@@ -46,9 +46,6 @@ namespace DanceSchoolApp.Server.DTOs.People
         public string Email { get; set; } = null!;
 
         [Required]
-        [MinLength(8, ErrorMessage = "Password must be at least 8 characters.")]
-        public string Password { get; set; } = null!;
-
         public byte? FirstRole { get; set; } = null;
 
         public PersonRequest? PersonInfo { get; set; } = null;

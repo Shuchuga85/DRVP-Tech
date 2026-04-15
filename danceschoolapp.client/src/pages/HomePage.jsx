@@ -9,7 +9,6 @@ import '../App.css'
 function HomePage() {
     return (
         <>
-            <Navbar />
             <Hero />
             <Features />
             <About />
