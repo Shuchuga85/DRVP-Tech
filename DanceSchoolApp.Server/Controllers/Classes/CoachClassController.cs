@@ -83,7 +83,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
         // ─── GET /api/coachclasses/status/{status} ─────────────────────────────
         // Staff use — filter classes by status.
         // Status values: 0=Requested, 1=Approved, 2=Rejected,
-        //                3=Cancelled, 4=Finished, 5=Validated, 6=Pending
+        //                3=Cancelled, 4=Finished, 5=Validated, 6=Pending, 7=StaffApproved
         [Authorize(Roles = "staff")]
         [HttpGet("status/{status}")]
         public async Task<IActionResult> GetByStatus(byte status)
@@ -91,7 +91,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
             if (!Enum.IsDefined(typeof(CoachClassStatus), status))
                 return BadRequest($"Invalid status value '{status}'. " +
                     "Valid values: 0=Requested, 1=Approved, 2=Rejected, " +
-                    "3=Cancelled, 4=Finished, 5=Validated, 6=Pending.");
+                    "3=Cancelled, 4=Finished, 5=Validated, 6=Pending, 7=StaffApproved.");
 
             try
             {
@@ -201,15 +201,15 @@ namespace DanceSchoolApp.Server.Controllers.Classes
 
         private bool IsStaff() => User.IsInRole("staff");
 
-        // ─── PATCH /api/coachclasses/{id}/approve ─────────────────────────────
-        // Staff use — transitions Requested → Approved.
+        // ─── PATCH /api/coachclasses/{id}/staff-approve ───────────────────────
+        // Staff use — transitions Requested → StaffApproved. Notifies coach.
         [Authorize(Roles = "staff")]
-        [HttpPatch("{id}/approve")]
-        public async Task<IActionResult> Approve(int id)
+        [HttpPatch("{id}/staff-approve")]
+        public async Task<IActionResult> StaffApprove(int id)
         {
             try
             {
-                await _coachClassService.ApproveAsync(id);
+                await _coachClassService.StaffApproveAsync(id);
                 return NoContent();
             }
             catch (KeyNotFoundException ex)
@@ -224,6 +224,41 @@ namespace DanceSchoolApp.Server.Controllers.Classes
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
+        }
+
+        // ─── PATCH /api/coachclasses/{id}/coach-accept ────────────────────────
+        // Coach use — transitions StaffApproved → Approved. Notifies parent + staff.
+        [Authorize(Roles = "coach")]
+        [HttpPatch("{id}/coach-accept")]
+        public async Task<IActionResult> CoachAccept(int id)
+        {
+            try
+            {
+                await _coachClassService.CoachAcceptAsync(id, GetUserId());
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            catch (UnauthorizedAccessException) { return Forbid(); }
+            catch (InvalidOperationException ex) { return Conflict(ex.Message); }
+            catch (Exception ex) { return StatusCode(500, ex.Message); }
+        }
+
+        // ─── PATCH /api/coachclasses/{id}/coach-reject ────────────────────────
+        // Coach use — transitions StaffApproved → Rejected. Notifies parent + staff.
+        [Authorize(Roles = "coach")]
+        [HttpPatch("{id}/coach-reject")]
+        public async Task<IActionResult> CoachRejectClass(int id,
+            [FromBody] CoachClassCoachRejectRequest? request)
+        {
+            try
+            {
+                await _coachClassService.CoachRejectClassAsync(id, GetUserId(), request?.Reason);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            catch (UnauthorizedAccessException) { return Forbid(); }
+            catch (InvalidOperationException ex) { return Conflict(ex.Message); }
+            catch (Exception ex) { return StatusCode(500, ex.Message); }
         }
 
         // ─── PATCH /api/coachclasses/{id}/reject ──────────────────────────────

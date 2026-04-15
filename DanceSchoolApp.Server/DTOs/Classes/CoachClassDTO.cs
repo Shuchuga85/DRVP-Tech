@@ -5,13 +5,14 @@ namespace DanceSchoolApp.Server.DTOs.Classes
     // ─── Status enum ──────────────────────────────────────────────────────────
     public enum CoachClassStatus : byte
     {
-        Requested = 0,
-        Approved = 1,
-        Rejected = 2,
-        Cancelled = 3,
-        Finished = 4,
-        Validated = 5,
-        Pending = 6   // validation issue: 48h expired or responses conflict
+        Requested     = 0,
+        Approved      = 1,  // coach accepted
+        Rejected      = 2,
+        Cancelled     = 3,
+        Finished      = 4,
+        Validated     = 5,
+        Pending       = 6,  // awaiting staff final sign-off
+        StaffApproved = 7   // staff approved, awaiting coach acceptance
     }
 
     // ─── Responses ────────────────────────────────────────────────────────────
@@ -90,9 +91,6 @@ namespace DanceSchoolApp.Server.DTOs.Classes
         public int ModalityId { get; set; }
 
         [Required]
-        public int StudioId { get; set; }
-
-        [Required]
         public int CoachId { get; set; }
 
         [Required]
@@ -138,6 +136,12 @@ namespace DanceSchoolApp.Server.DTOs.Classes
     // Staff-only reject request — reason is optional but useful for
     // the notification sent back to the parent.
     public class CoachClassRejectRequest
+    {
+        [MaxLength(256)]
+        public string? Reason { get; set; }
+    }
+
+    public class CoachClassCoachRejectRequest
     {
         [MaxLength(256)]
         public string? Reason { get; set; }

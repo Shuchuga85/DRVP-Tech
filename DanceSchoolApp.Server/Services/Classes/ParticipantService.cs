@@ -144,6 +144,21 @@ namespace DanceSchoolApp.Server.Services.Classes
             _context.Participants.Add(participant);
             await _context.SaveChangesAsync();
 
+            // Notify coach that a new student joined
+            var classInfo = await _context.CoachClasses
+                .FirstOrDefaultAsync(c => c.ClassId == request.ClassId);
+
+            if (classInfo is not null)
+            {
+                await _notificationService.SendAsync(
+                    userId: classInfo.IdCoach,
+                    title: "New Student Joined",
+                    message: $"A student has joined your class on {classInfo.StartDatetime:dd/MM/yyyy HH:mm}.",
+                    type: NotificationType.ClassUpdate,
+                    entityType: "CoachClass",
+                    entityId: request.ClassId);
+            }
+
             return participant.ParticipantId;
         }
 
