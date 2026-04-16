@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
-import AppLayout from './components/AppLayout'
-import ProtectedRoute from './components/ProtectedRoute'
+import AppLayout from './layouts/AppLayout'
+import ProtectedRoute from './layouts/ProtectedRoute'
 import DashboardLayout from './layouts/DashboardLayout'
 
 import HomePage from './pages/public/HomePage'
@@ -8,6 +8,7 @@ import LoginPage from './pages/public/LoginPage'
 import UnauthorizedPage from './pages/public/UnauthorizedPage'
 
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
+import AdminUsersPage from './pages/admin/AdminUsersPage'
 import StaffDashboardPage from './pages/direction/DirecaoDashboardPage'
 import CoachDashboardPage from './pages/prof/ProfessorDashboardPage'
 import ParentDashboardPage from './pages/parent/EncarregadoDashboardPage'
@@ -35,6 +36,7 @@ function App() {
                 }
             >
                 <Route path="/admin" element={<AdminDashboardPage />} />
+                <Route path="/admin/utilizadores" element={<AdminUsersPage />} />
             </Route>
 
             {/* STAFF */}

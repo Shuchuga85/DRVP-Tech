@@ -136,7 +136,7 @@ namespace DanceSchoolApp.Server.Controllers.People
 
         // ─── PATCH /api/users/{id}/activate ───────────────────────────────────
         [HttpPatch("{id}/activate")]
-        [Authorize(Roles = "staff")]
+        [Authorize(Roles = "staff,admin")]
         public async Task<IActionResult> ActivateUser(int id)
         {
             try
@@ -159,7 +159,7 @@ namespace DanceSchoolApp.Server.Controllers.People
             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         // ─── PATCH /api/users/{id}/deactivate ─────────────────────────────────
-        [Authorize(Roles = "staff")]
+        [Authorize(Roles = "staff,admin")]
         [HttpPatch("{id}/deactivate")]
         public async Task<IActionResult> DeactivateUser(int id)
         {

@@ -38,7 +38,6 @@ function LoginPage() {
             const data = await response.json()
 
             console.log('Login OK:', data)
-
             await refreshSession()
 
             const roleNames = (data.roles || []).map((role) =>
