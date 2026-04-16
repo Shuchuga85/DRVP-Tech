@@ -18,6 +18,39 @@ namespace DanceSchoolApp.Server.Services.People
 
         // ─── Queries ──────────────────────────────────────────────────────────
 
+        public async Task<List<CoachAvailableResponse>> GetAvailableCoachesAsync()
+        {
+            var coaches = await _context.Coaches
+                .Include(c => c.CoachNavigation)
+                    .ThenInclude(u => u.PersonInfo)
+                .Include(c => c.IdModalities)
+                .Where(c => c.CoachNavigation.IsActive)
+                .ToListAsync();
+
+            return coaches
+                .Select(c =>
+                {
+                    var p = c.CoachNavigation.PersonInfo;
+                    return new CoachAvailableResponse
+                    {
+                        CoachId    = c.CoachId,
+                        Name       = p is not null
+                            ? $"{p.FirstName} {p.LastName}".Trim()
+                            : c.CoachNavigation.Username,
+                        Modalities = c.IdModalities
+                            .Select(m => new ModalitySummary
+                            {
+                                ModalityId = m.ModalityId,
+                                Name       = m.Name
+                            })
+                            .OrderBy(m => m.Name)
+                            .ToList()
+                    };
+                })
+                .OrderBy(r => r.Name)
+                .ToList();
+        }
+
         public async Task<List<CoachListResponse>> GetCoachsAsync()
         {
             return await _context.Users

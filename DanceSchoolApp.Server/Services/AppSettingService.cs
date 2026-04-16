@@ -13,9 +13,10 @@ namespace DanceSchoolApp.Server.Services
         private static readonly Dictionary<string, string> _defaults = new()
         {
             ["validation_window_hours"] = "48",
-            ["class_price_per_30min"]   = "15.00",
-            ["class_price_per_60min"]   = "25.00",
-            ["max_participants"]         = "8"
+            ["class_price_weekday"]     = "36.00",
+            ["class_price_weekend"]     = "43.20",
+            ["coach_rate_per_hour"]     = "35.00",
+            ["max_participants"]        = "8"
         };
 
         public AppSettingService(AppDbContext context)

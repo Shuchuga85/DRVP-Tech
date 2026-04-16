@@ -1,4 +1,5 @@
 using DanceSchoolApp.Server.Services;
+using DanceSchoolApp.Server.Services.People;
 using DanceSchoolApp.Server.Services.Scheduling;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,13 +14,16 @@ namespace DanceSchoolApp.Server.Controllers
     {
         private readonly ParentPortalService _parentService;
         private readonly BookingService      _bookingService;
+        private readonly CoachService        _coachService;
 
         public ParentPortalController(
             ParentPortalService parentService,
-            BookingService      bookingService)
+            BookingService      bookingService,
+            CoachService        coachService)
         {
             _parentService  = parentService;
             _bookingService = bookingService;
+            _coachService   = coachService;
         }
 
         // ─── GET /api/ee/dashboard ────────────────────────────────────────────
@@ -215,6 +219,26 @@ namespace DanceSchoolApp.Server.Controllers
                     categoryId, maxPrice, search, page, pageSize);
 
                 if (result.TotalCount == 0)
+                    return NoContent();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        // ─── GET /api/ee/coaches ──────────────────────────────────────────────
+        // Slim coach list for booking dropdowns (active coaches + modalities only).
+        [HttpGet("coaches")]
+        public async Task<IActionResult> GetCoaches()
+        {
+            try
+            {
+                var result = await _coachService.GetAvailableCoachesAsync();
+
+                if (!result.Any())
                     return NoContent();
 
                 return Ok(result);

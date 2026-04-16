@@ -20,6 +20,13 @@
         public List<ModalitySummary> Modalities { get; set; } = new();
     }
 
+    public class CoachAvailableResponse
+    {
+        public int    CoachId    { get; set; }
+        public string Name       { get; set; } = null!;
+        public List<ModalitySummary> Modalities { get; set; } = new();
+    }
+
     public class CoachListResponse
     {
         public int CoachId { get; set; }

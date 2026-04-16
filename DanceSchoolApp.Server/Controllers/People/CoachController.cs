@@ -18,6 +18,27 @@ namespace DanceSchoolApp.Server.Controllers.People
             _CoachService = CoachService;
         }
 
+        // ─── GET /api/coaches/available ───────────────────────────────────────
+        // Active coaches with their modalities — slim read for booking dropdowns.
+        [Authorize(Roles = "parent,staff")]
+        [HttpGet("available")]
+        public async Task<IActionResult> GetAvailable()
+        {
+            try
+            {
+                var result = await _CoachService.GetAvailableCoachesAsync();
+
+                if (!result.Any())
+                    return NoContent();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
         // ─── GET /api/coaches/me ───────────────────────────────────────────────
         [Authorize(Roles = "coach")]
         [HttpGet("me")]
