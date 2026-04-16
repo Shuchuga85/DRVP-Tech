@@ -9,6 +9,7 @@ function LoginPage() {
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
+
     const { refreshSession } = useAuth()
     const navigate = useNavigate()
 
@@ -37,20 +38,47 @@ function LoginPage() {
             const data = await response.json()
 
             console.log('Login OK:', data)
-
+            console.log('Roles:', data.roles)
             await refreshSession()
+
+            const roleNames = (data.roles || []).map((role) => {
+                if (typeof role === 'string') {
+                    return role.toLowerCase()
+                }
+
+                if (role.roleName) {
+                    return role.roleName.toLowerCase()
+                }
+
+                if (role.RoleName) {
+                    return role.RoleName.toLowerCase()
+                }
+
+                return ''
+            })
 
             // guardar user (opcional)
             localStorage.setItem(
                 'user',
                 JSON.stringify({
-                    id: data.UserId,
-                    username: data.Username,
-                    roles: data.Roles,
+                    id: data.userId,
+                    username: data.username,
+                    email: data.email,
+                    roles: data.roles,
                 })
             )
 
-            navigate('/')
+            if (roleNames.includes('admin')) {
+                navigate('/admin')
+            } else if (roleNames.includes('staff')) {
+                navigate('/staff')
+            } else if (roleNames.includes('coach')) {
+                navigate('/coach')
+            } else if (roleNames.includes('parent')) {
+                navigate('/parent')
+            } else {
+                navigate('/')
+            }
         } catch (err) {
             console.error(err)
             setError(err.message || 'Erro no login')
@@ -67,8 +95,6 @@ function LoginPage() {
                 <h1>Iniciar sessão</h1>
 
                 <form onSubmit={handleSubmit} className="login-form">
-
-                    {/* EMAIL */}
                     <div className="form-group">
                         <label htmlFor="email">Email</label>
                         <input
@@ -81,7 +107,6 @@ function LoginPage() {
                         />
                     </div>
 
-                    {/* PASSWORD */}
                     <div className="form-group">
                         <label htmlFor="password">Palavra-passe</label>
                         <input

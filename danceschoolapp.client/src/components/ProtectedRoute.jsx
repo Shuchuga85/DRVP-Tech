@@ -12,13 +12,32 @@ function ProtectedRoute({ children, allowedRoles = [] }) {
         return <Navigate to="/login" replace />
     }
 
-    if (allowedRoles.length > 0) {
-        const userRoles = user?.roles || []
-        const hasPermission = allowedRoles.some(role => userRoles.includes(role))
-
-        if (!hasPermission) {
-            return <Navigate to="/unauthorized" replace />
+    const userRoles = (user?.roles || []).map((role) => {
+        if (typeof role === 'string') {
+            return role.toLowerCase()
         }
+
+        if (role?.roleName) {
+            return role.roleName.toLowerCase()
+        }
+
+        if (role?.RoleName) {
+            return role.RoleName.toLowerCase()
+        }
+
+        return ''
+    })
+
+    const normalizedAllowedRoles = allowedRoles.map((role) =>
+        role.toLowerCase()
+    )
+
+    const hasAccess = normalizedAllowedRoles.some((role) =>
+        userRoles.includes(role)
+    )
+
+    if (!hasAccess) {
+        return <Navigate to="/unauthorized" replace />
     }
 
     return children
