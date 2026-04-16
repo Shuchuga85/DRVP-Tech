@@ -2,6 +2,14 @@
 
 namespace DanceSchoolApp.Server.DTOs.Classes
 {
+    // ─── Coach validation status enum ────────────────────────────────────────
+    public enum CoachValidationStatus : byte
+    {
+        Pending   = 0,
+        Confirmed = 1,
+        Denied    = 2
+    }
+
     // ─── Status enum ──────────────────────────────────────────────────────────
     public enum CoachClassStatus : byte
     {
@@ -21,6 +29,7 @@ namespace DanceSchoolApp.Server.DTOs.Classes
     {
         public int ClassId { get; set; }
         public CoachClassStatus Status { get; set; }
+        public CoachValidationStatus CoachValidationStatus { get; set; }
         public DateTime StartDatetime { get; set; }
         public DateTime EndDatetime { get; set; }
         public string ModalityName { get; set; } = null!;
@@ -35,6 +44,7 @@ namespace DanceSchoolApp.Server.DTOs.Classes
     {
         public int ClassId { get; set; }
         public CoachClassStatus Status { get; set; }
+        public CoachValidationStatus CoachValidationStatus { get; set; }
         public DateTime StartDatetime { get; set; }
         public DateTime EndDatetime { get; set; }
 
@@ -145,5 +155,11 @@ namespace DanceSchoolApp.Server.DTOs.Classes
     {
         [MaxLength(256)]
         public string? Reason { get; set; }
+    }
+
+    public class CoachValidateRequest
+    {
+        [Required]
+        public bool DidTeach { get; set; }
     }
 }

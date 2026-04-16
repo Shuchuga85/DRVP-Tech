@@ -9,6 +9,8 @@ public partial class Modality
 
     public string Name { get; set; } = null!;
 
+    public string? Description { get; set; }
+
     public bool IsActive { get; set; }
 
     public virtual ICollection<CoachClass> CoachClasses { get; set; } = new List<CoachClass>();

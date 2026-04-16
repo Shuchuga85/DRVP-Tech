@@ -24,6 +24,7 @@ namespace DanceSchoolApp.Server.Services.School
                 {
                     ModalityId = m.ModalityId,
                     Name = m.Name,
+                    Description = m.Description,
                     IsActive = m.IsActive
                 })
                 .ToListAsync();
@@ -43,6 +44,7 @@ namespace DanceSchoolApp.Server.Services.School
             {
                 ModalityId = modality.ModalityId,
                 Name = modality.Name,
+                Description = modality.Description,
                 IsActive = modality.IsActive,
                 StudioCount = modality.IdStudios.Count,
                 CoachCount = modality.IdCoaches.Count
@@ -62,6 +64,7 @@ namespace DanceSchoolApp.Server.Services.School
             var modality = new Modality
             {
                 Name = request.Name,
+                Description = request.Description,
                 IsActive = true
             };
 
@@ -86,6 +89,53 @@ namespace DanceSchoolApp.Server.Services.School
                 throw new InvalidOperationException($"Another modality named '{request.Name}' already exists.");
 
             modality.Name = request.Name;
+            modality.Description = request.Description;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task AssignCoachAsync(int modalityId, int coachId)
+        {
+            bool modalityActive = await _context.Modalities
+                .AnyAsync(m => m.ModalityId == modalityId && m.IsActive);
+
+            if (!modalityActive)
+                throw new KeyNotFoundException($"Modality with id {modalityId} was not found or is inactive.");
+
+            bool coachExists = await _context.Coaches
+                .AnyAsync(c => c.CoachId == coachId);
+
+            if (!coachExists)
+                throw new KeyNotFoundException($"Coach with id {coachId} was not found.");
+
+            var modality = await _context.Modalities
+                .Include(m => m.IdCoaches)
+                .FirstAsync(m => m.ModalityId == modalityId);
+
+            bool alreadyAssigned = modality.IdCoaches.Any(c => c.CoachId == coachId);
+            if (alreadyAssigned)
+                throw new InvalidOperationException(
+                    $"Coach {coachId} is already assigned to modality {modalityId}.");
+
+            var coach = await _context.Coaches.FindAsync(coachId);
+            modality.IdCoaches.Add(coach!);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UnassignCoachAsync(int modalityId, int coachId)
+        {
+            var modality = await _context.Modalities
+                .Include(m => m.IdCoaches)
+                .FirstOrDefaultAsync(m => m.ModalityId == modalityId);
+
+            if (modality is null)
+                throw new KeyNotFoundException($"Modality with id {modalityId} was not found.");
+
+            var coach = modality.IdCoaches.FirstOrDefault(c => c.CoachId == coachId);
+            if (coach is null)
+                throw new KeyNotFoundException(
+                    $"Coach {coachId} is not assigned to modality {modalityId}.");
+
+            modality.IdCoaches.Remove(coach);
             await _context.SaveChangesAsync();
         }
 

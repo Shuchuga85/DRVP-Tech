@@ -145,5 +145,51 @@ namespace DanceSchoolApp.Server.Controllers.School
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
+        // ─── POST /api/modalities/{id}/coaches/{coachId} ──────────────────────
+        // Staff only — assign a coach to this modality.
+        [Authorize(Roles = "staff")]
+        [HttpPost("{id}/coaches/{coachId}")]
+        public async Task<IActionResult> AssignCoach(int id, int coachId)
+        {
+            try
+            {
+                await _modalityService.AssignCoachAsync(id, coachId);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        // ─── DELETE /api/modalities/{id}/coaches/{coachId} ────────────────────
+        // Staff only — unassign a coach from this modality.
+        [Authorize(Roles = "staff")]
+        [HttpDelete("{id}/coaches/{coachId}")]
+        public async Task<IActionResult> UnassignCoach(int id, int coachId)
+        {
+            try
+            {
+                await _modalityService.UnassignCoachAsync(id, coachId);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
     }
 }

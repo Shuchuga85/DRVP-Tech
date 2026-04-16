@@ -17,15 +17,17 @@ public partial class Item
 
     public int? IdCategory { get; set; }
 
-    public int? IdContact { get; set; }
+    public string? ContactPhone { get; set; }
+
+    public string? ContactEmail { get; set; }
+
+    public string? ContactAddress { get; set; }
 
     public DateOnly? CreatedAt { get; set; }
 
     public bool IsActive { get; set; }
 
     public virtual ItemCategory? IdCategoryNavigation { get; set; }
-
-    public virtual ItemContact? IdContactNavigation { get; set; }
 
     public virtual User? IdOwnerNavigation { get; set; }
 

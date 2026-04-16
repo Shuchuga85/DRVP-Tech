@@ -156,33 +156,6 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
         }
 
         // ═══════════════════════════════════════════════════════════════════════
-        // CONTACT  –  /api/items/{id}/contact
-        // ═══════════════════════════════════════════════════════════════════════
-
-        // ─── PUT /api/items/{id}/contact ──────────────────────────────────────
-        [HttpPut("{id}/contact")]
-        [Authorize(Roles = "staff")]
-        public async Task<IActionResult> UpsertContact(int id, [FromBody] ItemContactUpsertRequest request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            try
-            {
-                await _itemService.UpsertContactAsync(id, request);
-                return NoContent();
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
-        }
-
-        // ═══════════════════════════════════════════════════════════════════════
         // IMAGES  –  /api/items/{id}/images
         // ═══════════════════════════════════════════════════════════════════════
 

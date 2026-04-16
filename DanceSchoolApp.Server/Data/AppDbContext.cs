@@ -28,8 +28,6 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<ItemCategory> ItemCategories { get; set; }
 
-    public virtual DbSet<ItemContact> ItemContacts { get; set; }
-
     public virtual DbSet<ItemImage> ItemImages { get; set; }
 
     public virtual DbSet<ItemRequisition> ItemRequisitions { get; set; }
@@ -171,6 +169,9 @@ public partial class AppDbContext : DbContext
             entity.HasIndex(e => new { e.IdStudio, e.StartDatetime, e.EndDatetime }, "IX_CoachClass_Studio_Time");
 
             entity.Property(e => e.ClassId).HasColumnName("class_id");
+            entity.Property(e => e.CoachValidationStatus)
+                  .HasDefaultValue((byte)0)
+                  .HasColumnName("coach_validation_status");
             entity.Property(e => e.CoachValidatedAt).HasColumnName("coach_validated_at");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
@@ -247,20 +248,21 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("description");
             entity.Property(e => e.FromSchool).HasColumnName("from_school");
             entity.Property(e => e.IdCategory).HasColumnName("id_category");
-            entity.Property(e => e.IdContact).HasColumnName("id_contact");
             entity.Property(e => e.IdOwner).HasColumnName("id_owner");
             entity.Property(e => e.IsActive).HasColumnName("is_active");
             entity.Property(e => e.Name)
                 .HasMaxLength(128)
                 .HasColumnName("name");
+            entity.Property(e => e.ContactPhone)
+                .HasMaxLength(20).IsUnicode(false).HasColumnName("contact_phone");
+            entity.Property(e => e.ContactEmail)
+                .HasMaxLength(254).HasColumnName("contact_email");
+            entity.Property(e => e.ContactAddress)
+                .HasMaxLength(256).HasColumnName("contact_address");
 
             entity.HasOne(d => d.IdCategoryNavigation).WithMany(p => p.Items)
                 .HasForeignKey(d => d.IdCategory)
                 .HasConstraintName("FK__Item__id_categor__5CA1C101");
-
-            entity.HasOne(d => d.IdContactNavigation).WithMany(p => p.Items)
-                .HasForeignKey(d => d.IdContact)
-                .HasConstraintName("FK__Item__id_contact__5D95E53A");
 
             entity.HasOne(d => d.IdOwnerNavigation).WithMany(p => p.Items)
                 .HasForeignKey(d => d.IdOwner)
@@ -280,25 +282,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.IsActive)
                 .HasDefaultValue(true)
                 .HasColumnName("is_active");
-        });
-
-        modelBuilder.Entity<ItemContact>(entity =>
-        {
-            entity.HasKey(e => e.IcontactId).HasName("PK__Item_Con__D578A923F0629269");
-
-            entity.ToTable("Item_Contact");
-
-            entity.Property(e => e.IcontactId).HasColumnName("icontact_id");
-            entity.Property(e => e.Address)
-                .HasMaxLength(256)
-                .HasColumnName("address");
-            entity.Property(e => e.Email)
-                .HasMaxLength(254)
-                .HasColumnName("email");
-            entity.Property(e => e.PhoneNumber)
-                .HasMaxLength(20)
-                .IsUnicode(false)
-                .HasColumnName("phone_number");
         });
 
         modelBuilder.Entity<ItemImage>(entity =>
@@ -390,6 +373,9 @@ public partial class AppDbContext : DbContext
             entity.ToTable("Modality");
 
             entity.Property(e => e.ModalityId).HasColumnName("modality_id");
+            entity.Property(e => e.Description)
+                .HasMaxLength(256)
+                .HasColumnName("description");
             entity.Property(e => e.IsActive)
                 .HasDefaultValue(true)
                 .HasColumnName("is_active");

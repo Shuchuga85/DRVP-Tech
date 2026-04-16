@@ -70,6 +70,7 @@ namespace DanceSchoolApp.Server.Services.Classes
             {
                 ClassId = coachClass.ClassId,
                 Status = (CoachClassStatus)coachClass.Status,
+                CoachValidationStatus = (CoachValidationStatus)coachClass.CoachValidationStatus,
                 StartDatetime = coachClass.StartDatetime,
                 EndDatetime = coachClass.EndDatetime,
                 ModalityId = coachClass.IdModality,
@@ -541,9 +542,10 @@ namespace DanceSchoolApp.Server.Services.Classes
 
         // ─── Validation workflow ──────────────────────────────────────────────
 
-        public async Task CoachValidateAsync(int classId, int coachUserId)
+        public async Task CoachValidateAsync(int classId, int coachUserId, bool didTeach)
         {
             var coachClass = await _context.CoachClasses
+                .Include(c => c.Participants)
                 .FirstOrDefaultAsync(c => c.ClassId == classId);
 
             if (coachClass is null)
@@ -556,11 +558,60 @@ namespace DanceSchoolApp.Server.Services.Classes
                 throw new InvalidOperationException(
                     "Coach validation is only available for Finished classes.");
 
-            if (coachClass.CoachValidatedAt is not null)
+            if (coachClass.CoachValidationStatus != (byte)CoachValidationStatus.Pending)
                 throw new InvalidOperationException(
                     "Coach has already validated this class.");
 
+            coachClass.CoachValidationStatus = didTeach
+                ? (byte)CoachValidationStatus.Confirmed
+                : (byte)CoachValidationStatus.Denied;
             coachClass.CoachValidatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            var notifTitle = didTeach ? "Coach Confirmed Class" : "Coach Denied Teaching Class";
+            var notifMsg = didTeach
+                ? $"Coach has confirmed class id {classId} was taught."
+                : $"Coach has denied teaching class id {classId}.";
+
+            var staffIds = await _context.Users
+                .Include(u => u.IdRoles)
+                .Where(u => u.IdRoles.Any(r => r.RoleId == 1) && u.IsActive)
+                .Select(u => u.UserId)
+                .ToListAsync();
+
+            foreach (var staffId in staffIds)
+            {
+                await _notificationService.SendAsync(
+                    userId: staffId,
+                    title: notifTitle,
+                    message: notifMsg,
+                    type: NotificationType.ClassUpdate,
+                    entityType: "CoachClass",
+                    entityId: classId);
+            }
+
+            // If all participants have already responded, advance to Pending now.
+            await TryAdvanceClassToStaffReviewAsync(coachClass);
+        }
+
+        // Called after coach validates — mirrors the check in ParticipantService.
+        // Advances to Pending only when BOTH the coach has responded AND all
+        // participants have responded.
+        private async Task TryAdvanceClassToStaffReviewAsync(CoachClass coachClass)
+        {
+            if (coachClass.Status != (byte)CoachClassStatus.Finished) return;
+            if (coachClass.CoachValidationStatus == (byte)CoachValidationStatus.Pending) return;
+
+            var allParticipants = await _context.Participants
+                .Where(p => p.IdCoachClass == coachClass.ClassId)
+                .ToListAsync();
+
+            bool allResponded = allParticipants
+                .All(p => p.ValidationStatus != 0); // 0 = ParticipantValidationStatus.Pending
+
+            if (!allResponded) return;
+
+            coachClass.Status = (byte)CoachClassStatus.Pending;
             await _context.SaveChangesAsync();
 
             var staffIds = await _context.Users
@@ -573,11 +624,11 @@ namespace DanceSchoolApp.Server.Services.Classes
             {
                 await _notificationService.SendAsync(
                     userId: staffId,
-                    title: "Coach Confirmed Class",
-                    message: $"Coach has confirmed class id {classId} was taught.",
-                    type: NotificationType.ClassUpdate,
+                    title: "Class Ready for Validation",
+                    message: $"Coach and all participants have responded for class id {coachClass.ClassId}. Final staff sign-off required.",
+                    type: NotificationType.ValidationRequest,
                     entityType: "CoachClass",
-                    entityId: classId);
+                    entityId: coachClass.ClassId);
             }
         }
 
@@ -695,6 +746,7 @@ namespace DanceSchoolApp.Server.Services.Classes
             {
                 ClassId = c.ClassId,
                 Status = (CoachClassStatus)c.Status,
+                CoachValidationStatus = (CoachValidationStatus)c.CoachValidationStatus,
                 StartDatetime = c.StartDatetime,
                 EndDatetime = c.EndDatetime,
                 ModalityName = c.IdModalityNavigation.Name,
