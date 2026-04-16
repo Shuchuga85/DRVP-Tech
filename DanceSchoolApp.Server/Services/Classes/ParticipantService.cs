@@ -249,13 +249,17 @@ namespace DanceSchoolApp.Server.Services.Classes
 
             if (!allResponded) return;
 
-            // All participants have responded — move class to Pending for
-            // staff to review. Staff will then call the final validate endpoint.
+            // All participants have responded — check that coach has also responded
+            // before advancing to Pending for staff sign-off.
             var coachClass = await _context.CoachClasses
                 .FirstOrDefaultAsync(c => c.ClassId == classId);
 
             if (coachClass is null ||
                 coachClass.Status != (byte)CoachClassStatus.Finished)
+                return;
+
+            // Coach must have given a response (Confirmed or Denied) before advancing.
+            if (coachClass.CoachValidationStatus == (byte)CoachValidationStatus.Pending)
                 return;
 
             coachClass.Status = (byte)CoachClassStatus.Pending;

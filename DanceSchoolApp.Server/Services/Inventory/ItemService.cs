@@ -69,7 +69,6 @@ namespace DanceSchoolApp.Server.Services.Inventory
         {
             var item = await _context.Items
                 .Include(i => i.IdCategoryNavigation)
-                .Include(i => i.IdContactNavigation)
                 .Include(i => i.ItemImages)
                 .Include(i => i.ItemVariants)
                 .FirstOrDefaultAsync(i => i.ItemId == id);
@@ -84,20 +83,6 @@ namespace DanceSchoolApp.Server.Services.Inventory
 
         public async Task<int> CreateItemAsync(ItemCreateRequest request, int ownerUserId, bool fromSchool)
         {
-            ItemContact? contact = null;
-
-            if (request.Contact is not null)
-            {
-                contact = new ItemContact
-                {
-                    PhoneNumber = request.Contact.PhoneNumber,
-                    Email = request.Contact.Email,
-                    Address = request.Contact.Address
-                };
-                _context.ItemContacts.Add(contact);
-                await _context.SaveChangesAsync();
-            }
-
             var item = new Item
             {
                 Name = request.Name,
@@ -105,7 +90,9 @@ namespace DanceSchoolApp.Server.Services.Inventory
                 FromSchool = fromSchool,
                 IdOwner = ownerUserId,
                 IdCategory = request.IdCategory,
-                IdContact = contact?.IcontactId,
+                ContactPhone = request.ContactPhone,
+                ContactEmail = request.ContactEmail,
+                ContactAddress = request.ContactAddress,
                 CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow),
                 IsActive = true
             };
@@ -126,6 +113,9 @@ namespace DanceSchoolApp.Server.Services.Inventory
             if (request.Name is not null) item.Name = request.Name;
             if (request.Description is not null) item.Description = request.Description;
             if (request.IdCategory.HasValue) item.IdCategory = request.IdCategory;
+            if (request.ContactPhone is not null) item.ContactPhone = request.ContactPhone;
+            if (request.ContactEmail is not null) item.ContactEmail = request.ContactEmail;
+            if (request.ContactAddress is not null) item.ContactAddress = request.ContactAddress;
 
             await _context.SaveChangesAsync();
         }
@@ -138,39 +128,6 @@ namespace DanceSchoolApp.Server.Services.Inventory
 
             if (rows == 0)
                 throw new KeyNotFoundException($"Item with id {id} was not found.");
-        }
-
-        // ─── Contact ──────────────────────────────────────────────────────────────
-
-        public async Task UpsertContactAsync(int itemId, ItemContactUpsertRequest request)
-        {
-            var item = await _context.Items
-                .Include(i => i.IdContactNavigation)
-                .FirstOrDefaultAsync(i => i.ItemId == itemId);
-
-            if (item is null)
-                throw new KeyNotFoundException($"Item with id {itemId} was not found.");
-
-            if (item.IdContactNavigation is not null)
-            {
-                item.IdContactNavigation.PhoneNumber = request.PhoneNumber;
-                item.IdContactNavigation.Email = request.Email;
-                item.IdContactNavigation.Address = request.Address;
-            }
-            else
-            {
-                var contact = new ItemContact
-                {
-                    PhoneNumber = request.PhoneNumber,
-                    Email = request.Email,
-                    Address = request.Address
-                };
-                _context.ItemContacts.Add(contact);
-                await _context.SaveChangesAsync();
-                item.IdContact = contact.IcontactId;
-            }
-
-            await _context.SaveChangesAsync();
         }
 
         // ─── Images ───────────────────────────────────────────────────────────────
@@ -300,13 +257,9 @@ namespace DanceSchoolApp.Server.Services.Inventory
                 CategoryId = item.IdCategoryNavigation.CategoryId,
                 CatgName = item.IdCategoryNavigation.CatgName
             },
-            Contact = item.IdContactNavigation == null ? null : new ItemContactResponse
-            {
-                IcontactId = item.IdContactNavigation.IcontactId,
-                PhoneNumber = item.IdContactNavigation.PhoneNumber,
-                Email = item.IdContactNavigation.Email,
-                Address = item.IdContactNavigation.Address
-            },
+            ContactPhone = item.ContactPhone,
+            ContactEmail = item.ContactEmail,
+            ContactAddress = item.ContactAddress,
             Images = item.ItemImages.Select(img => new ItemImageResponse
             {
                 ImageId = img.ImageId,

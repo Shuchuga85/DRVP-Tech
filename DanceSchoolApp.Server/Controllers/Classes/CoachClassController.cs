@@ -340,14 +340,19 @@ namespace DanceSchoolApp.Server.Controllers.Classes
         }
 
         // ─── PATCH /api/coachclasses/{id}/coach-validate ──────────────────────
-        // Coach use — confirms they taught the class. Only available on Finished classes.
+        // Coach use — confirms or denies they taught the class.
+        // Only available on Finished classes.
         [Authorize(Roles = "coach")]
         [HttpPatch("{id}/coach-validate")]
-        public async Task<IActionResult> CoachValidate(int id)
+        public async Task<IActionResult> CoachValidate(int id,
+            [FromBody] CoachValidateRequest request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             try
             {
-                await _coachClassService.CoachValidateAsync(id, GetUserId());
+                await _coachClassService.CoachValidateAsync(id, GetUserId(), request.DidTeach);
                 return NoContent();
             }
             catch (KeyNotFoundException ex) { return NotFound(ex.Message); }

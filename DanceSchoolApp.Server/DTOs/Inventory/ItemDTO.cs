@@ -26,14 +26,6 @@ namespace DanceSchoolApp.Server.DTOs.Inventory
         public string? CatgName { get; set; }
     }
 
-    public class ItemContactResponse
-    {
-        public int IcontactId { get; set; }
-        public string? PhoneNumber { get; set; }
-        public string? Email { get; set; }
-        public string? Address { get; set; }
-    }
-
     // ─── Item Responses ──────────────────────────────────────────────────────────
 
     public class ItemListResponse
@@ -59,7 +51,9 @@ namespace DanceSchoolApp.Server.DTOs.Inventory
         public bool IsActive { get; set; }
         public DateOnly? CreatedAt { get; set; }
         public ItemCategorySummaryResponse? Category { get; set; }
-        public ItemContactResponse? Contact { get; set; }
+        public string? ContactPhone { get; set; }
+        public string? ContactEmail { get; set; }
+        public string? ContactAddress { get; set; }
         public List<ItemImageResponse> Images { get; set; } = new();
         public List<ItemVariantSummaryResponse> Variants { get; set; } = new();
     }
@@ -80,7 +74,15 @@ namespace DanceSchoolApp.Server.DTOs.Inventory
 
         public int? IdCategory { get; set; }
 
-        public ItemContactUpsertRequest? Contact { get; set; }
+        [MaxLength(20)]
+        public string? ContactPhone { get; set; }
+
+        [EmailAddress]
+        [MaxLength(254)]
+        public string? ContactEmail { get; set; }
+
+        [MaxLength(256)]
+        public string? ContactAddress { get; set; }
     }
 
     public class ItemUpdateRequest
@@ -92,6 +94,16 @@ namespace DanceSchoolApp.Server.DTOs.Inventory
         public string? Description { get; set; }
 
         public int? IdCategory { get; set; }
+
+        [MaxLength(20)]
+        public string? ContactPhone { get; set; }
+
+        [EmailAddress]
+        [MaxLength(254)]
+        public string? ContactEmail { get; set; }
+
+        [MaxLength(256)]
+        public string? ContactAddress { get; set; }
     }
 
     // ─── ItemVariant Responses ───────────────────────────────────────────────────
