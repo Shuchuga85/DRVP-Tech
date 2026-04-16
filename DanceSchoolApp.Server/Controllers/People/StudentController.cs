@@ -121,6 +121,30 @@ namespace DanceSchoolApp.Server.Controllers.People
             }
         }
 
+        // ─── PUT /api/students/{id} ───────────────────────────────────────────
+        // Parent use — updates PersonInfo fields only (does NOT reset AcceptanceStatus).
+        [Authorize(Roles = "parent")]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateStudentPersonInfo(
+            int id, [FromBody] StudentUpdateRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var student = await _studentService.GetStudentAsync(id);
+                if (student.ParentUserId != GetUserId())
+                    return Forbid();
+
+                await _studentService.UpdatePersonInfoAsync(id, request);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            catch (InvalidOperationException ex) { return Conflict(ex.Message); }
+            catch (Exception ex) { return StatusCode(500, ex.Message); }
+        }
+
         // ─── PATCH /api/students/{id} ──────────────────────────────────────────
         [Authorize(Roles = "staff,parent")]
         [HttpPatch("{id}")]

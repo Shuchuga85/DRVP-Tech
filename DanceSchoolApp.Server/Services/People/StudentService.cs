@@ -153,6 +153,30 @@ namespace DanceSchoolApp.Server.Services.People
             await _context.SaveChangesAsync();
         }
 
+        // Updates PersonInfo only — does NOT reset AcceptanceStatus.
+        public async Task UpdatePersonInfoAsync(int studentId, StudentUpdateRequest request)
+        {
+            var student = await _context.Students
+                .Include(s => s.PersonInfo)
+                .FirstOrDefaultAsync(s => s.StudentId == studentId);
+
+            if (student is null)
+                throw new KeyNotFoundException($"Student with id {studentId} was not found.");
+
+            if (student.PersonInfo is null)
+                throw new InvalidOperationException(
+                    $"Student with id {studentId} has no personal info record.");
+
+            student.PersonInfo.FirstName = request.FirstName;
+            student.PersonInfo.LastName  = request.LastName;
+            student.PersonInfo.BirthDate = request.BirthDate;
+            student.PersonInfo.Phone     = request.Phone;
+            student.PersonInfo.Address   = request.Address;
+            student.PersonInfo.Nif       = request.Nif;
+
+            await _context.SaveChangesAsync();
+        }
+
         public async Task SetStudentStateAsync(int studentId, bool isActive)
         {
             var rowsAffected = await _context.Students
