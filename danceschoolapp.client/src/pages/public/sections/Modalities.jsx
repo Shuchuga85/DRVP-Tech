@@ -1,13 +1,13 @@
-import balletImg from '../assets/ballet.jpg'
-import contemporaneoImg from '../assets/contemporaneo.jpg'
-import jazzImg from '../assets/jazz.jpg'
-import hiphopImg from '../assets/hiphop.jpg'
-import sevilhanasImg from '../assets/sevilhanas.jpg'
-import teatroMusicalImg from '../assets/teatro-musical.jpg'
-import ginasticaImg from '../assets/ginastica-acrobatica.jpg'
-import flexibilidadeImg from '../assets/flexibilidade.jpg'
-import bodyBalanceImg from '../assets/body-balance.jpg'
-import acrodanceImg from '../assets/acrodance.jpg'
+import balletImg from '../../../assets/ballet.jpg'
+import contemporaneoImg from '../../../assets/contemporaneo.jpg'
+import jazzImg from '../../../assets/jazz.jpg'
+import hiphopImg from '../../../assets/hiphop.jpg'
+import sevilhanasImg from '../../../assets/sevilhanas.jpg'
+import teatroMusicalImg from '../../../assets/teatro-musical.jpg'
+import ginasticaImg from '../../../assets/ginastica-acrobatica.jpg'
+import flexibilidadeImg from '../../../assets/flexibilidade.jpg'
+import bodyBalanceImg from '../../../assets/body-balance.jpg'
+import acrodanceImg from '../../../assets/acrodance.jpg'
 
 function Modalities() {
     const modalities = [

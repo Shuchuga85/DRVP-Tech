@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import '../../styles/LoginPage.css'
 import logo from '../../assets/logo-entartes.png'
-import { useAuth } from '../../context/AuthContext'
+import { useAuth } from '../../context/useAuth'
 
 function LoginPage() {
     const [email, setEmail] = useState('')
@@ -26,8 +26,8 @@ function LoginPage() {
                 },
                 credentials: 'include',
                 body: JSON.stringify({
-                    email: email,
-                    password: password,
+                    email,
+                    password,
                 }),
             })
 
@@ -38,32 +38,18 @@ function LoginPage() {
             const data = await response.json()
 
             console.log('Login OK:', data)
-            console.log('Roles:', data.roles)
+
             await refreshSession()
 
-            const roleNames = (data.roles || []).map((role) => {
-                if (typeof role === 'string') {
-                    return role.toLowerCase()
-                }
+            const roleNames = (data.roles || []).map((role) =>
+                role.toLowerCase()
+            )
 
-                if (role.roleName) {
-                    return role.roleName.toLowerCase()
-                }
-
-                if (role.RoleName) {
-                    return role.RoleName.toLowerCase()
-                }
-
-                return ''
-            })
-
-            // guardar user (opcional)
             localStorage.setItem(
                 'user',
                 JSON.stringify({
                     id: data.userId,
                     username: data.username,
-                    email: data.email,
                     roles: data.roles,
                 })
             )

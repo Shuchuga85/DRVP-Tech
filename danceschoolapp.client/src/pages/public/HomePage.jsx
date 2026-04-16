@@ -1,9 +1,9 @@
-import Navbar from '../../components/Navbar'
-import Hero from '../../components/Hero'
-import Features from '../../components/Features'
-import About from '../../components/About'
-import Modalities from '../../components/Modalities'
-import Footer from '../../components/Footer'
+import Navbar from './sections/Navbar'
+import Hero from './sections/Hero'
+import Features from './sections/Features'
+import About from './sections/About'
+import Modalities from './sections/Modalities'
+import Footer from './sections/Footer'
 import '../../App.css'
 function HomePage() {
     return (
