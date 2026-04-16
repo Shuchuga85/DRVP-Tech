@@ -1,10 +1,7 @@
-function StatusBadge({ isActive }) {
+function StatusBadge({ active }) {
     return (
-        <span
-            className={`status-badge ${isActive ? 'status-badge--active' : 'status-badge--inactive'
-                }`}
-        >
-            {isActive ? 'Ativo' : 'Inativo'}
+        <span className={`badge ${active ? 'badge--active' : 'badge--inactive'}`}>
+            {active ? 'Ativo' : 'Inativo'}
         </span>
     )
 }
