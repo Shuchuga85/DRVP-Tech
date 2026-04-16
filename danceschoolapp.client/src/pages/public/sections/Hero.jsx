@@ -1,4 +1,4 @@
-import heroImg from '../assets/logo-entartes.png'
+import heroImg from '../../../assets/logo-entartes.png'
 
 function Hero() {
     return (

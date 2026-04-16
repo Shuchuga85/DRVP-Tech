@@ -2,13 +2,14 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import '../../styles/LoginPage.css'
 import logo from '../../assets/logo-entartes.png'
-import { useAuth } from '../../context/AuthContext'
+import { useAuth } from '../../context/useAuth'
 
 function LoginPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
+
     const { refreshSession } = useAuth()
     const navigate = useNavigate()
 
@@ -25,8 +26,8 @@ function LoginPage() {
                 },
                 credentials: 'include',
                 body: JSON.stringify({
-                    email: email,
-                    password: password,
+                    email,
+                    password,
                 }),
             })
 
@@ -40,17 +41,30 @@ function LoginPage() {
 
             await refreshSession()
 
-            // guardar user (opcional)
+            const roleNames = (data.roles || []).map((role) =>
+                role.toLowerCase()
+            )
+
             localStorage.setItem(
                 'user',
                 JSON.stringify({
-                    id: data.UserId,
-                    username: data.Username,
-                    roles: data.Roles,
+                    id: data.userId,
+                    username: data.username,
+                    roles: data.roles,
                 })
             )
 
-            navigate('/')
+            if (roleNames.includes('admin')) {
+                navigate('/admin')
+            } else if (roleNames.includes('staff')) {
+                navigate('/staff')
+            } else if (roleNames.includes('coach')) {
+                navigate('/coach')
+            } else if (roleNames.includes('parent')) {
+                navigate('/parent')
+            } else {
+                navigate('/')
+            }
         } catch (err) {
             console.error(err)
             setError(err.message || 'Erro no login')
@@ -67,8 +81,6 @@ function LoginPage() {
                 <h1>Iniciar sessão</h1>
 
                 <form onSubmit={handleSubmit} className="login-form">
-
-                    {/* EMAIL */}
                     <div className="form-group">
                         <label htmlFor="email">Email</label>
                         <input
@@ -81,7 +93,6 @@ function LoginPage() {
                         />
                     </div>
 
-                    {/* PASSWORD */}
                     <div className="form-group">
                         <label htmlFor="password">Palavra-passe</label>
                         <input
