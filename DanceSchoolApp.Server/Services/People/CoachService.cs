@@ -41,6 +41,43 @@ namespace DanceSchoolApp.Server.Services.People
                 .ToListAsync();
         }
 
+        public async Task<CoachMeResponse> GetCoachMeAsync(int userId)
+        {
+            var coach = await _context.Coaches
+                .Include(c => c.CoachNavigation)
+                    .ThenInclude(u => u.PersonInfo)
+                .Include(c => c.IdModalities)
+                .FirstOrDefaultAsync(c => c.CoachId == userId);
+
+            if (coach is null)
+                throw new KeyNotFoundException(
+                    "Coach profile not found for the authenticated user.");
+
+            var user = coach.CoachNavigation;
+            var p    = user.PersonInfo;
+
+            return new CoachMeResponse
+            {
+                CoachId    = coach.CoachId,
+                Biography  = coach.Biography,
+                Title      = null,
+                PhotoUrl   = coach.PhotoUrl,
+                IsActive   = user.IsActive,
+                Name       = p is not null
+                    ? $"{p.FirstName} {p.LastName}".Trim()
+                    : user.Username,
+                Email      = user.Email,
+                Modalities = coach.IdModalities
+                    .Select(m => new ModalitySummary
+                    {
+                        ModalityId = m.ModalityId,
+                        Name       = m.Name
+                    })
+                    .OrderBy(m => m.Name)
+                    .ToList()
+            };
+        }
+
         public async Task<CoachDetailResponse> GetCoachAsync(int id)
         {
             var coach = await _context.Users

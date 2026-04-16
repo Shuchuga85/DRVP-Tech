@@ -167,6 +167,34 @@ namespace DanceSchoolApp.Server.Services.People
             return user.UserId;
         }
 
+        public async Task UpsertPersonInfoAsync(int userId, UpdatePersonInfoRequest request)
+        {
+            var user = await _context.Users
+                .Include(u => u.PersonInfo)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user is null)
+                throw new KeyNotFoundException($"User with id {userId} was not found.");
+
+            if (user.PersonInfo is null)
+            {
+                user.PersonInfo = new PersonInfo
+                {
+                    FirstName = request.FirstName ?? string.Empty,
+                    LastName  = request.LastName  ?? string.Empty
+                };
+            }
+
+            if (request.FirstName is not null) user.PersonInfo.FirstName = request.FirstName;
+            if (request.LastName  is not null) user.PersonInfo.LastName  = request.LastName;
+            if (request.Phone     is not null) user.PersonInfo.Phone     = request.Phone;
+            if (request.Address   is not null) user.PersonInfo.Address   = request.Address;
+            if (request.BirthDate is not null) user.PersonInfo.BirthDate = request.BirthDate;
+            if (request.Nif       is not null) user.PersonInfo.Nif       = request.Nif;
+
+            await _context.SaveChangesAsync();
+        }
+
         public async Task SetUserStateAsync(int userId, bool isActive)
         {
             var rowsAffected = await _context.Users

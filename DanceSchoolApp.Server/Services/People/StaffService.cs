@@ -38,6 +38,30 @@ namespace DanceSchoolApp.Server.Services.People
                 .ToListAsync();
         }
 
+        public async Task<StaffMeResponse> GetStaffMeAsync(int userId)
+        {
+            var user = await _context.Users
+                .Include(u => u.PersonInfo)
+                .Include(u => u.IdRoles)
+                .FirstOrDefaultAsync(u => u.UserId == userId &&
+                                          u.IdRoles.Any(r => r.RoleId == Roles.Staff));
+
+            if (user is null)
+                throw new KeyNotFoundException("Staff profile not found.");
+
+            var p = user.PersonInfo;
+
+            return new StaffMeResponse
+            {
+                StaffId  = user.UserId,
+                Username = user.Username,
+                Name     = p is not null
+                    ? $"{p.FirstName} {p.LastName}".Trim()
+                    : user.Username,
+                Email    = user.Email
+            };
+        }
+
         public async Task<StaffDetailResponse> GetStaffAsync(int id)
         {
             var staff = await _context.Users

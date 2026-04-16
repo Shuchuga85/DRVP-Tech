@@ -3,6 +3,7 @@ using DanceSchoolApp.Server.Services.People;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using DanceSchoolApp.Server.Models;
+using System.Security.Claims;
 
 namespace DanceSchoolApp.Server.Controllers.People
 {
@@ -109,6 +110,30 @@ namespace DanceSchoolApp.Server.Controllers.People
             }
         }
 
+        // ─── PATCH /api/users/{id}/personinfo ─────────────────────────────────
+        // Ownership: caller must be {id} OR staff. All fields optional.
+        // Creates PersonInfo if the user has none yet.
+        [HttpPatch("{id}/personinfo")]
+        [Authorize]
+        public async Task<IActionResult> UpdatePersonInfo(
+            int id, [FromBody] UpdatePersonInfoRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            int callerId = GetUserId();
+            if (callerId != id && !User.IsInRole("staff"))
+                return Forbid();
+
+            try
+            {
+                await _userService.UpsertPersonInfoAsync(id, request);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            catch (Exception ex) { return StatusCode(500, ex.Message); }
+        }
+
         // ─── PATCH /api/users/{id}/activate ───────────────────────────────────
         [HttpPatch("{id}/activate")]
         [Authorize(Roles = "staff")]
@@ -128,6 +153,10 @@ namespace DanceSchoolApp.Server.Controllers.People
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
+        // ─── Helpers ──────────────────────────────────────────────────────────
+        private int GetUserId() =>
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         // ─── PATCH /api/users/{id}/deactivate ─────────────────────────────────
         [Authorize(Roles = "staff")]

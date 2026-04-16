@@ -38,6 +38,39 @@ namespace DanceSchoolApp.Server.Services.People
                 .ToListAsync();
         }
 
+        public async Task<ParentMeResponse> GetParentMeAsync(int userId)
+        {
+            var user = await _context.Users
+                .Include(u => u.PersonInfo)
+                .Include(u => u.Students)
+                    .ThenInclude(s => s.PersonInfo)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user is null)
+                throw new KeyNotFoundException("User not found.");
+
+            var p = user.PersonInfo;
+
+            return new ParentMeResponse
+            {
+                ParentId = user.UserId,
+                Username = user.Username,
+                Name     = p is not null
+                    ? $"{p.FirstName} {p.LastName}".Trim()
+                    : user.Username,
+                Email    = user.Email,
+                Children = user.Students
+                    .Select(s => new ChildSummary
+                    {
+                        ChildId = s.StudentId,
+                        Name    = s.PersonInfo is not null
+                            ? $"{s.PersonInfo.FirstName} {s.PersonInfo.LastName}".Trim()
+                            : $"Student {s.StudentId}"
+                    })
+                    .ToList()
+            };
+        }
+
         public async Task<ParentDetailResponse> GetParentAsync(int id)
         {
             var user = await _context.Users

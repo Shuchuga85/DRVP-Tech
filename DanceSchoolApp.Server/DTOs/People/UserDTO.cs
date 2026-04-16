@@ -34,6 +34,17 @@ namespace DanceSchoolApp.Server.DTOs.People
 
     // ─── Requests ─────────────────────────────────────────────────────────────
 
+    public class UpdatePersonInfoRequest
+    {
+        public string?  FirstName { get; set; }
+        public string?  LastName  { get; set; }
+        public string?  Phone     { get; set; }
+        public string?  Address   { get; set; }
+        public DateOnly? BirthDate { get; set; }
+        [MaxLength(9)]
+        public string?  Nif       { get; set; }
+    }
+
     public class UserCreateRequest
     {
         [Required]

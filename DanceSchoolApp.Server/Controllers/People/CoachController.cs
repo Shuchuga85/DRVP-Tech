@@ -3,6 +3,7 @@ using DanceSchoolApp.Server.Services.People;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace DanceSchoolApp.Server.Controllers.People
 {
@@ -16,6 +17,29 @@ namespace DanceSchoolApp.Server.Controllers.People
         {
             _CoachService = CoachService;
         }
+
+        // ─── GET /api/coaches/me ───────────────────────────────────────────────
+        [Authorize(Roles = "coach")]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMe()
+        {
+            try
+            {
+                var result = await _CoachService.GetCoachMeAsync(GetUserId());
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        private int GetUserId() =>
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         // ─── GET /api/coaches ──────────────────────────────────────────────────
         [Authorize(Roles = "staff")]
