@@ -1,11 +1,12 @@
 import { Routes, Route } from 'react-router-dom'
 import AppLayout from './components/AppLayout'
-import HomePage from './pages/HomePage'
-import LoginPage from './pages/LoginPage'
-import AdminPage from './pages/AdminPage'
-import StaffPage from './pages/StaffPage'
+import HomePage from './pages/public/HomePage'
+import LoginPage from './pages/public/LoginPage'
 import ProtectedRoute from './components/ProtectedRoute'
-import UnauthorizedPage from './pages/UnauthorizedPage'
+import UnauthorizedPage from './pages/public/UnauthorizedPage'
+
+import AdminPage from './pages/admin/AdminPage'
+import DirectionPage from './pages/Direction/DirectionPage'
 
 function App() {
     return (
@@ -30,10 +31,10 @@ function App() {
                 />
 
                 <Route
-                    path="/staff"
+                    path="/Direction"
                     element={
-                        <ProtectedRoute allowedRoles={['staff', 'admin']}>
-                            <StaffPage />
+                        <ProtectedRoute allowedRoles={['Direction', 'admin']}>
+                            <DirectionPage />
                         </ProtectedRoute>
                     }
                 />

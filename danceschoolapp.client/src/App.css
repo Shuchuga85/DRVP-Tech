@@ -137,8 +137,8 @@ img {
 /* HERO */
 .hero {
     width: 100%;
-/*    padding: clamp(2rem, 5vw, 4.5rem) 0;
-*/}
+    padding: clamp(2rem, 5vw, 4.5rem) 0;
+/**/}
 
 .hero-content {
     display: grid;
@@ -237,49 +237,179 @@ img {
 
 .about-content {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: clamp(2rem, 4vw, 4rem);
-    align-items: center;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: clamp(2rem, 4vw, 3.5rem);
+    align-items: start;
 }
 
-.about-text h2 {
-    margin: 0 0 1rem;
-    font-size: clamp(2.2rem, 3.8vw, 3.3rem);
-    line-height: 1.08;
-    letter-spacing: -0.04em;
-    font-weight: 700;
+.about-text {
+    max-width: 42rem;
+}
+
+    .about-text h2 {
+        margin: 0 0 1.2rem;
+        font-size: clamp(2.4rem, 4vw, 3.3rem);
+        line-height: 1.08;
+        letter-spacing: -0.04em;
+        font-weight: 700;
+    }
+
+.about-lead {
+    margin: 0 0 1.2rem;
+    font-size: 1.08rem;
+    line-height: 1.8;
+    color: var(--text);
 }
 
 .about-text p {
     margin: 0 0 1rem;
-    font-size: clamp(1rem, 1.2vw, 1.08rem);
+    font-size: 1rem;
     line-height: 1.8;
     color: #495568;
 }
 
-.about-text ul {
-    margin: 1.5rem 0 0;
-    padding-left: 1.25rem;
-    color: var(--primary-dark);
+.about-info-grid {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1.8rem;
 }
 
-.about-text li {
-    margin-bottom: 0.7rem;
-    font-size: 1rem;
-    line-height: 1.7;
-}
-
-.about-image img {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 4 / 5;
-    object-fit: cover;
-    border-radius: 1.5rem;
+.about-info-card {
+    background: var(--surface);
+    border: 0.0625rem solid var(--border);
+    border-radius: 1.2rem;
+    padding: 1.2rem 1.25rem;
     box-shadow: var(--shadow);
 }
 
-/* GENERIC SECTIONS */
-.section-title {
+    .about-info-card h3 {
+        margin: 0 0 0.8rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .about-info-card p {
+        margin: 0;
+        font-size: 0.98rem;
+        line-height: 1.7;
+        color: var(--muted);
+    }
+
+    .about-info-card ul {
+        margin: 0;
+        padding-left: 1.2rem;
+    }
+
+    .about-info-card li {
+        margin-bottom: 0.45rem;
+        font-size: 0.98rem;
+        line-height: 1.6;
+        color: var(--primary-dark);
+    }
+
+/* MAPA */
+.about-map-card {
+    background: var(--surface);
+    border: 0.0625rem solid var(--border);
+    border-radius: 1.5rem;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    width: 100%;
+    max-width: 100%;
+}
+
+.about-map-info {
+    padding: 1.2rem 1.3rem 1rem;
+    border-bottom: 0.0625rem solid var(--border);
+}
+
+    .about-map-info h3 {
+        margin: 0 0 0.45rem;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .about-map-info p {
+        margin: 0;
+        font-size: 0.96rem;
+        line-height: 1.6;
+        color: var(--muted);
+    }
+
+.about-map {
+    width: 100%;
+    height: 28rem;
+}
+
+    .about-map iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+
+/* TEXTO EXTRA (valores, missão, visão) */
+.about-extra {
+    margin-top: 2rem;
+}
+
+    .about-extra h3 {
+        margin: 1.6rem 0 0.6rem;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .about-extra ul {
+        margin: 0 0 1rem;
+        padding-left: 1.2rem;
+    }
+
+    .about-extra li {
+        margin-bottom: 0.4rem;
+        font-size: 1rem;
+        line-height: 1.6;
+        color: var(--text);
+    }
+
+    .about-extra p {
+        margin: 0 0 1rem;
+        font-size: 1rem;
+        line-height: 1.75;
+        color: var(--muted);
+    }
+/* RESPONSIVE */
+@media (max-width: 62rem) {
+    .about-content {
+        grid-template-columns: 1fr;
+    }
+
+    .about-text {
+        max-width: none;
+    }
+
+    .about-map {
+        height: 24rem;
+    }
+}
+
+@media (max-width: 48rem) {
+    .about-text h2 {
+        text-align: center;
+    }
+
+    .about-lead,
+    .about-text p {
+        text-align: center;
+    }
+
+    .about-map {
+        height: 20rem;
+    }
+}
+/* GENERIC SECTIONS 
+*/.section-title {
     margin: 0 0 0.75rem;
     text-align: center;
     font-size: clamp(2.1rem, 3vw, 3rem);

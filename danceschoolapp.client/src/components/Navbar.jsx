@@ -12,7 +12,7 @@ function Navbar({ simple }) {
                     <nav className="nav-links">
                         <a href="#sobre">Sobre</a>
                         <a href="#modalidades">Modalidades</a>
-                        <a href="#testemunhos">Testemunhos</a>
+                        {/*<a href="#testemunhos">Testemunhos</a>*/}
                         <a href="#footer">Contacto</a>
                     </nav>
                 )}
