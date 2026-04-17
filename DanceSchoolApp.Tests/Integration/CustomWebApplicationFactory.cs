@@ -1,10 +1,8 @@
 using DanceSchoolApp.Server.Data;
-using DanceSchoolApp.Server.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DanceSchoolApp.Tests.Integration;
@@ -26,45 +24,40 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Test");
+
         builder.ConfigureServices(services =>
         {
-            // ── 1. Remove the AppDbContext registration ───────────────────────
-            var contextDescriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(AppDbContext));
-            if (contextDescriptor != null)
-                services.Remove(contextDescriptor);
+            // Remove EVERY descriptor whose ServiceType name contains
+            // "DbContext" or "DbContextOptions" — this catches all the
+            // EF Core internal registrations (options, options-configuration,
+            // the context itself) regardless of EF Core version.
+            var toRemove = services
+                .Where(d =>
+                    d.ServiceType == typeof(AppDbContext) ||
+                    d.ServiceType == typeof(DbContextOptions<AppDbContext>) ||
+                    d.ServiceType == typeof(DbContextOptions) ||
+                    (d.ServiceType.IsGenericType &&
+                     d.ServiceType.GetGenericTypeDefinition().FullName != null &&
+                     d.ServiceType.GetGenericTypeDefinition().FullName!
+                         .Contains("IDbContextOptionsConfiguration")))
+                .ToList();
 
-            // ── 2. Remove DbContextOptions<AppDbContext> ──────────────────────
-            var optionsDescriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
-            if (optionsDescriptor != null)
-                services.Remove(optionsDescriptor);
+            foreach (var d in toRemove)
+                services.Remove(d);
 
-            // ── 3. Remove the generic IDbContextOptions too ───────────────────
-            var genericOptionsDescriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions));
-            if (genericOptionsDescriptor != null)
-                services.Remove(genericOptionsDescriptor);
-
-            // ── 4. Re-register with the open SQLite connection ────────────────
+            // Re-register AppDbContext against the shared in-memory SQLite
+            // connection. The connection must stay open for the entire lifetime
+            // of the factory or the in-memory DB is destroyed between scopes.
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlite(_connection));
-
-            // ── 5. Stub out EmailService to prevent SMTP calls ────────────────
-            // EmailService is auto-registered by the reflection loop in Program.cs.
-            // We override it with a factory that constructs it with a null/empty
-            // SMTP config — it will never actually send because our tests never
-            // trigger password-reset flows, and the constructor doesn't send on init.
-            // (No action needed here — the env var warning is harmless for tests.)
         });
-
-        // Suppress the SPA proxy startup assembly that tries to launch Vite
-        builder.UseEnvironment("Test");
     }
 
     /// <summary>
-    /// Seeds data into the test database before a test makes HTTP requests.
-    /// EnsureCreated() builds the schema from the EF model on first call.
+    /// Runs a seeder action inside a dedicated DI scope so tests can populate
+    /// the in-memory database before sending HTTP requests.
+    /// EnsureCreated() is idempotent — safe to call from multiple tests.
     /// </summary>
     public void SeedDatabase(Action<AppDbContext> seeder)
     {
