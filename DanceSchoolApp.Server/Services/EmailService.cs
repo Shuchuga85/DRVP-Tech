@@ -14,7 +14,7 @@ public class EmailService
     /// <summary>
     /// Envia um link de configuração de password para o email do novo utilizador.
     /// </summary>
-    public async Task SendWelcomeEmailAsync(string toEmail, string role, string setupLink)
+    public virtual async Task SendWelcomeEmailAsync(string toEmail, string role, string setupLink)
     {
         var subject = "Bem-vindo à App da Ent'Artes — Configure a sua password";
 
@@ -49,7 +49,7 @@ public class EmailService
         await SendEmailAsync(toEmail, subject, body);
     }
 
-    public async Task SendPasswordResetEmailAsync(string toEmail, string resetLink)
+    public virtual async Task SendPasswordResetEmailAsync(string toEmail, string resetLink)
     {
         var subject = "Redefinir Password — Dance School App";
 
