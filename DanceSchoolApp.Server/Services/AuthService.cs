@@ -114,7 +114,7 @@ namespace DanceSchoolApp.Server.Services
             await _context.SaveChangesAsync();
         }
 
-        private static string GeneratePasswordResetToken(int userId, string email)
+        public string GeneratePasswordResetToken(int userId, string email)
         {
             var secret = Environment.GetEnvironmentVariable("DanceSchoolApp_JWT_Secret")!;
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));

@@ -12,25 +12,32 @@ public class EmailService
     }
 
     /// <summary>
-    /// Envia as credenciais geradas para o email do novo utilizador.
+    /// Envia um link de configuração de password para o email do novo utilizador.
     /// </summary>
-    public async Task SendWelcomeEmailAsync(string toEmail, string role, string temporaryPassword)
+    public async Task SendWelcomeEmailAsync(string toEmail, string role, string setupLink)
     {
-        var subject = "Bem-vindo à Dance School App — As suas credenciais";
+        var subject = "Bem-vindo à App da Ent'Artes — Configure a sua password";
 
         var body = $"""
             <html>
             <body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto;">
-              <h2 style="color: #7b2d8b;">Bem-vindo à App da Ent´artes!</h2>
-              <p>A sua conta foi criada com o perfil  <strong>{role}</strong>.</p>
-              <p>Utilize as seguintes credenciais para entrar na aplicação:</p>
-              <table style="background:#f4f4f4; padding:16px; border-radius:8px; width:100%;">
-                <tr><td><strong>Email:</strong></td><td>{toEmail}</td></tr>
-                <tr><td><strong>Password:</strong></td><td style="font-size:1.2em; letter-spacing:2px;">{temporaryPassword}</td></tr>
-              </table>
-              <p style="margin-top:16px;">
-                Após o primeiro login, poderá alterar a sua password e preencher os seus dados pessoais.
-                Pode também usar a opção 'Esqueci a password' na página de login para definir uma nova password.
+              <h2 style="color: #7b2d8b;">Bem-vindo à App da Ent'Artes!</h2>
+              <p>A sua conta foi criada com o perfil <strong>{role}</strong>.</p>
+              <p>Para definir a sua password e aceder à plataforma, clique no botão abaixo:</p>
+              <div style="margin: 24px 0;">
+                <a href="{setupLink}"
+                   style="display:inline-block; padding:12px 28px; background:#7b2d8b;
+                          color:#fff; text-decoration:none; border-radius:6px; font-size:1em;">
+                  Definir Password
+                </a>
+              </div>
+              <p style="color:#555;">
+                O link é válido por <strong>24 horas</strong>.
+              </p>
+              <p style="color:#555;">
+                Se preferir manter a password temporária comunicada pela escola,
+                pode iniciar sessão diretamente em
+                <a href="https://localhost:5173/login" style="color:#7b2d8b;">https://localhost:5173/login</a>.
               </p>
               <p style="color:#888; font-size:0.85em;">
                 Se não estava à espera deste email, pode ignorá-lo.

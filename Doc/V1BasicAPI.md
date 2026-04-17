@@ -231,7 +231,6 @@ All endpoints except auth/login and auth/forgot-password require a valid JWT coo
 | POST | `/api/users` | staff | Create user. Auto-generates password, sends welcome email. Body: `{ username, email, firstRole?, personInfo? }`. |
 | PATCH | `/api/users/{id}/activate` | staff | Activate user account. |
 | PATCH | `/api/users/{id}/deactivate` | staff | Deactivate user account. |
-| PATCH | `/api/users/{id}/change-password` | Authenticated (own) | Change own password. Body: `{ oldPassword, newPassword }`. |
 | PUT | `/api/users/{id}/roles` | staff | Replace user's roles. |
 
 ---

@@ -12,12 +12,14 @@ namespace DanceSchoolApp.Server.Services.People
     {
         private readonly AppDbContext _context;
         private readonly EmailService _emailService;
+        private readonly AuthService _authService;
         private readonly ILogger<UserService> _logger;
 
-        public UserService(AppDbContext context, EmailService emailService, ILogger<UserService> logger)
+        public UserService(AppDbContext context, EmailService emailService, AuthService authService, ILogger<UserService> logger)
         {
             _context = context;
             _emailService = emailService;
+            _authService = authService;
             _logger = logger;
         }
 
@@ -157,11 +159,13 @@ namespace DanceSchoolApp.Server.Services.People
             try
             {
                 string roleName = role?.RoleName ?? "Utilizador";
-                await _emailService.SendWelcomeEmailAsync(user.Email, roleName, generatedPassword);
+                string resetToken = _authService.GeneratePasswordResetToken(user.UserId, user.Email!);
+                string resetLink = $"https://localhost:5173/reset-password?token={resetToken}";
+                await _emailService.SendWelcomeEmailAsync(user.Email, roleName, resetLink);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "O utilizador {Email} foi criado com ID {Id}, mas o email de boas-vindas falhou. Pass: {Pass}", user.Email, user.UserId, generatedPassword);
+                _logger.LogError(ex, "O utilizador {Email} foi criado com ID {Id}, mas o email de boas-vindas falhou.", user.Email, user.UserId);
             }
 
             return user.UserId;
