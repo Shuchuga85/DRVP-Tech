@@ -146,7 +146,7 @@ namespace DanceSchoolApp.Server.Controllers.School
             }
         }
 
-        // ─── POST /api/studios/add/modality ────────────────────────────────
+        // ─── POST /api/studios/modality ────────────────────────────────
         [Authorize(Roles = "staff")]
         [HttpPost("modality")]
         public async Task<IActionResult> AddModality([FromBody] StudioModalityRequest request)
@@ -173,7 +173,7 @@ namespace DanceSchoolApp.Server.Controllers.School
             }
         }
 
-        // ─── DELETE /api/studios/remove/modality ─────────────────
+        // ─── DELETE /api/studios/modality ─────────────────
         [Authorize(Roles = "staff")]
         [HttpDelete("modality")]
         public async Task<IActionResult> RemoveModality([FromBody] StudioModalityRequest request)

@@ -13,13 +13,15 @@ namespace DanceSchoolApp.Server.Services.People
         private readonly AppDbContext _context;
         private readonly EmailService _emailService;
         private readonly AuthService _authService;
+        private readonly CoachService _coachService;
         private readonly ILogger<UserService> _logger;
 
-        public UserService(AppDbContext context, EmailService emailService, AuthService authService, ILogger<UserService> logger)
+        public UserService(AppDbContext context, EmailService emailService, AuthService authService, CoachService coachService, ILogger<UserService> logger)
         {
             _context = context;
             _emailService = emailService;
             _authService = authService;
+            _coachService = coachService;
             _logger = logger;
         }
 
@@ -155,6 +157,9 @@ namespace DanceSchoolApp.Server.Services.People
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
+
+            if (role.RoleId == Roles.Coach)
+                _coachService.CreateCoachAsync(user.UserId);
 
             try
             {

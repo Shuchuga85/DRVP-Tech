@@ -1,4 +1,5 @@
-﻿using DanceSchoolApp.Server.Data;
+﻿using Azure.Core;
+using DanceSchoolApp.Server.Data;
 using DanceSchoolApp.Server.DTOs;
 using DanceSchoolApp.Server.DTOs.People;
 using DanceSchoolApp.Server.Models;
@@ -141,6 +142,26 @@ namespace DanceSchoolApp.Server.Services.People
                 }
             };
         }
+
+        public async Task<bool> CreateCoachAsync(int coachid)
+        {
+
+            bool coachExists = await _context.Coaches
+                .AnyAsync(u => u.CoachId == coachid);
+
+            if (coachExists)
+                throw new InvalidOperationException("Coach already exists.");
+
+            var coach = new Coach
+            {
+                CoachId = coachid,
+            };
+            _context.Coaches.Add(coach);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
 
     }
 }
