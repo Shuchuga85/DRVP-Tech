@@ -37,17 +37,11 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         builder.ConfigureServices(services =>
         {
             // ── Replace AppDbContext with SQLite in-memory ────────────────────
-            var optionsDescriptors = services
-                .Where(d => d.ServiceType == typeof(DbContextOptions<AppDbContext>))
-                .ToList();
-            foreach (var d in optionsDescriptors)
-                services.Remove(d);
+            var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
+            if (descriptor != null) services.Remove(descriptor);
 
-            var contextDescriptors = services
-                .Where(d => d.ServiceType == typeof(AppDbContext))
-                .ToList();
-            foreach (var d in contextDescriptors)
-                services.Remove(d);
+            var contextDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(AppDbContext));
+            if (contextDescriptor != null) services.Remove(contextDescriptor);
 
             // Pass the existing open connection so EF does not close it between
             // scopes, which would wipe the in-memory database.
@@ -94,7 +88,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         base.Dispose(disposing);
         if (disposing)
+        {
+            _connection.Close();
             _connection.Dispose();
+        }
     }
 
     // ── No-op email stub ─────────────────────────────────────────────────────
