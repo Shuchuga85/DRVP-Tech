@@ -114,8 +114,6 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
 
         // ── Log in once per role — cookies are kept for the whole test ────────
         var parentJwt = await LoginAndGetCookie("parent_lc");
-        var staffJwt  = await LoginAndGetCookie("staff_lc");
-        var coachJwt  = await LoginAndGetCookie("coach_lc");
 
         // ── Step 1 — Parent creates the class request ─────────────────────────
         var createResp = await _client.SendAsync(
@@ -137,7 +135,9 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
         int classId = createDoc.RootElement.GetProperty("classId").GetInt32();
         classId.Should().BeGreaterThan(0, because: "response body must contain a positive classId");
 
+
         // ── Step 2 — Staff approves (Requested → StaffApproved) ───────────────
+        var staffJwt = await LoginAndGetCookie("staff_lc");
         var approveResp = await _client.SendAsync(
             MakeRequest(HttpMethod.Patch, $"/api/coachclasses/{classId}/staff-approve", staffJwt));
 
@@ -145,6 +145,7 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
             because: "staff-approve on a Requested class must return 204");
 
         // ── Step 3 — Coach accepts (StaffApproved → Approved) ─────────────────
+        var coachJwt = await LoginAndGetCookie("coach_lc");
         var acceptResp = await _client.SendAsync(
             MakeRequest(HttpMethod.Patch, $"/api/coachclasses/{classId}/coach-accept", coachJwt));
 
@@ -152,6 +153,7 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
             because: "coach-accept on a StaffApproved class must return 204");
 
         // ── Step 4 — Staff finishes the class (Approved → Finished) ───────────
+        staffJwt = await LoginAndGetCookie("staff_lc");
         var finishResp = await _client.SendAsync(
             MakeRequest(HttpMethod.Patch, $"/api/coachclasses/{classId}/finish", staffJwt));
 
@@ -160,6 +162,7 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
 
         // ── Step 5 — Coach validates (records DidTeach; class stays Finished  ──
         //            until the single participant also responds in step 6)
+        coachJwt = await LoginAndGetCookie("coach_lc");
         var coachValidateResp = await _client.SendAsync(
             MakeRequest(HttpMethod.Patch, $"/api/coachclasses/{classId}/coach-validate", coachJwt,
                 new { didTeach = true }));
@@ -168,6 +171,7 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
             because: "coach-validate on a Finished class must return 204");
 
         // ── Step 6a — Staff retrieves the participant list to get the ID ───────
+        staffJwt = await LoginAndGetCookie("staff_lc");
         var participantsResp = await _client.SendAsync(
             MakeRequest(HttpMethod.Get, $"/api/participants/class/{classId}", staffJwt));
 
@@ -186,6 +190,7 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
         // This is the LAST required response (coach already validated in step 5),
         // so ParticipantService.TryAdvanceClassToStaffReviewAsync auto-advances
         // the class from Finished → Pending.
+        parentJwt = await LoginAndGetCookie("parent_lc");
         var parentValidateResp = await _client.SendAsync(
             MakeRequest(HttpMethod.Patch, $"/api/participants/{participantId}/parent-validate", parentJwt,
                 new { attended = true }));
@@ -194,6 +199,7 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
             because: "parent-validate on a Finished-class participant must return 204");
 
         // ── Step 7 — Staff final sign-off (Pending → Validated) ───────────────
+        staffJwt = await LoginAndGetCookie("staff_lc");
         var staffValidateResp = await _client.SendAsync(
             MakeRequest(HttpMethod.Patch, $"/api/coachclasses/{classId}/staff-validate", staffJwt));
 
