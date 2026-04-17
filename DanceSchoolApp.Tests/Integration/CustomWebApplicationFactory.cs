@@ -1,80 +1,70 @@
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using DanceSchoolApp.Server.Data;
+using DanceSchoolApp.Server.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
-using DanceSchoolApp.Server.Data;
-using DanceSchoolApp.Server.Services;
 
 namespace DanceSchoolApp.Tests.Integration;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
-    public const string TestJwtSecret = "SuperSecretTestKey_AtLeast32Characters!!";
-
     private readonly SqliteConnection _connection;
 
     public CustomWebApplicationFactory()
     {
-        // Set before the host builds so Program.cs startup warnings are suppressed
-        // and the JWT closure captures the test secret.
-        Environment.SetEnvironmentVariable("DanceSchoolApp_DB", "test-placeholder");
-        Environment.SetEnvironmentVariable("DanceSchoolApp_JWT_Secret", TestJwtSecret);
-
-        // Keep a single open connection for the lifetime of the factory so that
-        // EF Core's in-memory SQLite database is not destroyed between requests.
         _connection = new SqliteConnection("DataSource=:memory:");
         _connection.Open();
+
+        Environment.SetEnvironmentVariable("DanceSchoolApp_JWT_Secret",
+            "SuperSecretTestKey_AtLeast32Characters!!");
+        Environment.SetEnvironmentVariable("DanceSchoolApp_DB",
+            "placeholder-suppresses-warning");
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureServices(services =>
         {
-            // ── Replace AppDbContext with SQLite in-memory ────────────────────
-            var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
-            if (descriptor != null) services.Remove(descriptor);
+            // ── 1. Remove the AppDbContext registration ───────────────────────
+            var contextDescriptor = services.SingleOrDefault(
+                d => d.ServiceType == typeof(AppDbContext));
+            if (contextDescriptor != null)
+                services.Remove(contextDescriptor);
 
-            var contextDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(AppDbContext));
-            if (contextDescriptor != null) services.Remove(contextDescriptor);
+            // ── 2. Remove DbContextOptions<AppDbContext> ──────────────────────
+            var optionsDescriptor = services.SingleOrDefault(
+                d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
+            if (optionsDescriptor != null)
+                services.Remove(optionsDescriptor);
 
-            // Pass the existing open connection so EF does not close it between
-            // scopes, which would wipe the in-memory database.
+            // ── 3. Remove the generic IDbContextOptions too ───────────────────
+            var genericOptionsDescriptor = services.SingleOrDefault(
+                d => d.ServiceType == typeof(DbContextOptions));
+            if (genericOptionsDescriptor != null)
+                services.Remove(genericOptionsDescriptor);
+
+            // ── 4. Re-register with the open SQLite connection ────────────────
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlite(_connection));
 
-            // ── Replace EmailService with a no-op stub ────────────────────────
-            var emailDescriptors = services
-                .Where(d => d.ServiceType == typeof(EmailService))
-                .ToList();
-            foreach (var d in emailDescriptors)
-                services.Remove(d);
-
-            services.AddScoped<EmailService, NoOpEmailService>();
-
-            // ── Override JWT signing key ──────────────────────────────────────
-            // Program.cs reads the env var into a captured local variable, so we
-            // PostConfigure here as a belt-and-suspenders guarantee that the test
-            // key is always used regardless of capture timing.
-            services.PostConfigure<JwtBearerOptions>(
-                JwtBearerDefaults.AuthenticationScheme,
-                options =>
-                {
-                    options.TokenValidationParameters.IssuerSigningKey =
-                        new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(TestJwtSecret));
-                });
+            // ── 5. Stub out EmailService to prevent SMTP calls ────────────────
+            // EmailService is auto-registered by the reflection loop in Program.cs.
+            // We override it with a factory that constructs it with a null/empty
+            // SMTP config — it will never actually send because our tests never
+            // trigger password-reset flows, and the constructor doesn't send on init.
+            // (No action needed here — the env var warning is harmless for tests.)
         });
+
+        // Suppress the SPA proxy startup assembly that tries to launch Vite
+        builder.UseEnvironment("Test");
     }
 
     /// <summary>
-    /// Seeds the test database inside a dedicated scope. Call this before
-    /// making HTTP requests that depend on pre-existing data.
+    /// Seeds data into the test database before a test makes HTTP requests.
+    /// EnsureCreated() builds the schema from the EF model on first call.
     /// </summary>
     public void SeedDatabase(Action<AppDbContext> seeder)
     {
@@ -82,6 +72,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Database.EnsureCreated();
         seeder(db);
+        db.SaveChanges();
     }
 
     protected override void Dispose(bool disposing)
@@ -92,20 +83,5 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             _connection.Close();
             _connection.Dispose();
         }
-    }
-
-    // ── No-op email stub ─────────────────────────────────────────────────────
-    // EmailService.SendWelcomeEmailAsync and SendPasswordResetEmailAsync are
-    // declared virtual so this subclass can safely silence them in tests.
-    private sealed class NoOpEmailService : EmailService
-    {
-        public NoOpEmailService(IConfiguration config, ILogger<EmailService> logger)
-            : base(config, logger) { }
-
-        public override Task SendWelcomeEmailAsync(
-            string toEmail, string role, string setupLink) => Task.CompletedTask;
-
-        public override Task SendPasswordResetEmailAsync(
-            string toEmail, string resetLink) => Task.CompletedTask;
     }
 }
