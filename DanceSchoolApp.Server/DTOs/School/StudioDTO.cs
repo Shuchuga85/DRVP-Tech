@@ -44,6 +44,8 @@ namespace DanceSchoolApp.Server.DTOs.School
 
         [MaxLength(256)]
         public string? Address { get; set; }
+
+        public List<int> ModalityIds { get; set; } = new();
     }
 
     public class StudioUpdateRequest
@@ -58,14 +60,8 @@ namespace DanceSchoolApp.Server.DTOs.School
 
         [MaxLength(256)]
         public string? Address { get; set; }
+
+        public List<int> ModalityIds { get; set; } = new();
     }
 
-    public class StudioModalityRequest
-    {
-        [Required]
-        public int ModalityId { get; set; }
-
-        [Required]
-        public int StudioId { get; set; }
-    }
 }

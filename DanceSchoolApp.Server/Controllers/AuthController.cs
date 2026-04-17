@@ -12,10 +12,12 @@ namespace DanceSchoolApp.Server.Controllers
     {
         private const string CookieName = "jwt";
         private readonly AuthService _authService;
+        private readonly IWebHostEnvironment _env;
 
-        public AuthController(AuthService authService)
+        public AuthController(AuthService authService, IWebHostEnvironment env)
         {
             _authService = authService;
+            _env = env;
         }
 
         // ─── POST /api/auth/login ──────────────────────────────────────────────
@@ -35,8 +37,8 @@ namespace DanceSchoolApp.Server.Controllers
 
                 Response.Cookies.Append(CookieName, token, new CookieOptions
                 {
-                    HttpOnly = true,           // JS cannot read this cookie
-                    Secure = true,           // HTTPS only
+                    HttpOnly = true,
+                    Secure = !_env.IsDevelopment(),  // false in Development/Test, true in Production
                     SameSite = SameSiteMode.Strict,
                     Expires = response.ExpiresAt,
                     Path = "/"

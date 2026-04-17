@@ -75,6 +75,15 @@ namespace DanceSchoolApp.Server.Services.School
                 IsActive = true
             };
 
+            if (request.ModalityIds.Count > 0)
+            {
+                var modalities = await _context.Modalities
+                    .Where(m => request.ModalityIds.Contains(m.ModalityId) && m.IsActive)
+                    .ToListAsync();
+                foreach (var m in modalities)
+                    studio.IdModalities.Add(m);
+            }
+
             _context.Studios.Add(studio);
             await _context.SaveChangesAsync();
 
@@ -83,7 +92,9 @@ namespace DanceSchoolApp.Server.Services.School
 
         public async Task UpdateStudioAsync(int id, StudioUpdateRequest request)
         {
-            var studio = await _context.Studios.FindAsync(id);
+            var studio = await _context.Studios
+                .Include(s => s.IdModalities)
+                .FirstOrDefaultAsync(s => s.StudioId == id);
 
             if (studio is null)
                 throw new KeyNotFoundException($"Studio with id {id} was not found.");
@@ -97,6 +108,16 @@ namespace DanceSchoolApp.Server.Services.School
             studio.Name = request.Name;
             studio.Capacity = request.Capacity;
             studio.Address = request.Address;
+
+            studio.IdModalities.Clear();
+            if (request.ModalityIds.Count > 0)
+            {
+                var modalities = await _context.Modalities
+                    .Where(m => request.ModalityIds.Contains(m.ModalityId) && m.IsActive)
+                    .ToListAsync();
+                foreach (var m in modalities)
+                    studio.IdModalities.Add(m);
+            }
 
             await _context.SaveChangesAsync();
         }

@@ -146,18 +146,15 @@ namespace DanceSchoolApp.Server.Controllers.School
             }
         }
 
-        // ─── POST /api/studios/modality ────────────────────────────────
+        // ─── POST /api/studios/{studioId}/modalities/{modalityId} ────────────────────
         [Authorize(Roles = "staff")]
-        [HttpPost("modality")]
-        public async Task<IActionResult> AddModality([FromBody] StudioModalityRequest request)
+        [HttpPost("{studioId}/modalities/{modalityId}")]
+        public async Task<IActionResult> AddModality(int studioId, int modalityId)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             try
             {
-                await _studioService.AddModalityAsync(request.StudioId, request.ModalityId);
-                return Ok($"Modality {request.ModalityId} added to studio {request.StudioId}.");
+                await _studioService.AddModalityAsync(studioId, modalityId);
+                return Ok($"Modality {modalityId} added to studio {studioId}.");
             }
             catch (KeyNotFoundException ex)
             {
@@ -173,14 +170,14 @@ namespace DanceSchoolApp.Server.Controllers.School
             }
         }
 
-        // ─── DELETE /api/studios/modality ─────────────────
+        // ─── DELETE /api/studios/{studioId}/modalities/{modalityId} ──────────────────
         [Authorize(Roles = "staff")]
-        [HttpDelete("modality")]
-        public async Task<IActionResult> RemoveModality([FromBody] StudioModalityRequest request)
+        [HttpDelete("{studioId}/modalities/{modalityId}")]
+        public async Task<IActionResult> RemoveModality(int studioId, int modalityId)
         {
             try
             {
-                await _studioService.RemoveModalityAsync(request.StudioId, request.ModalityId);
+                await _studioService.RemoveModalityAsync(studioId, modalityId);
                 return NoContent();
             }
             catch (KeyNotFoundException ex)

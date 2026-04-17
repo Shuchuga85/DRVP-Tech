@@ -158,8 +158,8 @@ namespace DanceSchoolApp.Server.Services.People
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            if (role.RoleId == Roles.Coach)
-                _coachService.CreateCoachAsync(user.UserId);
+            if (role is not null && role.RoleId == Roles.Coach)
+                await _coachService.CreateCoachAsync(user.UserId);
 
             try
             {
