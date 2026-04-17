@@ -3,6 +3,7 @@ using DanceSchoolApp.Server.DTOs.Classes;
 using DanceSchoolApp.Server.Services.Classes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace DanceSchoolApp.Server.Controllers.Classes
 {
@@ -49,9 +50,11 @@ namespace DanceSchoolApp.Server.Controllers.Classes
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
             try
             {
-                var newId = await _participantService.JoinClassAsync(request);
+                var newId = await _participantService.JoinClassAsync(request, userId);
                 return CreatedAtAction(
                     nameof(GetByClass),
                     new { classId = request.ClassId },
@@ -60,6 +63,10 @@ namespace DanceSchoolApp.Server.Controllers.Classes
             catch (KeyNotFoundException ex)
             {
                 return NotFound(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, ex.Message);
             }
             catch (InvalidOperationException ex)
             {

@@ -69,7 +69,7 @@ namespace DanceSchoolApp.Server.Services.Classes
 
         // ─── Commands ─────────────────────────────────────────────────────────
 
-        public async Task<int> JoinClassAsync(ParticipantJoinRequest request)
+        public async Task<int> JoinClassAsync(ParticipantJoinRequest request, int callingUserId)
         {
             // ── 1. Class must exist and be open (Approved + has space) ─────────
             var coachClass = await _context.CoachClasses
@@ -97,15 +97,14 @@ namespace DanceSchoolApp.Server.Services.Classes
                 throw new KeyNotFoundException(
                     $"Student with id {request.StudentId} was not found or is inactive.");
 
+            if (student.ParentUserId != callingUserId)
+                throw new UnauthorizedAccessException("You can only enroll your own students.");
+
             if (student.AcceptanceStatus != 1)
                 throw new InvalidOperationException(
                     "This student has not been accepted by staff yet and cannot join classes.");
 
             // ── 3. Student must belong to the requesting parent ───────────────
-            // NOTE: once auth is in, replace request.ParentUserId with the
-            // authenticated user id from the JWT claims. For now the parent
-            // id is inferred from the student record for safety.
-            // This prevents a parent from enrolling another parent's student.
 
             // ── 4. Student not already enrolled in this class ─────────────────
             // The DB has a unique constraint UQ_ClassStudent, but we catch it

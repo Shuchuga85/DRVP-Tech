@@ -54,7 +54,7 @@ public class ParticipantOwnershipTests
         {
             ClassId   = coachClass.ClassId,
             StudentId = student.StudentId
-        });
+        }, parentUser.UserId);
 
         // Assert — no exception, and a Participant row was persisted
         await act.Should().NotThrowAsync();
@@ -67,9 +67,7 @@ public class ParticipantOwnershipTests
 
     // ─── 2. Ownership guard (not yet implemented) ─────────────────────────────
 
-    [Fact(Skip =
-        "JoinClassAsync does not yet accept a callingUserId; ownership check is " +
-        "commented out pending JWT integration. Un-skip once the guard is wired in.")]
+    [Fact]
     public async Task EnrollStudent_StudentBelongsToDifferentParent_ThrowsUnauthorizedAccess()
     {
         // Arrange
@@ -91,13 +89,11 @@ public class ParticipantOwnershipTests
         var service = CreateService(db);
 
         // Act — parent B attempts to enroll parent A's student
-        // (requires a callingUserId parameter that does not yet exist)
         Func<Task> act = () => service.JoinClassAsync(new ParticipantJoinRequest
         {
             ClassId   = coachClass.ClassId,
             StudentId = student.StudentId
-            // callingUserId = parentUserB.UserId  ← parameter does not exist yet
-        });
+        }, parentUserB.UserId);
 
         // Assert
         await act.Should().ThrowAsync<UnauthorizedAccessException>();
@@ -145,7 +141,7 @@ public class ParticipantOwnershipTests
         {
             ClassId   = coachClass.ClassId,
             StudentId = student2.StudentId
-        });
+        }, parentUser.UserId);
 
         // Assert
         await act.Should().ThrowAsync<InvalidOperationException>()
@@ -178,7 +174,7 @@ public class ParticipantOwnershipTests
         {
             ClassId   = coachClass.ClassId,
             StudentId = student.StudentId
-        });
+        }, parentUser.UserId);
 
         // Assert
         await act.Should().ThrowAsync<InvalidOperationException>()
@@ -224,7 +220,7 @@ public class ParticipantOwnershipTests
         {
             ClassId   = coachClass.ClassId,
             StudentId = pendingStudent.StudentId
-        });
+        }, parentUser.UserId);
 
         // Assert
         await act.Should().ThrowAsync<InvalidOperationException>()
