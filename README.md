@@ -29,10 +29,10 @@ Este repositório contém o desenvolvimento do trabalho realizado no âmbito do 
 ---
 
 ## 🔗 Documentação do API
-[Patch v1.0](Doc/V1BasicAPI.md)   
-[Patch v2.0](Doc/V2AdvancedAPI.md)   
+[Patch v1.0](Docs/V1BasicAPI.md)   
+[Patch v2.0](Docs/V2AdvancedAPI.md)   
    
-[Endpoint Mapping by page](Doc/EndpointsMapping.md)   
+[Endpoint Mapping by page](Docs/EndpointsMapping.md)   
 
 ---
 
