@@ -126,10 +126,10 @@ Integration tests are configured to run **sequentially** (no parallelism) to avo
 
 | Document | Description |
 |----------|-------------|
-| [V1BasicAPI.md](Doc/V1BasicAPI.md) | All primitive REST endpoints (auth, users, classes, billing, …) |
-| [V2AdvancedAPI.md](Doc/V2AdvancedAPI.md) | Role-scoped portal controllers (`/api/staff/*`, `/api/ee/*`, `/api/coach/*`, `/api/admin/*`) |
-| [V3TestsFramework.md](Doc/V3TestsFramework.md) | Testing architecture, bug fixes, and automation added in patch v3 |
-| [EndpointsMapping.md](Doc/EndpointsMapping.md) | Page-by-page map from every React route to its API calls |
+| [V1BasicAPI.md](Docs/V1BasicAPI.md) | All primitive REST endpoints (auth, users, classes, billing, …) |
+| [V2AdvancedAPI.md](Docs/V2AdvancedAPI.md) | Role-scoped portal controllers (`/api/staff/*`, `/api/ee/*`, `/api/coach/*`, `/api/admin/*`) |
+| [V3TestsFramework.md](Docs/V3TestsFramework.md) | Testing architecture, bug fixes, and automation added in patch v3 |
+| [EndpointsMapping.md](Docs/EndpointsMapping.md) | Page-by-page map from every React route to its API calls |
 | [PostmanCfg/](PostmanCfg/) | Full Postman collection with flows and debug endpoints |
 
 ---
