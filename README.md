@@ -131,7 +131,6 @@ Integration tests are configured to run **sequentially** (no parallelism) to avo
 | [V3TestsFramework.md](Doc/V3TestsFramework.md) | Testing architecture, bug fixes, and automation added in patch v3 |
 | [EndpointsMapping.md](Doc/EndpointsMapping.md) | Page-by-page map from every React route to its API calls |
 | [PostmanCfg/](PostmanCfg/) | Full Postman collection with flows and debug endpoints |
-| [CLAUDE.md](CLAUDE.md) | AI-assisted development guide (conventions, patterns, test setup) |
 
 ---
 
