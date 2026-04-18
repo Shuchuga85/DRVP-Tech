@@ -7,7 +7,7 @@ export function AuthProvider({ children }) {
 
     const refreshSession = async () => {
         try {
-            const response = await fetch('https://localhost:7003/api/auth/me', {
+            const response = await fetch('/api/auth/me', {
                 method: 'GET',
                 credentials: 'include',
             })
@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
 
     const logout = async () => {
         try {
-            await fetch('https://localhost:7003/api/auth/logout', {
+            await fetch('/api/auth/logout', {
                 method: 'POST',
                 credentials: 'include',
             })

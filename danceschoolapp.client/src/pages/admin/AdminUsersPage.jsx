@@ -9,7 +9,7 @@ import {
     createUser,
     activateUser,
     deactivateUser,
-} from '../../features/users/services/usersService'
+} from '../../services/usersService'
 import '../../styles/AdminPage.css'
 
 const PAGE_SIZE = 20

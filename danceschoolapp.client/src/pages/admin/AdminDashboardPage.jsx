@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import PageCard from '../../components/common/PageCard'
-import KpiCard from '../../features/dashboard/components/KpiCard'
-import { getAdminDashboardStats } from '../../features/dashboard/services/dashboardService'
+import KpiCard from '../../components/common/KpiCard'
+import { getAdminDashboardStats } from '../../services/dashboardService'
 import '../../styles/AdminPage.css'
 
 function AdminDashboardPage() {

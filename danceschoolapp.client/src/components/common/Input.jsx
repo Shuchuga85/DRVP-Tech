@@ -5,6 +5,8 @@ function Input({
     onChange,
     placeholder = '',
     onKeyDown,
+    disabled = false,
+    className = '',
 }) {
     return (
         <input
@@ -14,7 +16,8 @@ function Input({
             placeholder={placeholder}
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={onKeyDown}
-            className="input"
+            disabled={disabled}
+            className={`input ${className}`.trim()}
         />
     )
 }

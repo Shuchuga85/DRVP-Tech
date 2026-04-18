@@ -13,7 +13,7 @@ export const sidebarMenus = {
         { label: 'Estúdios', to: '/staff/estudios' },
         { label: 'Eventos', to: '/staff/eventos' },
         { label: 'Inventário', to: '/staff/inventario' },
-        { label: 'Agenda Global', to: '/staff/agenda-global' },
+        { label: 'Agenda Global', to: '/staff/agenda' },
         { label: 'Faturação', to: '/staff/faturacao' },
     ],
 

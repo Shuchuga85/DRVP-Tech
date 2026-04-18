@@ -4,10 +4,11 @@ function Sidebar({ items = [] }) {
     return (
         <aside className="dashboard-sidebar">
             <nav className="dashboard-sidebar-nav">
-                {items.map((item) => (
+                {items.map((item, index) => (
                     <NavLink
                         key={item.to}
                         to={item.to}
+                        end={index === 0}
                         className={({ isActive }) =>
                             isActive
                                 ? 'dashboard-sidebar-link active'
