@@ -332,9 +332,13 @@ __pycache__/
 *.odx.cs
 *.xsd.cs
 
+# Claude Code
+CLAUDE.md
+ClaudeSessions/
+
 # OpenCover UI analysis results
 OpenCover/
-CLAUDE.md
+
 # Azure Stream Analytics local run output
 ASALocalRun/
 
