@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using System.Reflection;
 using DanceSchoolApp.Server.Data;
+using DanceSchoolApp.Server.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.SqlServer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,6 +22,7 @@ foreach (var service in serviceTypes)
     builder.Services.AddScoped(service);
 }
 
+builder.Services.AddHostedService<ClassLifecycleWorker>();
 
 // ── Controllers ───────────────────────────────────────────────────────────
 builder.Services.AddControllers();

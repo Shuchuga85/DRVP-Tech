@@ -516,6 +516,9 @@ namespace DanceSchoolApp.Server.Services.Classes
 
             if (coachClass is null) return;
 
+            coachClass.FinishedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
             var distinctParentIds = coachClass.Participants
                 .Select(p => p.IdStudentNavigation.ParentUserId)
                 .Distinct();
@@ -554,9 +557,10 @@ namespace DanceSchoolApp.Server.Services.Classes
             if (coachClass.IdCoach != coachUserId)
                 throw new UnauthorizedAccessException("You are not the coach for this class.");
 
-            if (coachClass.Status != (byte)CoachClassStatus.Finished)
+            if (coachClass.Status != (byte)CoachClassStatus.Finished &&
+                coachClass.Status != (byte)CoachClassStatus.Pending)
                 throw new InvalidOperationException(
-                    "Coach validation is only available for Finished classes.");
+                    "Coach validation is only available for Finished or Pending classes.");
 
             if (coachClass.CoachValidationStatus != (byte)CoachValidationStatus.Pending)
                 throw new InvalidOperationException(
@@ -588,6 +592,20 @@ namespace DanceSchoolApp.Server.Services.Classes
                     type: NotificationType.ClassUpdate,
                     entityType: "CoachClass",
                     entityId: classId);
+            }
+
+            if (coachClass.Status == (byte)CoachClassStatus.Pending)
+            {
+                foreach (var staffId in staffIds)
+                {
+                    await _notificationService.SendAsync(
+                        userId: staffId,
+                        title: "Late Coach Validation Received",
+                        message: $"Coach submitted a validation for class id {classId} after the validation window closed.",
+                        type: NotificationType.Warning,
+                        entityType: "CoachClass",
+                        entityId: classId);
+                }
             }
 
             // If all participants have already responded, advance to Pending now.

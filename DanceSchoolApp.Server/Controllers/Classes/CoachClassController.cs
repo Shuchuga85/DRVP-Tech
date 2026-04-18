@@ -313,32 +313,6 @@ namespace DanceSchoolApp.Server.Controllers.Classes
             }
         }
 
-        // ─── PATCH /api/coachclasses/{id}/finish ──────────────────────────────
-        // Staff use — transitions Approved → Finished, triggering the
-        // 48h validation window for coach and parent.
-        [Authorize(Roles = "staff")]
-        [HttpPatch("{id}/finish")]
-        public async Task<IActionResult> Finish(int id)
-        {
-            try
-            {
-                await _coachClassService.FinishAsync(id);
-                return NoContent();
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
-        }
-
         // ─── PATCH /api/coachclasses/{id}/coach-validate ──────────────────────
         // Coach use — confirms or denies they taught the class.
         // Only available on Finished classes.

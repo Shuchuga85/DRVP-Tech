@@ -28,7 +28,7 @@ namespace DanceSchoolApp.Server.Services
             decimal weekdayRate = await _appSettings.GetDecimalAsync(
                 "class_price_weekday", 36.00m);
             decimal weekendRate = await _appSettings.GetDecimalAsync(
-                "class_price_weekend", 43.20m);
+                "class_price_weekend", 43.50m);
 
             // One query: validated classes in the month, with every participant's
             // student record eagerly loaded.

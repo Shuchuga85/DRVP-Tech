@@ -1,6 +1,7 @@
 using DanceSchoolApp.Server.Data;
 using DanceSchoolApp.Server.DTOs.Classes;
 using DanceSchoolApp.Server.Models;
+using DanceSchoolApp.Server.Services;
 using DanceSchoolApp.Server.Services.Classes;
 using DanceSchoolApp.Server.Services.Social;
 using DanceSchoolApp.Tests.Helpers;
@@ -25,7 +26,8 @@ public class ParticipantOwnershipTests
     private static ParticipantService CreateService(AppDbContext db)
     {
         var notifications = new NotificationService(db);
-        return new ParticipantService(db, notifications);
+        var appSettings   = new AppSettingService(db);
+        return new ParticipantService(db, notifications, appSettings);
     }
 
     // ─── 1. Happy path ────────────────────────────────────────────────────────

@@ -27,6 +27,8 @@ public partial class CoachClass
 
     public byte CoachValidationStatus { get; set; }
 
+    public DateTime? FinishedAt { get; set; }
+
     public DateTime? CoachValidatedAt { get; set; }
 
     public DateTime? StaffValidatedAt { get; set; }

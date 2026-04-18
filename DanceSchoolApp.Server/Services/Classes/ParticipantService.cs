@@ -12,12 +12,15 @@ namespace DanceSchoolApp.Server.Services.Classes
     {
         private readonly AppDbContext _context;
         private readonly NotificationService _notificationService;
+        private readonly AppSettingService _appSettings;
 
         public ParticipantService(AppDbContext context,
-            NotificationService notificationService)
+            NotificationService notificationService,
+            AppSettingService appSettings)
         {
             _context = context;
             _notificationService = notificationService;
+            _appSettings = appSettings;
         }
 
         // ─── Queries ──────────────────────────────────────────────────────────
@@ -130,13 +133,28 @@ namespace DanceSchoolApp.Server.Services.Classes
                 throw new InvalidOperationException(
                     "This student is already enrolled in another class at this time.");
 
-            // ── 6. Enroll ─────────────────────────────────────────────────────
+            // ── 6. Resolve class price ────────────────────────────────────────
+            decimal classPrice;
+            if (request.ClassPrice.HasValue)
+            {
+                classPrice = request.ClassPrice.Value;
+            }
+            else
+            {
+                var dow = coachClass.StartDatetime.DayOfWeek;
+                bool isWeekend = dow == DayOfWeek.Saturday || dow == DayOfWeek.Sunday;
+                classPrice = isWeekend
+                    ? await _appSettings.GetDecimalAsync("class_price_weekend", 43.20m)
+                    : await _appSettings.GetDecimalAsync("class_price_weekday", 36.00m);
+            }
+
+            // ── 7. Enroll ─────────────────────────────────────────────────────
             var participant = new Participant
             {
                 IdCoachClass = request.ClassId,
                 IdStudent = request.StudentId,
                 JoinedAt = DateOnly.FromDateTime(DateTime.UtcNow),
-                ClassPrice = request.ClassPrice ?? 0m,  // default until pricing config exists
+                ClassPrice = classPrice,
                 ValidationStatus = (byte)ParticipantValidationStatus.Pending
             };
 
@@ -248,27 +266,44 @@ namespace DanceSchoolApp.Server.Services.Classes
 
             if (!allResponded) return;
 
-            // All participants have responded — check that coach has also responded
-            // before advancing to Pending for staff sign-off.
             var coachClass = await _context.CoachClasses
                 .FirstOrDefaultAsync(c => c.ClassId == classId);
 
-            if (coachClass is null ||
-                coachClass.Status != (byte)CoachClassStatus.Finished)
-                return;
-
-            // Coach must have given a response (Confirmed or Denied) before advancing.
-            if (coachClass.CoachValidationStatus == (byte)CoachValidationStatus.Pending)
-                return;
-
-            coachClass.Status = (byte)CoachClassStatus.Pending;
-            await _context.SaveChangesAsync();
+            if (coachClass is null) return;
 
             var staffIds = await _context.Users
                 .Include(u => u.IdRoles)
                 .Where(u => u.IdRoles.Any(r => r.RoleId == 1) && u.IsActive)
                 .Select(u => u.UserId)
                 .ToListAsync();
+
+            // If the worker already expired the window and moved the class to Pending,
+            // skip the status change but notify staff that a late parent response arrived.
+            if (coachClass.Status == (byte)CoachClassStatus.Pending)
+            {
+                foreach (var staffId in staffIds)
+                {
+                    await _notificationService.SendAsync(
+                        userId: staffId,
+                        title: "Late Parent Validation Received",
+                        message: $"A parent submitted a validation for class id {classId} after the validation window closed.",
+                        type: NotificationType.Warning,
+                        entityType: "CoachClass",
+                        entityId: classId);
+                }
+                return;
+            }
+
+            // Normal path: class is still Finished — check coach has also responded
+            // before advancing to Pending for staff sign-off.
+            if (coachClass.Status != (byte)CoachClassStatus.Finished)
+                return;
+
+            if (coachClass.CoachValidationStatus == (byte)CoachValidationStatus.Pending)
+                return;
+
+            coachClass.Status = (byte)CoachClassStatus.Pending;
+            await _context.SaveChangesAsync();
 
             foreach (var staffId in staffIds)
             {

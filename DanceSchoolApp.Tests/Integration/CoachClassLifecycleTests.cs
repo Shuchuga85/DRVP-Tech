@@ -152,13 +152,16 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
         acceptResp.StatusCode.Should().Be(HttpStatusCode.NoContent,
             because: "coach-accept on a StaffApproved class must return 204");
 
-        // ── Step 4 — Staff finishes the class (Approved → Finished) ───────────
-        staffJwt = await LoginAndGetCookie("staff_lc");
-        var finishResp = await _client.SendAsync(
-            MakeRequest(HttpMethod.Patch, $"/api/coachclasses/{classId}/finish", staffJwt));
-
-        finishResp.StatusCode.Should().Be(HttpStatusCode.NoContent,
-            because: "finish on an Approved class must return 204");
+        // ── Step 4 — Simulate worker transitioning Approved → Finished ──────────
+        // The /finish endpoint has been removed; the transition is now automated
+        // by ClassLifecycleWorker. Directly update DB state to replicate what
+        // the worker does so the rest of the lifecycle can proceed.
+        _factory.SeedDatabase(db =>
+        {
+            var cls = db.CoachClasses.Find(classId)!;
+            cls.Status = (byte)CoachClassStatus.Finished;
+            cls.FinishedAt = DateTime.UtcNow.AddHours(-1);
+        });
 
         // ── Step 5 — Coach validates (records DidTeach; class stays Finished  ──
         //            until the single participant also responds in step 6)

@@ -36,9 +36,8 @@ namespace DanceSchoolApp.Server.DTOs.Classes
         [Required]
         public int StudentId { get; set; }
 
-        // Optional at enrollment — will be populated from AppSetting pricing
-        // once that is built. Defaults to 0 until then.
-        // TODO: resolve from AppSetting when pricing config is implemented.
+        // Priority: custom override (staff-set) > AppSetting rate (weekend/weekday) > default fallback.
+        // Null means "resolve from app settings at enrollment time".
         public decimal? ClassPrice { get; set; }
     }
 

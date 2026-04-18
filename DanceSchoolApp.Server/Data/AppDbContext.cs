@@ -172,6 +172,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.CoachValidationStatus)
                   .HasDefaultValue((byte)0)
                   .HasColumnName("coach_validation_status");
+            entity.Property(e => e.FinishedAt).HasColumnName("finished_at");
             entity.Property(e => e.CoachValidatedAt).HasColumnName("coach_validated_at");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
