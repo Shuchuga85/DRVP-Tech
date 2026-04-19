@@ -1,0 +1,55 @@
+Here are the 2nd version of the mockups for the DanceSchoolApp project 
+OBS: this version is not final and have wrong features, what i manage to spot i flagged 
+as “(wrong: ...)” 
+/ee As parent, first impression dashboard. 
+/ee/classes As parent role, for checking and validating class after it happened in 48 
+hour. 
+/ee/students As parent, editing  student 
+/ee/classes As parent, checking his week calendar 
+/ee/classes As parent, checking available slots to request classes in a calendar. 
+/ee/classes As parent, requesting a class 
+/ee/classes As parent, checking for joinable classes (wrong: if class is full should not 
+even show) 
+/ee/inventory As parent cheking the community marketplace (wrong: item blobs should 
+not be variants instead the main item, then leads to an item only page, with the variants 
+and image, and we dont have variant state in db: not adding) 
+/ee/inventory As parent checking school marketplace (wrong: button should lead to a 
+item page, just like in real shopping sites: vinted, nike, aliexpress etc, again variant 
+state is not a thing) 
+/admin As admin dashboard 
+/admin/users As admin, managing/generating first staffs accounts (App_settings tab 
+will be added later for admin) 
+/coach As coach, dashboard with simple data 
+/coach/availability As Coach, available.(wrong: missing create absence days subpage) 
+/coach/availability As Coach, creating availability (wrong: when adding, it should insert, 
+weekday, startdate , enddate, starttime, endtime) 
+/coach/class-validation As coach, accept a requested class, after staff’s acceptance. 
+/coach/class-validation As coach validated the lesson given to the class.  
+/coach/agenda As coach, his agenda. (worth adding other status classes as different 
+colors) 
+/staff As staff, dashboard
+/staff/users As staff, creating/managing parent and coach accounts 
+/staff/verify-student As staff validating new students (wrong: just accept or refuse 
+button, and when refusing a message for a notification is obliged) 
+/staff/validate-class As staff accepting a new class request, auto message to the coach 
+so he can accept as well, or refused message the parent (wrong: there is no note in 
+coachclass) 
+/staff/validate-class As Staff, validating classes after the 48hour double validation, 
+pending is ran either if the 48 time is past or there is coach/parent saing opposite things 
+once that happens they are notified to communicate with each other and figure out who 
+is lying/mistake about the class happening. (wrong: it is supposed to show either a list 
+of parents and validation status or a count for confirmed, not responded, or disputed). 
+As staff finishing off pending classes when the coach and parents are in syntony (wrong:  
+same as finished classes parents should have list or counts.) 
+/staff/validate-class As staff, modality manager. 
+/staff/modalities As staff, modality creating example. 
+/staff/studios As staff, studio manager. 
+/staff/studios As staff, sudio adding example 
+/staff/events As staff, managing events (wrong; i dont have event type in db, not adding 
+so mockup is changing later) 
+/staff/agenda As staff a page to check classes summary,  
+/staff/billing As staff a page to check the billing (wrong: it is not €/hour is total expenses 
+since the price is fixed as either 36€/h for regular days and 43.2€/h for weekends 
+(appsettings table)) 
+/staff/billing As staff a page to check coach billing (wrong : same problem as studen 
+billing) 

@@ -1,0 +1,7 @@
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+
+@base_address = http://localhost:5295/weatherforecast
+
+GET {{base_address}}
+
+###
