@@ -166,7 +166,7 @@ namespace DanceSchoolApp.Server.Services.People
                 string roleName = role?.RoleName ?? "Utilizador";
                 string resetToken = _authService.GeneratePasswordResetToken(user.UserId, user.Email!);
                 string resetLink = $"https://localhost:5173/reset-password?token={resetToken}";
-                await _emailService.SendWelcomeEmailAsync(user.Email, roleName, resetLink);
+                await _emailService.SendWelcomeEmailAsync(user.Email, roleName, generatedPassword,resetLink);
             }
             catch (Exception ex)
             {
