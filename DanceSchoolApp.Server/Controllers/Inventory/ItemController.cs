@@ -18,13 +18,27 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
             _itemService = itemService;
         }
 
-        // ─── Helper ───────────────────────────────────────────────────────────────
+        // ─── Helpers ──────────────────────────────────────────────────────────────
 
         private int GetUserId() =>
             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         private bool IsStaff() =>
             User.IsInRole("staff");
+
+        /// <summary>
+        /// Staff may manage any item. Parents may only manage their own
+        /// community items. Throws <see cref="UnauthorizedAccessException"/>
+        /// when the caller has no right to modify the item.
+        /// </summary>
+        private async Task EnsureCanManageItem(int itemId)
+        {
+            if (IsStaff()) return;
+
+            if (!await _itemService.IsItemOwnerAsync(itemId, GetUserId()))
+                throw new UnauthorizedAccessException(
+                    "You can only manage your own community items.");
+        }
 
         // ═══════════════════════════════════════════════════════════════════════
         // ITEMS
@@ -113,8 +127,9 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
         }
 
         // ─── PATCH /api/items/{id} ────────────────────────────────────────────
+        /// <summary>Staff or item owner updates item metadata.</summary>
         [HttpPatch("{id}")]
-        [Authorize(Roles = "staff")]
+        [Authorize(Roles = "staff,parent")]
         public async Task<IActionResult> UpdateItem(int id, [FromBody] ItemUpdateRequest request)
         {
             if (!ModelState.IsValid)
@@ -122,8 +137,13 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
 
             try
             {
+                await EnsureCanManageItem(id);
                 await _itemService.UpdateItemAsync(id, request);
                 return NoContent();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
             }
             catch (KeyNotFoundException ex)
             {
@@ -136,14 +156,20 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
         }
 
         // ─── DELETE /api/items/{id} ───────────────────────────────────────────
+        /// <summary>Staff or item owner deactivates an item (soft-delete).</summary>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "staff")]
+        [Authorize(Roles = "staff,parent")]
         public async Task<IActionResult> DeactivateItem(int id)
         {
             try
             {
+                await EnsureCanManageItem(id);
                 await _itemService.DeactivateItemAsync(id);
                 return NoContent();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
             }
             catch (KeyNotFoundException ex)
             {
@@ -160,8 +186,9 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
         // ═══════════════════════════════════════════════════════════════════════
 
         // ─── POST /api/items/{id}/images ──────────────────────────────────────
+        /// <summary>Staff or item owner adds an image to an item.</summary>
         [HttpPost("{id}/images")]
-        [Authorize(Roles = "staff")]
+        [Authorize(Roles = "staff,parent")]
         public async Task<IActionResult> AddImage(int id, [FromBody] ItemImageAddRequest request)
         {
             if (!ModelState.IsValid)
@@ -169,8 +196,13 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
 
             try
             {
+                await EnsureCanManageItem(id);
                 var imageId = await _itemService.AddImageAsync(id, request);
                 return CreatedAtAction(nameof(GetItem), new { id }, new { imageId });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
             }
             catch (KeyNotFoundException ex)
             {
@@ -183,14 +215,20 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
         }
 
         // ─── DELETE /api/items/{id}/images/{imageId} ──────────────────────────
+        /// <summary>Staff or item owner removes an image from an item.</summary>
         [HttpDelete("{id}/images/{imageId}")]
-        [Authorize(Roles = "staff")]
+        [Authorize(Roles = "staff,parent")]
         public async Task<IActionResult> RemoveImage(int id, int imageId)
         {
             try
             {
+                await EnsureCanManageItem(id);
                 await _itemService.RemoveImageAsync(id, imageId);
                 return NoContent();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
             }
             catch (KeyNotFoundException ex)
             {
@@ -231,8 +269,9 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
         }
 
         // ─── POST /api/items/{id}/variants ────────────────────────────────────
+        /// <summary>Staff or item owner creates a variant.</summary>
         [HttpPost("{id}/variants")]
-        [Authorize(Roles = "staff")]
+        [Authorize(Roles = "staff,parent")]
         public async Task<IActionResult> CreateVariant(int id, [FromBody] ItemVariantCreateRequest request)
         {
             if (!ModelState.IsValid)
@@ -240,8 +279,13 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
 
             try
             {
+                await EnsureCanManageItem(id);
                 var variantId = await _itemService.CreateVariantAsync(id, request);
                 return CreatedAtAction(nameof(GetVariants), new { id }, new { variantId });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
             }
             catch (KeyNotFoundException ex)
             {
@@ -254,8 +298,9 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
         }
 
         // ─── PATCH /api/items/{id}/variants/{variantId} ───────────────────────
+        /// <summary>Staff or item owner updates a variant (including activate/deactivate).</summary>
         [HttpPatch("{id}/variants/{variantId}")]
-        [Authorize(Roles = "staff")]
+        [Authorize(Roles = "staff,parent")]
         public async Task<IActionResult> UpdateVariant(int id, int variantId, [FromBody] ItemVariantUpdateRequest request)
         {
             if (!ModelState.IsValid)
@@ -263,8 +308,13 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
 
             try
             {
+                await EnsureCanManageItem(id);
                 await _itemService.UpdateVariantAsync(id, variantId, request);
                 return NoContent();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
             }
             catch (KeyNotFoundException ex)
             {
@@ -277,14 +327,20 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
         }
 
         // ─── DELETE /api/items/{id}/variants/{variantId} ──────────────────────
+        /// <summary>Staff or item owner hard-deletes a variant (if no active requisitions).</summary>
         [HttpDelete("{id}/variants/{variantId}")]
-        [Authorize(Roles = "staff")]
+        [Authorize(Roles = "staff,parent")]
         public async Task<IActionResult> DeleteVariant(int id, int variantId)
         {
             try
             {
+                await EnsureCanManageItem(id);
                 await _itemService.DeleteVariantAsync(id, variantId);
                 return NoContent();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
             }
             catch (KeyNotFoundException ex)
             {
