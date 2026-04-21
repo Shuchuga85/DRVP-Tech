@@ -194,6 +194,12 @@ namespace DanceSchoolApp.Server.Services.Classes
                 throw new InvalidOperationException(
                     "Validation is only available for Finished classes.");
 
+            // Parent can only validate after a coach validates firts.
+            if (participant.IdCoachClassNavigation.CoachValidatedAt == null)
+                throw new InvalidOperationException(
+                    "Validation is only available after coach validates."
+                    );
+
             // Prevent re-validation once already responded.
             if (participant.ValidationStatus != (byte)ParticipantValidationStatus.Pending)
                 throw new InvalidOperationException(
