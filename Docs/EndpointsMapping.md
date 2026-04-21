@@ -129,14 +129,13 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 |---|---|
 | Page mount | `GET /api/auth/me` |
 | Tab "Requisitadas" (default) | `GET /api/staff/validate-classes?tab=requested&page=1&pageSize=15` |
-| Tab "Finalizadas" | `GET /api/staff/validate-classes?tab=finished&page=1&pageSize=15` |
 | Tab "Pendentes" | `GET /api/staff/validate-classes?tab=pending&page=1&pageSize=15` |
 | Pagination | `GET /api/staff/validate-classes?tab={tab}&page={n}` |
 | "Aceitar Aula" button (Requisitadas) | `PATCH /api/coachclasses/{id}/staff-approve` |
 | "Recusar Aula" button (Requisitadas) | `PATCH /api/coachclasses/{id}/reject` body: `{ reason? }` |
-| "Aula Realizada" button (Finalizadas) | `PATCH /api/coachclasses/{id}/staff-validate` (only available on Pending tab) |
-| "Aula Não Realizada" button (Finalizadas) | Will stay Pending for staff to investigate |
 | "Validar" button (Pendentes tab) | `PATCH /api/coachclasses/{id}/staff-validate` |
+| "Cancelar" button (Pendentes tab) | `PATCH /api/coachclasses/{id}/cancel` |
+
 
 ### `/staff/modalities` — Modalidades
 
