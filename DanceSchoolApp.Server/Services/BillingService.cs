@@ -122,8 +122,10 @@ namespace DanceSchoolApp.Server.Services
         public async Task<PagedBillingCoachResponse> GetCoachBillingAsync(
             int year, int month, string? search, int page, int pageSize)
         {
-            decimal coachRate = await _appSettings.GetDecimalAsync(
-                "coach_rate_per_hour", 35.00m);
+            decimal weekdayRate = await _appSettings.GetDecimalAsync(
+                "class_price_weekday", 36.00m);
+            decimal weekendRate = await _appSettings.GetDecimalAsync(
+                "class_price_weekend", 43.50m);
 
             // One query: validated classes in the month, with coach → user info
             // and coach modalities.
@@ -139,27 +141,43 @@ namespace DanceSchoolApp.Server.Services
                     c.StartDatetime.Month == month)
                 .ToListAsync();
 
-            // Group by coach and accumulate hours.
-            var allRows = classes
-                .GroupBy(c => c.IdCoach)
-                .Select(g =>
+            // Group by coach and accumulate hours + amount using weekday/weekend
+            // rates (same pricing as student billing).
+            var coachTotals = new Dictionary<int, (Coach Coach, decimal Hours, decimal Amount)>();
+
+            foreach (var cls in classes)
+            {
+                decimal durationHours = DurationHours(cls);
+                bool isWeekend = cls.StartDatetime.DayOfWeek is
+                    DayOfWeek.Saturday or DayOfWeek.Sunday;
+                decimal rate   = isWeekend ? weekendRate : weekdayRate;
+                decimal amount = durationHours * rate;
+
+                int cid = cls.IdCoach;
+                if (coachTotals.TryGetValue(cid, out var existing))
+                    coachTotals[cid] = (existing.Coach,
+                        existing.Hours  + durationHours,
+                        existing.Amount + amount);
+                else
+                    coachTotals[cid] = (cls.IdCoachNavigation, durationHours, amount);
+            }
+
+            var allRows = coachTotals
+                .Select(kv =>
                 {
-                    var coach        = g.First().IdCoachNavigation;
-                    decimal hours    = g.Sum(DurationHours);
-                    decimal total    = Math.Round(hours * coachRate, 2);
-                    var modalities   = coach.IdModalities
+                    var coach      = kv.Value.Coach;
+                    var modalities = coach.IdModalities
                         .Select(m => m.Name)
                         .OrderBy(n => n)
                         .ToList();
 
                     return new BillingCoachRow
                     {
-                        CoachId         = g.Key,
+                        CoachId         = kv.Key,
                         CoachName       = ResolveCoachName(coach),
                         Modalities      = modalities,
-                        HoursTaught     = Math.Round(hours, 2),
-                        RatePerHour     = coachRate,
-                        TotalAmount     = total,
+                        HoursTaught     = Math.Round(kv.Value.Hours,  2),
+                        TotalAmount     = Math.Round(kv.Value.Amount, 2),
                         PaymentStatus   = null,
                         LastPaymentDate = null
                     };

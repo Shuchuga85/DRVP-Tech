@@ -45,7 +45,6 @@ namespace DanceSchoolApp.Server.DTOs.Billing
         public string CoachName { get; set; } = null!;
         public List<string> Modalities { get; set; } = new();
         public decimal HoursTaught { get; set; }
-        public decimal RatePerHour { get; set; }
         public decimal TotalAmount { get; set; }
         public string? PaymentStatus { get; set; }    // null — deferred
         public DateTime? LastPaymentDate { get; set; } // null — deferred

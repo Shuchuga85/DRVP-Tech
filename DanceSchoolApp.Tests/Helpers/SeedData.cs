@@ -20,8 +20,7 @@ public static class SeedData
     {
         db.AppSettings.AddRange(
             new AppSetting { SettingKey = "class_price_weekday", SettingValue = "36.00" },
-            new AppSetting { SettingKey = "class_price_weekend", SettingValue = "43.20" },
-            new AppSetting { SettingKey = "coach_rate_per_hour", SettingValue = "35.00" }
+            new AppSetting { SettingKey = "class_price_weekend", SettingValue = "43.20" }
         );
         db.SaveChanges();
     }

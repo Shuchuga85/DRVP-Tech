@@ -246,7 +246,7 @@ public class BillingServiceTests
     // ─── Coach billing ────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task GetCoachBilling_ValidatedClass_ComputesCoachAmount()
+    public async Task GetCoachBilling_WeekdayClass_AppliesWeekdayRate()
     {
         // Arrange
         var db = DbContextFactory.Create();
@@ -257,7 +257,7 @@ public class BillingServiceTests
         var coachUser = SeedData.SeedUserWithRole(db, "coach1", "coach");
         var coach     = SeedData.SeedCoach(db, coachUser);
 
-        // 2-hour Validated class — coach_rate_per_hour = 35.00
+        // Monday 1 Jan 2024 — weekday, 2-hour class
         var start = new DateTime(2024, 1, 1, 10, 0, 0, DateTimeKind.Utc);
         SeedData.SeedCoachClass(db, coach, modality, studio, coachUser,
             start: start, durationMinutes: 120, status: (byte)CoachClassStatus.Validated);
@@ -269,6 +269,33 @@ public class BillingServiceTests
 
         // Assert
         result.Items.Should().HaveCount(1);
-        result.Items[0].TotalAmount.Should().Be(70.00m); // 2h * 35.00
+        result.Items[0].TotalAmount.Should().Be(72.00m); // 2h * 36.00 (weekday rate)
+    }
+
+    [Fact]
+    public async Task GetCoachBilling_WeekendClass_AppliesWeekendRate()
+    {
+        // Arrange
+        var db = DbContextFactory.Create();
+        SeedData.SeedRoles(db);
+        SeedData.SeedAppSettings(db);
+        var modality  = SeedData.SeedModality(db);
+        var studio    = SeedData.SeedStudio(db);
+        var coachUser = SeedData.SeedUserWithRole(db, "coach1", "coach");
+        var coach     = SeedData.SeedCoach(db, coachUser);
+
+        // Saturday 6 Jan 2024 — weekend, 2-hour class
+        var start = new DateTime(2024, 1, 6, 10, 0, 0, DateTimeKind.Utc);
+        SeedData.SeedCoachClass(db, coach, modality, studio, coachUser,
+            start: start, durationMinutes: 120, status: (byte)CoachClassStatus.Validated);
+
+        var service = CreateService(db);
+
+        // Act
+        var result = await service.GetCoachBillingAsync(2024, 1, null, 1, 25);
+
+        // Assert
+        result.Items.Should().HaveCount(1);
+        result.Items[0].TotalAmount.Should().Be(86.40m); // 2h * 43.20 (weekend rate)
     }
 }
