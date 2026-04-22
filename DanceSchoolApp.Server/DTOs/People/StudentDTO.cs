@@ -35,7 +35,6 @@ namespace DanceSchoolApp.Server.DTOs.People
 
     public class StudentCreateRequest
     {
-        [Required]
         public int ParentId { get; set; }
 
         [Required]

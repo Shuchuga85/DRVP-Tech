@@ -168,7 +168,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
         // ─── POST /api/coachclasses ────────────────────────────────────────────
         // Parent use — creates a class request with at least one student.
         // Runs all conflict checks before inserting.
-        [Authorize(Roles = "staff,parent")]
+        [Authorize(Roles = "parent")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CoachClassCreateRequest request)
         {

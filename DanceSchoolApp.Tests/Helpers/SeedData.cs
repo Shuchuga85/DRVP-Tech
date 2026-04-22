@@ -84,6 +84,29 @@ public static class SeedData
         return student;
     }
 
+    public static CoachAvailability SeedCoachAvailability(
+        AppDbContext db,
+        Coach coach,
+        byte weekday,
+        TimeOnly startTime,
+        TimeOnly endTime,
+        DateOnly? validFrom  = null,
+        DateOnly? validUntil = null)
+    {
+        var av = new CoachAvailability
+        {
+            IdCoach    = coach.CoachId,
+            Weekday    = weekday,
+            StartTime  = startTime,
+            EndTime    = endTime,
+            ValidFrom  = validFrom,
+            ValidUntil = validUntil
+        };
+        db.CoachAvailabilities.Add(av);
+        db.SaveChanges();
+        return av;
+    }
+
     public static CoachClass SeedCoachClass(
         AppDbContext db,
         Coach coach,
