@@ -167,6 +167,7 @@ namespace DanceSchoolApp.Server.Services
                 .Where(p =>
                     p.IdStudentNavigation.ParentUserId == userId &&
                     p.ValidationStatus == 0 &&
+                    p.IdCoachClassNavigation.CoachValidatedAt != null &&
                     p.IdCoachClassNavigation.Status == (byte)CoachClassStatus.Finished);
 
             var total = await dbQuery.CountAsync();
