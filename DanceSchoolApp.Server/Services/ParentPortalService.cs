@@ -192,6 +192,7 @@ namespace DanceSchoolApp.Server.Services
                     StartDatetime    = cls.StartDatetime,
                     CoachName        = ResolveCoachName(cls.IdCoachNavigation),
                     ExpiresAt        = cls.StartDatetime.AddHours(48),
+                    MaxParticipants   = cls.MaxParticipants,
                     ValidationStatus = p.ValidationStatus
                 };
             }).ToList();

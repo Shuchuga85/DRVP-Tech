@@ -184,6 +184,7 @@ namespace DanceSchoolApp.Server.Services
                 ParentName        = ResolveUserName(c.CreatedByNavigation),
                 PreferredDatetime = c.StartDatetime,
                 DurationMinutes   = (int)(c.EndDatetime - c.StartDatetime).TotalMinutes,
+                MaxParticipants   = c.MaxParticipants,
                 StudioName        = c.IdStudioNavigation.Name,
                 ModalityName      = c.IdModalityNavigation.Name
             }).ToList();

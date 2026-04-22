@@ -167,6 +167,7 @@ namespace DanceSchoolApp.Server.Services
                     ModalityName          = c.IdModalityNavigation.Name,
                     StartDatetime         = c.StartDatetime,
                     EndDatetime           = c.EndDatetime,
+                    MaxParticipants     = c.MaxParticipants,
                     DurationMinutes       = (int)(c.EndDatetime - c.StartDatetime).TotalMinutes,
                     CoachName             = ResolveCoachName(c.IdCoachNavigation),
                     StudentNames          = parts

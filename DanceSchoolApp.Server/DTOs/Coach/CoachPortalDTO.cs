@@ -36,6 +36,7 @@ namespace DanceSchoolApp.Server.DTOs.Coach
         public DateTime PreferredDatetime { get; set; }
         public int DurationMinutes { get; set; }
         public string StudioName { get; set; } = null!;
+        public int MaxParticipants { get; set; }
         public string ModalityName { get; set; } = null!;
     }
 

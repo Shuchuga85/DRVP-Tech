@@ -50,6 +50,7 @@ namespace DanceSchoolApp.Server.DTOs.Staff
         public DateTime EndDatetime { get; set; }
         public int DurationMinutes { get; set; }
         public string CoachName { get; set; } = null!;
+        public int MaxParticipants { get; set; } = 1;
         public List<string> StudentNames { get; set; } = new();
         public string ParentName { get; set; } = null!;
         public byte CoachValidationStatus { get; set; }

@@ -51,6 +51,7 @@ namespace DanceSchoolApp.Server.DTOs.Parent
         public DateTime StartDatetime { get; set; }
         public string CoachName { get; set; } = null!;
         public DateTime ExpiresAt { get; set; }            // StartDatetime + 48h, computed
+        public int MaxParticipants { get; set; }
         public byte ValidationStatus { get; set; }
     }
 
