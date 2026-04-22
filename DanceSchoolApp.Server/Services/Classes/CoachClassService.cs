@@ -268,6 +268,25 @@ namespace DanceSchoolApp.Server.Services.Classes
                 throw new InvalidOperationException(
                     "The coach is already booked during this time window.");
 
+            // ── 5b. Coach availability covers the requested slot ───────────────
+            var classDate    = DateOnly.FromDateTime(request.StartDatetime);
+            var classWeekday = (byte)request.StartDatetime.DayOfWeek;
+            var classStart   = TimeOnly.FromTimeSpan(request.StartDatetime.TimeOfDay);
+            var classEnd     = TimeOnly.FromTimeSpan(request.EndDatetime.TimeOfDay);
+
+            bool hasAvailability = await _context.CoachAvailabilities
+                .AnyAsync(a =>
+                    a.IdCoach   == request.CoachId  &&
+                    a.Weekday   == classWeekday      &&
+                    a.StartTime <= classStart        &&
+                    a.EndTime   >= classEnd          &&
+                    (a.ValidFrom  == null || a.ValidFrom  <= classDate) &&
+                    (a.ValidUntil == null || a.ValidUntil >= classDate));
+
+            if (!hasAvailability)
+                throw new InvalidOperationException(
+                    "The coach does not have an availability slot covering the requested time window.");
+
             // ── 6. Validate all student ids belong to this parent ──────────────
             var parentStudents = await _context.Students
                 .Where(s => s.ParentUserId == createdByUserId && s.IsActive)

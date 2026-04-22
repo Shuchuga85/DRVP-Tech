@@ -94,6 +94,12 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
             var coach = SeedData.SeedCoach(db, coachUser);
             coachId = coach.CoachId; // CoachId == coachUser.UserId
 
+            // Coach available every Monday 09:00–12:00 (covers the 10–11h test window)
+            SeedData.SeedCoachAvailability(db, coach,
+                weekday:   (byte)DayOfWeek.Monday,
+                startTime: new TimeOnly(9, 0),
+                endTime:   new TimeOnly(12, 0));
+
             var parentUser = SeedData.SeedUserWithRole(db, "parent_lc", "parent");
             var student = SeedData.SeedStudent(db, parentUser, "Ana"); // AcceptanceStatus = 1
             studentId = student.StudentId;

@@ -103,8 +103,8 @@ namespace DanceSchoolApp.Server.Controllers.People
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (!IsStaff() && request.ParentId != GetUserId())
-                return Forbid();
+            if (!IsStaff())
+                request.ParentId = GetUserId();
 
             try
             {
