@@ -7,6 +7,8 @@ public static class SeedData
 {
     public static void SeedRoles(AppDbContext db)
     {
+        if (db.Roles.Any()) return;
+
         db.Roles.AddRange(
             new Role { RoleId = 0, RoleName = "admin" },
             new Role { RoleId = 1, RoleName = "staff" },
@@ -18,6 +20,8 @@ public static class SeedData
 
     public static void SeedAppSettings(AppDbContext db)
     {
+        if (db.AppSettings.Any()) return;
+
         db.AppSettings.AddRange(
             new AppSetting { SettingKey = "class_price_weekday", SettingValue = "36.00" },
             new AppSetting { SettingKey = "class_price_weekend", SettingValue = "43.20" }
