@@ -133,6 +133,9 @@ namespace DanceSchoolApp.Server.Services.People
 
             string generatedPassword = Guid.NewGuid().ToString("N")[..8];
 
+            if (request.PersonInfo?.Nif is not null)
+                await EnsureNifUniqueAsync(request.PersonInfo.Nif);
+
             var user = new User
             {
                 Username = request.Username,
@@ -199,9 +202,27 @@ namespace DanceSchoolApp.Server.Services.People
             if (request.Phone     is not null) user.PersonInfo.Phone     = request.Phone;
             if (request.Address   is not null) user.PersonInfo.Address   = request.Address;
             if (request.BirthDate is not null) user.PersonInfo.BirthDate = request.BirthDate;
-            if (request.Nif       is not null) user.PersonInfo.Nif       = request.Nif;
+            if (request.Nif       is not null)
+            {
+                await EnsureNifUniqueAsync(request.Nif, user.PersonInfo.PersonId);
+                user.PersonInfo.Nif = request.Nif;
+            }
 
             await _context.SaveChangesAsync();
+        }
+
+        // ─── Private helpers ──────────────────────────────────────────────────
+
+        private async Task EnsureNifUniqueAsync(string nif, int? excludePersonId = null)
+        {
+            var query = _context.PersonInfos
+                .Where(p => p.Nif == nif);
+
+            if (excludePersonId.HasValue)
+                query = query.Where(p => p.PersonId != excludePersonId.Value);
+
+            if (await query.AnyAsync())
+                throw new InvalidOperationException($"NIF '{nif}' is already in use.");
         }
 
         public async Task SetUserStateAsync(int userId, bool isActive)

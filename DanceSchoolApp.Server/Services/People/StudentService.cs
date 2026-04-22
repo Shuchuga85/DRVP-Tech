@@ -107,6 +107,9 @@ namespace DanceSchoolApp.Server.Services.People
             if (!parentExists)
                 throw new KeyNotFoundException($"User with id {request.ParentId} was not found.");
 
+            if (request.Nif is not null)
+                await EnsureNifUniqueAsync(request.Nif);
+
             var student = new Student
             {
                 ParentUserId = request.ParentId,
@@ -140,6 +143,9 @@ namespace DanceSchoolApp.Server.Services.People
             if (student.PersonInfo is null)
                 throw new InvalidOperationException($"Student with id {id} has no personal info record.");
 
+            if (request.Nif is not null)
+                await EnsureNifUniqueAsync(request.Nif, student.PersonInfo.PersonId);
+
             student.PersonInfo.FirstName = request.FirstName;
             student.PersonInfo.LastName = request.LastName;
             student.PersonInfo.BirthDate = request.BirthDate;
@@ -166,6 +172,9 @@ namespace DanceSchoolApp.Server.Services.People
             if (student.PersonInfo is null)
                 throw new InvalidOperationException(
                     $"Student with id {studentId} has no personal info record.");
+
+            if (request.Nif is not null)
+                await EnsureNifUniqueAsync(request.Nif, student.PersonInfo.PersonId);
 
             student.PersonInfo.FirstName = request.FirstName;
             student.PersonInfo.LastName  = request.LastName;
@@ -272,6 +281,18 @@ namespace DanceSchoolApp.Server.Services.People
         }
 
         // ─── Private helpers ──────────────────────────────────────────────────
+
+        private async Task EnsureNifUniqueAsync(string nif, int? excludePersonId = null)
+        {
+            var query = _context.PersonInfos
+                .Where(p => p.Nif == nif);
+
+            if (excludePersonId.HasValue)
+                query = query.Where(p => p.PersonId != excludePersonId.Value);
+
+            if (await query.AnyAsync())
+                throw new InvalidOperationException($"NIF '{nif}' is already in use.");
+        }
 
         private static string ResolveCoachName(Coach coach)
         {
