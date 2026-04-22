@@ -16,7 +16,6 @@ function Topbar() {
     return (
         <header className="dashboard-topbar">
             <div className="dashboard-brand">
-                <div className="dashboard-brand-glow"></div>
 
                 <div>
                     <h1>Ent&apos;Artes</h1>

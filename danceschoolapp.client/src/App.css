@@ -445,6 +445,141 @@ img {
     align-items: stretch;
 }
 
+/* Validation cards */
+.validation-card.card {
+    background: var(--surface);
+    border: 0.0625rem solid var(--border);
+    border-radius: 1rem;
+    box-shadow: var(--shadow);
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.validation-card-body {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+}
+
+.validation-card-main {
+    flex: 1 1 auto;
+}
+
+.validation-title {
+    margin: 0 0 0.25rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.validation-meta {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+}
+
+.validation-desc {
+    margin: 0 0 0.5rem;
+    color: #374151;
+}
+
+.validation-solicitante {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--primary-dark);
+}
+
+.validation-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.validation-actions .btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.95rem;
+}
+
+/* Empty state card */
+.empty-card {
+    background: transparent;
+    border: 0.0625rem dashed rgba(129, 140, 248, 0.25);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-card-body {
+    text-align: center;
+    color: var(--muted);
+}
+
+.empty-card-body h3 {
+    margin: 0 0 0.25rem;
+    color: var(--primary-dark);
+}
+
+/* validation info grid */
+.validation-info {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem 1.25rem;
+    margin-top: 0.5rem;
+    color: #2f3740;
+}
+
+.validation-info .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.validation-info .info-item strong {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #39424a;
+}
+
+.validation-info .info-item span {
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.status-badge {
+    background: #fff7ed;
+    color: #a16207;
+    padding: 0.22rem 0.6rem;
+    border-radius: 1rem;
+    font-size: 0.85rem;
+    border: 1px solid rgba(161,98,7,0.08);
+}
+
+.btn.btn-accept {
+    background: linear-gradient(135deg,#10b981,#059669);
+    color: white;
+    border: none;
+    padding: 0.6rem 0.9rem;
+    border-radius: 999px;
+}
+
+.btn.btn-reject {
+    background: linear-gradient(135deg,#ef4444,#dc2626);
+    color: white;
+    border: none;
+    padding: 0.6rem 0.9rem;
+    border-radius: 999px;
+}
+
+.validation-card.card {
+    padding: 1rem 1.25rem;
+    border-radius: 1rem;
+}
+
+
+
 .modality-card {
     overflow: hidden;
     border-radius: 1.4rem;
