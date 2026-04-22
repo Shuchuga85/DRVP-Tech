@@ -210,6 +210,7 @@ namespace DanceSchoolApp.Server.Services
                         .ThenInclude(s => s.PersonInfo)
                 .Where(c =>
                     c.IdCoach == coachId &&
+                    c.CoachValidationStatus == 0 &&
                     c.Status == (byte)CoachClassStatus.Finished);
 
             var total = await dbQuery.CountAsync();
