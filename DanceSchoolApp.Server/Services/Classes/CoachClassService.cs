@@ -205,6 +205,16 @@ namespace DanceSchoolApp.Server.Services.Classes
                 throw new KeyNotFoundException(
                     $"Coach with id {request.CoachId} was not found.");
 
+            // Validate start/end chronology and duration limits (30 to 120 minutes)
+            if (request.EndDatetime <= request.StartDatetime)
+                throw new InvalidOperationException(
+                    "The class end time must be after the start time.");
+
+            var durationMinutes = (request.EndDatetime - request.StartDatetime).TotalMinutes;
+            if (durationMinutes < 30 || durationMinutes > 120)
+                throw new InvalidOperationException(
+                    "Classes must have a duration between 30 and 120 minutes.");
+
             // ── 2. Auto-select studio ──────────────────────────────────────────
             var candidateStudios = await _context.Studios
                 .Include(s => s.IdModalities)

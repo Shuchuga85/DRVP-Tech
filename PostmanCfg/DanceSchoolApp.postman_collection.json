@@ -3558,10 +3558,21 @@
               "response": []
             },
             {
-              "name": "New Request",
+              "name": "Get Student Info",
               "request": {
                 "method": "GET",
-                "header": []
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/students/5",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "students",
+                    "5"
+                  ]
+                }
               },
               "response": []
             },
