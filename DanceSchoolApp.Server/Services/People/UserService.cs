@@ -206,9 +206,9 @@ namespace DanceSchoolApp.Server.Services.People
             if (request.LastName  is not null) user.PersonInfo.LastName  = request.LastName;
             if (request.Phone     is not null) user.PersonInfo.Phone     = request.Phone;
             if (request.Address   is not null) user.PersonInfo.Address   = request.Address;
-            if (request.BirthDate is not null)
+            if (request.BirthDate != default)
             {
-                ValidateBirthDate(request.BirthDate.Value);
+                ValidateBirthDate(request.BirthDate);
                 user.PersonInfo.BirthDate = request.BirthDate;
             }
             if (request.Nif       is not null)
