@@ -512,7 +512,7 @@ namespace DanceSchoolApp.Server.Services.Classes
         {
             await TransitionStatusAsync(
                 classId,
-                allowedFrom: new[] { CoachClassStatus.Requested, CoachClassStatus.Finished, CoachClassStatus.Approved },
+                allowedFrom: new[] { CoachClassStatus.Requested, CoachClassStatus.Finished, CoachClassStatus.Approved, CoachClassStatus.Pending},
                 newStatus: CoachClassStatus.Cancelled,
                 errorMessage: "Only a Requested or Finished or Approved class can be cancelled."
             );
