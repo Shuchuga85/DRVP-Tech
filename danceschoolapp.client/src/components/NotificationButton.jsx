@@ -9,45 +9,52 @@ export default function NotificationButton() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [open, setOpen] = useState(false)
 
+  // Fetch just enough to get TotalUnread — page 1, pageSize 1.
+  // The API returns TotalUnread as a top-level field regardless of pageSize.
+  const fetchUnread = async () => {
+    if (!userId) { setUnreadCount(0); return }
+    try {
+      const res = await fetch(`/api/notifications/user/${userId}?page=1&pageSize=1`, {
+        credentials: 'include'
+      })
+      if (!res.ok) return
+      const data = await res.json()
+      setUnreadCount(data.TotalUnread ?? data.totalUnread ?? 0)
+    } catch {
+      // silent — badge just won't update
+    }
+  }
+
   useEffect(() => {
     let mounted = true
-    let intervalId = null
+    let interval = null
 
-    const doFetch = async () => {
-      if (!userId) {
-        if (mounted) setUnreadCount(0)
-        return
-      }
-      try {
-        const res = await fetch(`/api/notifications/user/${userId}?page=1&pageSize=1`, {
-          credentials: 'include'
-        })
-        if (!res.ok) return
-        const data = await res.json()
-        let count = 0
-        if (Array.isArray(data)) count = data.filter(n => !n.isRead && !n.is_read).length
-        else if (data.totalUnread !== undefined) count = data.totalUnread
-        else if (data.items) count = (data.items || []).filter(n => !n.isRead && !n.is_read).length
-        if (mounted) setUnreadCount(count)
-      } catch (err) {
-        console.error('Erro fetchUnread', err)
-      }
+    const run = async () => {
+      if (!mounted) return
+      await fetchUnread()
+      if (!mounted) return
+      interval = setInterval(fetchUnread, 60_000)
     }
-
-    void doFetch()
-    intervalId = setInterval(doFetch, 60000)
+    run()
 
     return () => {
       mounted = false
-      clearInterval(intervalId)
+      clearInterval(interval)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId])
+
+  const handleClose = () => {
+    setOpen(false)
+    // Re-check unread count after user dismisses the modal
+    setTimeout(fetchUnread, 200)
+  }
 
   return (
     <>
       <div style={{ position: 'relative', marginLeft: 12 }}>
         <button
-          aria-label="Notifica��es"
+          aria-label="Notificações"
           onClick={() => setOpen(true)}
           className="notification-btn"
           style={{
@@ -60,7 +67,8 @@ export default function NotificationButton() {
             alignItems: 'center',
             justifyContent: 'center',
             border: 'none',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            position: 'relative',
           }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -85,7 +93,8 @@ export default function NotificationButton() {
                 justifyContent: 'center',
                 fontSize: 11,
                 padding: '0 5px',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.15)'
+                boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                pointerEvents: 'none',
               }}
             >
               {unreadCount > 99 ? '99+' : unreadCount}
@@ -97,22 +106,8 @@ export default function NotificationButton() {
       {open && (
         <NotificationModal
           userId={userId}
-          onClose={() => {
-            setOpen(false)
-            setTimeout(() => {
-              fetch(`/api/notifications/user/${userId}?page=1&pageSize=1`, { credentials: 'include' })
-                .then(r => r.ok ? r.json() : null)
-                .then(data => {
-                  if (!data) return
-                  let count = 0
-                  if (Array.isArray(data)) count = data.filter(n => !n.isRead && !n.is_read).length
-                  else if (data.totalUnread !== undefined) count = data.totalUnread
-                  else if (data.items) count = (data.items || []).filter(n => !n.isRead && !n.is_read).length
-                  setUnreadCount(count)
-                })
-                .catch(() => {})
-            }, 200)
-          }}
+          onClose={handleClose}
+          onUnreadChange={setUnreadCount}
         />
       )}
     </>

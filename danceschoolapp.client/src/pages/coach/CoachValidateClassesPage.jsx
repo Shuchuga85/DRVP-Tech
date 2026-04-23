@@ -34,10 +34,13 @@ function CoachValidateClassesPage() {
         }
     }
 
-    // On mount, fetch both tabs to populate stats; then show the active tab's list
+    // On mount, silently pre-fetch the validations count so the tab badge
+    // is populated immediately. The active tab data is loaded by the
+    // useEffect below — do NOT call fetchAulas here to avoid a race where
+    // init() finishes after the user has already switched tabs and overwrites
+    // the wrong data into aulas.
     useEffect(() => {
-        const init = async () => {
-            // Fetch the other tab silently for its count
+        const prefetchValidationsCount = async () => {
             try {
                 const other = await getCoachValidate({ tab: 'validations', page: 1, pageSize: 1 })
                 const otherData = other?.Items ?? other?.items ?? other ?? []
@@ -46,10 +49,8 @@ function CoachValidateClassesPage() {
                     validations: other?.ValidationsCount ?? other?.validationsCount ?? other?.totalCount ?? otherData.length,
                 }))
             } catch { /* ignore */ }
-            // Then fetch the active tab
-            fetchAulas('requests')
         }
-        init()
+        prefetchValidationsCount()
     }, [])
 
     useEffect(() => {
