@@ -205,6 +205,16 @@ namespace DanceSchoolApp.Server.Services.Classes
                 throw new KeyNotFoundException(
                     $"Coach with id {request.CoachId} was not found.");
 
+            // Ensure the coach actually teaches the requested modality
+            bool coachTeachesModality = await _context.Coaches
+                .Include(c => c.IdModalities)
+                .Where(c => c.CoachId == request.CoachId)
+                .AnyAsync(c => c.IdModalities.Any(m => m.ModalityId == request.ModalityId));
+
+            if (!coachTeachesModality)
+                throw new InvalidOperationException(
+                    $"Coach with id {request.CoachId} does not teach modality {request.ModalityId}.");
+
             // Validate start/end chronology and duration limits (30 to 120 minutes)
             if (request.EndDatetime <= request.StartDatetime)
                 throw new InvalidOperationException(
