@@ -25,6 +25,7 @@ namespace DanceSchoolApp.Server.Services.People
             _logger = logger;
         }
 
+   
         // ─── Queries ──────────────────────────────────────────────────────────
 
         public async Task<List<UserListResponse>> GetUsersAsync()
@@ -136,6 +137,10 @@ namespace DanceSchoolApp.Server.Services.People
             if (request.PersonInfo?.Nif is not null)
                 await EnsureNifUniqueAsync(request.PersonInfo.Nif);
 
+            // Validate birth date if provided
+            if (request.PersonInfo?.BirthDate is not null)
+                ValidateBirthDate(request.PersonInfo.BirthDate.Value);
+
             var user = new User
             {
                 Username = request.Username,
@@ -201,7 +206,11 @@ namespace DanceSchoolApp.Server.Services.People
             if (request.LastName  is not null) user.PersonInfo.LastName  = request.LastName;
             if (request.Phone     is not null) user.PersonInfo.Phone     = request.Phone;
             if (request.Address   is not null) user.PersonInfo.Address   = request.Address;
-            if (request.BirthDate is not null) user.PersonInfo.BirthDate = request.BirthDate;
+            if (request.BirthDate is not null)
+            {
+                ValidateBirthDate(request.BirthDate.Value);
+                user.PersonInfo.BirthDate = request.BirthDate;
+            }
             if (request.Nif       is not null)
             {
                 await EnsureNifUniqueAsync(request.Nif, user.PersonInfo.PersonId);
@@ -213,6 +222,16 @@ namespace DanceSchoolApp.Server.Services.People
 
         // ─── Private helpers ──────────────────────────────────────────────────
 
+        private static void ValidateBirthDate(DateOnly birthDate)
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            if (birthDate > today)
+                throw new InvalidOperationException("BirthDate cannot be in the future.");
+
+            var hundredYearsAgo = today.AddYears(-100);
+            if (birthDate < hundredYearsAgo)
+                throw new InvalidOperationException("BirthDate is too far in the past.");
+        }
         private async Task EnsureNifUniqueAsync(string nif, int? excludePersonId = null)
         {
             var query = _context.PersonInfos

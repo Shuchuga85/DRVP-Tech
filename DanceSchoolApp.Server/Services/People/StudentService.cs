@@ -20,6 +20,7 @@ namespace DanceSchoolApp.Server.Services.People
             _notificationService = notificationService;
         }
 
+
         // ─── Queries ──────────────────────────────────────────────────────────
 
         public async Task<List<StudentListResponse>> GetStudentsAsync()
@@ -110,6 +111,10 @@ namespace DanceSchoolApp.Server.Services.People
             if (request.Nif is not null)
                 await EnsureNifUniqueAsync(request.Nif);
 
+            // Validate birth date bounds
+            if (request.BirthDate is not null)
+                ValidateBirthDate(request.BirthDate.Value);
+
             var student = new Student
             {
                 ParentUserId = request.ParentId,
@@ -148,6 +153,8 @@ namespace DanceSchoolApp.Server.Services.People
 
             student.PersonInfo.FirstName = request.FirstName;
             student.PersonInfo.LastName = request.LastName;
+            if (request.BirthDate is not null)
+                ValidateBirthDate(request.BirthDate.Value);
             student.PersonInfo.BirthDate = request.BirthDate;
             student.PersonInfo.Phone = request.Phone;
             student.PersonInfo.Address = request.Address;
@@ -178,6 +185,8 @@ namespace DanceSchoolApp.Server.Services.People
 
             student.PersonInfo.FirstName = request.FirstName;
             student.PersonInfo.LastName  = request.LastName;
+            if (request.BirthDate is not null)
+                ValidateBirthDate(request.BirthDate.Value);
             student.PersonInfo.BirthDate = request.BirthDate;
             student.PersonInfo.Phone     = request.Phone;
             student.PersonInfo.Address   = request.Address;
@@ -281,6 +290,17 @@ namespace DanceSchoolApp.Server.Services.People
         }
 
         // ─── Private helpers ──────────────────────────────────────────────────
+
+        private static void ValidateBirthDate(DateOnly birthDate)
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            if (birthDate > today)
+                throw new InvalidOperationException("BirthDate cannot be in the future.");
+
+            var hundredYearsAgo = today.AddYears(-100);
+            if (birthDate < hundredYearsAgo)
+                throw new InvalidOperationException("BirthDate is too far in the past.");
+        }
 
         private async Task EnsureNifUniqueAsync(string nif, int? excludePersonId = null)
         {
