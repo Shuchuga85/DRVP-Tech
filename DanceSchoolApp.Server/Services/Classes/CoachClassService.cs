@@ -419,22 +419,22 @@ namespace DanceSchoolApp.Server.Services.Classes
                 entityType: "CoachClass",
                 entityId: classId);
 
-            var staffIds = await _context.Users
-                .Include(u => u.IdRoles)
-                .Where(u => u.IdRoles.Any(r => r.RoleId == 1) && u.IsActive)
-                .Select(u => u.UserId)
-                .ToListAsync();
+            //var staffIds = await _context.Users
+            //    .Include(u => u.IdRoles)
+            //    .Where(u => u.IdRoles.Any(r => r.RoleId == 1) && u.IsActive)
+            //    .Select(u => u.UserId)
+            //    .ToListAsync();
 
-            foreach (var staffId in staffIds)
-            {
-                await _notificationService.SendAsync(
-                    userId: staffId,
-                    title: "Coach Accepted Class",
-                    message: $"Coach accepted class id {classId} on {coachClass.StartDatetime:dd/MM/yyyy HH:mm}.",
-                    type: NotificationType.ClassUpdate,
-                    entityType: "CoachClass",
-                    entityId: classId);
-            }
+            //foreach (var staffId in staffIds)
+            //{
+            //    await _notificationService.SendAsync(
+            //        userId: staffId,
+            //        title: "Coach Accepted Class",
+            //        message: $"Coach accepted class id {classId} on {coachClass.StartDatetime:dd/MM/yyyy HH:mm}.",
+            //        type: NotificationType.ClassUpdate,
+            //        entityType: "CoachClass",
+            //        entityId: classId);
+            //}
         }
 
         public async Task CoachRejectClassAsync(int classId, int coachUserId, string? reason)
