@@ -123,7 +123,7 @@ namespace DanceSchoolApp.Server.Services.People
                 {
                     FirstName = request.FirstName,
                     LastName = request.LastName,
-                    BirthDate = request.BirthDate,
+                    BirthDate = request.BirthDate ?? default,
                     Phone = request.Phone,
                     Address = request.Address,
                     Nif = request.Nif
@@ -155,7 +155,7 @@ namespace DanceSchoolApp.Server.Services.People
             student.PersonInfo.LastName = request.LastName;
             if (request.BirthDate is not null)
                 ValidateBirthDate(request.BirthDate.Value);
-            student.PersonInfo.BirthDate = request.BirthDate;
+            student.PersonInfo.BirthDate = request.BirthDate ?? default;
             student.PersonInfo.Phone = request.Phone;
             student.PersonInfo.Address = request.Address;
             student.PersonInfo.Nif = request.Nif;
@@ -187,7 +187,7 @@ namespace DanceSchoolApp.Server.Services.People
             student.PersonInfo.LastName  = request.LastName;
             if (request.BirthDate is not null)
                 ValidateBirthDate(request.BirthDate.Value);
-            student.PersonInfo.BirthDate = request.BirthDate;
+            student.PersonInfo.BirthDate = request.BirthDate ?? default;
             student.PersonInfo.Phone     = request.Phone;
             student.PersonInfo.Address   = request.Address;
             student.PersonInfo.Nif       = request.Nif;

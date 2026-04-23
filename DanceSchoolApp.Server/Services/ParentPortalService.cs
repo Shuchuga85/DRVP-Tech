@@ -197,6 +197,7 @@ namespace DanceSchoolApp.Server.Services
                     ClassId       = c.ClassId,
                     ModalityName  = c.IdModalityNavigation.Name,
                     StartDatetime = c.StartDatetime,
+                    EndDatetime   = c.EndDatetime,
                     CoachName     = ResolveCoachName(c.IdCoachNavigation),
                     ExpiresAt     = c.StartDatetime.AddHours(48),
                     MaxParticipants = c.MaxParticipants,

@@ -152,7 +152,7 @@ namespace DanceSchoolApp.Server.Services.People
                 {
                     FirstName = request.PersonInfo.FirstName,
                     LastName = request.PersonInfo.LastName,
-                    BirthDate = request.PersonInfo.BirthDate,
+                    BirthDate = request.PersonInfo.BirthDate ?? default,
                     Phone = request.PersonInfo.Phone,
                     Address = request.PersonInfo.Address,
                     Nif = request.PersonInfo.Nif

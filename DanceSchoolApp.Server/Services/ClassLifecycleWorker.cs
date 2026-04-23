@@ -163,14 +163,7 @@ namespace DanceSchoolApp.Server.Services
 
             foreach (var cls in classes)
             {
-                // Explicit guard: skip classes already resolved by a fast-path
-                // TryAdvanceClassToStaffReviewAsync call (e.g. coach or parent voted
-                // and everyone else had already responded before the window expired).
-                if (cls.Status == (byte)CoachClassStatus.Pending   ||
-                    cls.Status == (byte)CoachClassStatus.Validated  ||
-                    cls.Status == (byte)CoachClassStatus.Cancelled)
-                    continue;
-
+                
                 cls.Status = (byte)CoachClassStatus.Pending;
 
                 // Build list of individuals who did not submit a validation response.

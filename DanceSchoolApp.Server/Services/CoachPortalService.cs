@@ -183,6 +183,7 @@ namespace DanceSchoolApp.Server.Services
                     .ToList(),
                 ParentName        = ResolveUserName(c.CreatedByNavigation),
                 PreferredDatetime = c.StartDatetime,
+                EndDatetime       = c.EndDatetime,
                 DurationMinutes   = (int)(c.EndDatetime - c.StartDatetime).TotalMinutes,
                 MaxParticipants   = c.MaxParticipants,
                 StudioName        = c.IdStudioNavigation.Name,
@@ -232,7 +233,9 @@ namespace DanceSchoolApp.Server.Services
                     ValidationStatus = p.ValidationStatus
                 }).ToList(),
                 StartDatetime         = c.StartDatetime,
+                EndDatetime           = c.EndDatetime,
                 StudioName            = c.IdStudioNavigation.Name,
+                MaxParticipants       = c.MaxParticipants,
                 ModalityName          = c.IdModalityNavigation.Name,
                 ExpiresAt             = c.StartDatetime.AddHours(48),
                 CoachValidationStatus = c.CoachValidationStatus
