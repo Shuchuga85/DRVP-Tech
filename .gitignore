@@ -336,6 +336,7 @@ __pycache__/
 # Claude Code
 CLAUDE.md
 ClaudeSessions/
+.claude
 
 # OpenCover UI analysis results
 OpenCover/
@@ -366,3 +367,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/danceschoolapp.client/obj/Debug/danceschoolapp.client.esproj.FileListAbsolute.txt
+/danceschoolapp.client/obj/Debug/danceschoolapp.client.esproj.FileListAbsolute.txt

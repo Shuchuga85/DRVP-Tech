@@ -7,6 +7,8 @@ public static class SeedData
 {
     public static void SeedRoles(AppDbContext db)
     {
+        if (db.Roles.Any()) return;
+
         db.Roles.AddRange(
             new Role { RoleId = 0, RoleName = "admin" },
             new Role { RoleId = 1, RoleName = "staff" },
@@ -18,10 +20,11 @@ public static class SeedData
 
     public static void SeedAppSettings(AppDbContext db)
     {
+        if (db.AppSettings.Any()) return;
+
         db.AppSettings.AddRange(
             new AppSetting { SettingKey = "class_price_weekday", SettingValue = "36.00" },
-            new AppSetting { SettingKey = "class_price_weekend", SettingValue = "43.20" },
-            new AppSetting { SettingKey = "coach_rate_per_hour", SettingValue = "35.00" }
+            new AppSetting { SettingKey = "class_price_weekend", SettingValue = "43.20" }
         );
         db.SaveChanges();
     }
@@ -83,6 +86,29 @@ public static class SeedData
         db.Students.Add(student);
         db.SaveChanges();
         return student;
+    }
+
+    public static CoachAvailability SeedCoachAvailability(
+        AppDbContext db,
+        Coach coach,
+        byte weekday,
+        TimeOnly startTime,
+        TimeOnly endTime,
+        DateOnly? validFrom  = null,
+        DateOnly? validUntil = null)
+    {
+        var av = new CoachAvailability
+        {
+            IdCoach    = coach.CoachId,
+            Weekday    = weekday,
+            StartTime  = startTime,
+            EndTime    = endTime,
+            ValidFrom  = validFrom,
+            ValidUntil = validUntil
+        };
+        db.CoachAvailabilities.Add(av);
+        db.SaveChanges();
+        return av;
     }
 
     public static CoachClass SeedCoachClass(

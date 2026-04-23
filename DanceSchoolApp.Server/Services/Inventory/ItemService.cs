@@ -241,6 +241,24 @@ namespace DanceSchoolApp.Server.Services.Inventory
             await _context.SaveChangesAsync();
         }
 
+        // ─── Ownership ────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Returns true when the given user owns the item (community item with
+        /// matching IdOwner). Staff callers should bypass this check entirely.
+        /// </summary>
+        public async Task<bool> IsItemOwnerAsync(int itemId, int userId)
+        {
+            var item = await _context.Items
+                .AsNoTracking()
+                .FirstOrDefaultAsync(i => i.ItemId == itemId);
+
+            if (item is null)
+                throw new KeyNotFoundException($"Item with id {itemId} was not found.");
+
+            return !item.FromSchool && item.IdOwner == userId;
+        }
+
         // ─── Helpers ──────────────────────────────────────────────────────────────
 
         private static ItemDetailResponse MapToDetail(Item item) => new()

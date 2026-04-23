@@ -1,11 +1,11 @@
 {
   "info": {
-    "_postman_id": "48cd8573-cc76-428c-bd3a-895b12031d1f",
+    "_postman_id": "807893da-26e1-4916-939d-16c22344eb15",
     "name": "DanceSchoolApp v2",
-    "description": "FlowArtes / Ent'Artes Dance School API\n\n## Setup\n1. Select the **DanceSchoolApp** environment\n2. Set `base_url` if needed (default: https://localhost:7003)\n3. Run **POST Login** — the test script auto-saves `userId`, `roles`, and `expiresAt`\n4. All requests use the shared cookie jar automatically (JWT is HttpOnly cookie)\n\n## Variables\n- `base_url` — server base (change to switch between local/staging)\n- `userId` — auto-set by Login\n- `roles` — auto-set by Login\n- `user_id`, `student_id`, `coach_id`, `class_id`, `participant_id`, `studio_id`, `modality_id`, `item_id` — set manually or auto-captured by POST scripts\n\n## Status values\n- CoachClass: 0=Requested, 1=Approved, 2=Rejected, 3=Cancelled, 4=Finished, 5=Validated, 6=Pending, 7=StaffApproved\n- StudentAcceptance: 0=Pending, 1=Accepted, 2=Rejected\n- Roles: 0=Admin, 1=Staff, 2=Coach, 3=Parent",
+    "description": "FlowArtes / Ent'Artes Dance School API\n\n## Setup\n\n1. Select the **DanceSchoolApp** environment\n    \n2. Set `base_url` if needed (default: [https://localhost:7003](https://localhost:7003))\n    \n3. Run **POST Login** — the test script auto-saves `userId`, `roles`, and `expiresAt`\n    \n4. All requests use the shared cookie jar automatically (JWT is HttpOnly cookie)\n    \n\n## Variables\n\n- `base_url` — server base (change to switch between local/staging)\n    \n- `userId` — auto-set by Login\n    \n- `roles` — auto-set by Login\n    \n- `user_id`, `student_id`, `coach_id`, `class_id`, `participant_id`, `studio_id`, `modality_id`, `item_id` — set manually or auto-captured by POST scripts\n    \n\n## Status values\n\n- CoachClass: 0=Requested, 1=Approved, 2=Rejected, 3=Cancelled, 4=Finished, 5=Validated, 6=Pending, 7=StaffApproved\n    \n- StudentAcceptance: 0=Pending, 1=Accepted, 2=Rejected\n    \n- Roles: 0=Admin, 1=Staff, 2=Coach, 3=Parent",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "52952904",
-    "_collection_link": "https://go.postman.co/collection/52952904-48cd8573-cc76-428c-bd3a-895b12031d1f?source=collection_link"
+    "_exporter_id": "53613039",
+    "_collection_link": "https://go.postman.co/collection/53613039-807893da-26e1-4916-939d-16c22344eb15?source=collection_link"
   },
   "item": [
     {
@@ -3374,7 +3374,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"email\": \"parent@parent.com\",\n    \"password\": \"12345678\"\n}"
+                  "raw": "{\n    \"email\": \"kixap16308@pertok.com\",\n    \"password\": \"12345678\"\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/api/auth/login",
@@ -3402,7 +3402,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"parentId\": {{parent_id}},\n    \"firstName\": \"Test\",\n    \"lastName\": \"Student\",\n    \"birthDate\": \"2016-01-15\",\n    \"phone\": \"910000001\",\n    \"nif\": \"111111111\"\n}"
+                  "raw": "{\n    \"parentId\": 20,\n    \"firstName\": \"Vitor\",\n    \"lastName\": \"Rezende\",\n    \"birthDate\": \"2010-01-15\",\n    \"phone\": \"914536783\",\n    \"nif\": \"234567897\"\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/api/students",
@@ -3482,17 +3482,17 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"reason\": \"Wrong NIF. Please provide a valid NIF number.\"\n}"
+                  "raw": "{\n    \"reason\": \" isso esta mal\"\n}"
                 },
                 "url": {
-                  "raw": "{{base_url}}/api/students/{{student_id}}/reject",
+                  "raw": "{{base_url}}/api/students/4/reject",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
                     "api",
                     "students",
-                    "{{student_id}}",
+                    "4",
                     "reject"
                   ]
                 }
@@ -3511,7 +3511,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"email\": \"parent@parent.com\",\n    \"password\": \"12345678\"\n}"
+                  "raw": "{\n    \"email\": \"kixap16308@pertok.com\",\n    \"password\": \"12345678\"\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/api/auth/login",
@@ -3533,7 +3533,7 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/api/notifications/user/10?page=1&pageSize=20",
+                  "raw": "{{base_url}}/api/notifications/user/20?page=1&pageSize=20",
                   "host": [
                     "{{base_url}}"
                   ],
@@ -3541,7 +3541,7 @@
                     "api",
                     "notifications",
                     "user",
-                    "10"
+                    "20"
                   ],
                   "query": [
                     {
@@ -3552,6 +3552,25 @@
                       "key": "pageSize",
                       "value": "20"
                     }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Student Info",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/students/5",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "students",
+                    "5"
                   ]
                 }
               },
@@ -3572,14 +3591,14 @@
                   "raw": "{\n    \"firstName\": \"Test\",\n    \"lastName\": \"Student\",\n    \"birthDate\": \"2016-01-15\",\n    \"phone\": \"910000001\",\n    \"nif\": \"222222222\"\n}"
                 },
                 "url": {
-                  "raw": "{{base_url}}/api/students/{{student_id}}",
+                  "raw": "{{base_url}}/api/students/3",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
                     "api",
                     "students",
-                    "{{student_id}}"
+                    "3"
                   ]
                 }
               },

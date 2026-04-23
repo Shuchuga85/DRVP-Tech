@@ -14,7 +14,7 @@ public class EmailService
     /// <summary>
     /// Envia um link de configuração de password para o email do novo utilizador.
     /// </summary>
-    public virtual async Task SendWelcomeEmailAsync(string toEmail, string role, string setupLink)
+    public virtual async Task SendWelcomeEmailAsync(string toEmail, string role,string generatedPassword, string setupLink)
     {
         var subject = "Bem-vindo à App da Ent'Artes — Configure a sua password";
 
@@ -33,6 +33,9 @@ public class EmailService
               </div>
               <p style="color:#555;">
                 O link é válido por <strong>24 horas</strong>.
+              </p>
+              <p style="color:#555;">
+                A sua password temporária é: <strong>{generatedPassword}</strong>
               </p>
               <p style="color:#555;">
                 Se preferir manter a password temporária comunicada pela escola,

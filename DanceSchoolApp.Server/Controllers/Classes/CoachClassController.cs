@@ -168,7 +168,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
         // ─── POST /api/coachclasses ────────────────────────────────────────────
         // Parent use — creates a class request with at least one student.
         // Runs all conflict checks before inserting.
-        [Authorize(Roles = "staff,parent")]
+        [Authorize(Roles = "parent")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CoachClassCreateRequest request)
         {
@@ -265,7 +265,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
         // Staff use — transitions Requested → Rejected.
         // Optional reason body is forwarded to notification (TODO).
         [Authorize(Roles = "staff")]
-        [HttpPatch("{id}/reject")]
+        [HttpPatch("{id}/staff-reject")]
         public async Task<IActionResult> Reject(int id,
             [FromBody] CoachClassRejectRequest? request)
         {
