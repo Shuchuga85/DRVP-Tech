@@ -492,23 +492,33 @@ namespace DanceSchoolApp.Server.Services.Classes
         {
             await TransitionStatusAsync(
                 classId,
-                allowedFrom: new[] { CoachClassStatus.Requested, CoachClassStatus.Approved },
+                allowedFrom: new[] { CoachClassStatus.Requested, CoachClassStatus.Finished, CoachClassStatus.Approved },
                 newStatus: CoachClassStatus.Cancelled,
-                errorMessage: "Only a Requested or Approved class can be cancelled."
+                errorMessage: "Only a Requested or Finished or Approved class can be cancelled."
             );
 
             var coachClass = await _context.CoachClasses
                 .FirstOrDefaultAsync(c => c.ClassId == classId);
 
             if (coachClass is null) return;
+            
 
-            await _notificationService.SendAsync(
-                userId: coachClass.CreatedBy,
-                title: "Class Cancelled",
-                message: "A coaching class has been cancelled.",
-                type: NotificationType.Warning,
-                entityType: "CoachClass",
-                entityId: classId);
+            var parentsToNotify = coachClass.Participants
+                .Where(p => p.IdCoachClass == classId)
+                .Select(p => p.IdStudentNavigation.ParentUserId)
+                .Distinct()
+                .ToList();
+
+            foreach (var parentId in parentsToNotify)
+            {
+                await _notificationService.SendAsync(
+                   userId: parentId,
+                   title: "Class Cancelled",
+                   message: "A coaching class has been cancelled.",
+                   type: NotificationType.Warning,
+                   entityType: "CoachClass",
+                   entityId: classId);
+            }
 
             await _notificationService.SendAsync(
                 userId: coachClass.IdCoach,
