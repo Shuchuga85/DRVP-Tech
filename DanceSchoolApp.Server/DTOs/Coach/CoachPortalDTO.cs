@@ -1,5 +1,4 @@
 using DanceSchoolApp.Server.DTOs.Classes;
-using DanceSchoolApp.Server.DTOs.Staff;
 
 namespace DanceSchoolApp.Server.DTOs.Coach
 {
@@ -45,7 +44,7 @@ namespace DanceSchoolApp.Server.DTOs.Coach
     public class CoachValidationItem
     {
         public int ClassId { get; set; }
-        public List<string> StudentNames { get; set; } = new();
+        public List<ParticipantSummaryItem> Participants { get; set; } = new();
         public DateTime StartDatetime { get; set; }
         public string StudioName { get; set; } = null!;
         public string ModalityName { get; set; } = null!;

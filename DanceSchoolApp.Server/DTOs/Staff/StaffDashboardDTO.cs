@@ -1,5 +1,6 @@
 using DanceSchoolApp.Server.DTOs.Classes;
 
+
 namespace DanceSchoolApp.Server.DTOs.Staff
 {
     // ─── Dashboard ────────────────────────────────────────────────────────────
@@ -51,10 +52,11 @@ namespace DanceSchoolApp.Server.DTOs.Staff
         public int DurationMinutes { get; set; }
         public string CoachName { get; set; } = null!;
         public int MaxParticipants { get; set; } = 1;
-        public List<string> StudentNames { get; set; } = new();
         public string ParentName { get; set; } = null!;
         public byte CoachValidationStatus { get; set; }
         public ParticipantSummaryDto ParticipantSummary { get; set; } = null!;
+        // Full per-participant list with individual validation status and parent name
+        public List<ParticipantSummaryItem> Participants { get; set; } = new();
     }
 
     public class ParticipantSummaryDto

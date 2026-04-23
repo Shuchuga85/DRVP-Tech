@@ -104,15 +104,22 @@ function ClassValidationCard({
     const endTime = formatTime(endDt)
     const timeStr = endTime ? `${startTime}\u2013${endTime}` : startTime
 
-    const borderClass = variant === 'amber' ? 'class-card--amber'
-        : variant === 'orange' ? 'class-card--orange'
-            : variant === 'green' ? 'class-card--green' : ''
+    const hasDisputed = participants.some(p => (p.ValidationStatus ?? p.validationStatus ?? 0) === 2)
+    const coachDenied = coachValidationStatus === 2
+
+    // Contested state overrides the normal border on the staff pending view
+    const isContested = showCoachValidation && (hasDisputed || coachDenied)
+    const borderClass = isContested ? 'class-card--contested'
+        : variant === 'amber' ? 'class-card--amber'
+            : variant === 'orange' ? 'class-card--orange'
+                : variant === 'green' ? 'class-card--green' : ''
 
     const capacityClass = variant === 'amber' ? 'class-card-capacity--amber'
         : variant === 'orange' ? 'class-card-capacity--orange' : ''
 
-    const expandedClass = variant === 'amber' ? 'class-card-expanded--amber'
-        : variant === 'orange' ? 'class-card-expanded--orange' : ''
+    const expandedClass = isContested ? 'class-card-expanded--contested'
+        : variant === 'amber' ? 'class-card-expanded--amber'
+            : variant === 'orange' ? 'class-card-expanded--orange' : ''
 
     const confirmText = confirmLabel
         || (tipo === 'coach-request' ? 'Aceitar Aula' : 'Realizada')
@@ -134,6 +141,11 @@ function ClassValidationCard({
                         <span className={`class-card-capacity ${capacityClass}`}>
                             Alunos {enrolled}/{maxParticipants}
                         </span>
+                        {/* Contested badge — shown on staff pending view when anyone disputed */}
+                        {showCoachValidation && (hasDisputed || coachDenied) && (
+                            <span className="status-pill status-pill--rejected">Contestada</span>
+                        )}
+                        {/* Awaiting validation badge — parent view */}
                         {tipo === 'professor' && (
                             <span className="status-pill status-pill--pending">Aguarda validação</span>
                         )}
@@ -210,7 +222,29 @@ function ClassValidationCard({
                                         </div>
                                         <div className="participant-right">
                                             {price != null && <span>{price}€</span>}
-                                            {tipo === 'professor' || showCoachValidation ? (
+                                            {tipo === 'professor' ? (
+                                                vs === 0 ? (
+                                                    <div className="participant-actions">
+                                                        <button
+                                                            className="btn-participant-confirm"
+                                                            onClick={(e) => { e.stopPropagation(); onConfirm && onConfirm(pId) }}
+                                                        >
+                                                            {'\u2713'} Realizada
+                                                        </button>
+                                                        <button
+                                                            className="btn-participant-reject"
+                                                            onClick={(e) => { e.stopPropagation(); onReject && onReject(pId) }}
+                                                        >
+                                                            {'\u2717'} Não realizada
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <ValidationDot
+                                                        state={vs}
+                                                        label={vs === 1 ? 'Realizada' : 'Não realizada'}
+                                                    />
+                                                )
+                                            ) : showCoachValidation ? (
                                                 <ValidationDot
                                                     state={vs}
                                                     label={vs === 1 ? 'Realizada' : vs === 2 ? 'Não realizada' : 'Aguarda'}
@@ -261,21 +295,23 @@ function ClassValidationCard({
                         </div>
                     )}
 
-                    {/* Actions */}
-                    <div className="class-card-actions">
-                        <button
-                            className="btn btn-accept"
-                            onClick={() => id && onConfirm(id)}
-                        >
-                            {confirmText}
-                        </button>
-                        <button
-                            className="btn btn-reject"
-                            onClick={() => id && onReject(id)}
-                        >
-                            {rejectText}
-                        </button>
-                    </div>
+                    {/* Actions — hidden for parent view (per-participant buttons handle it) */}
+                    {!(tipo === 'professor' && participants.length > 0) && (
+                        <div className="class-card-actions">
+                            <button
+                                className="btn btn-accept"
+                                onClick={() => id && onConfirm(id)}
+                            >
+                                {confirmText}
+                            </button>
+                            <button
+                                className="btn btn-reject"
+                                onClick={() => id && onReject(id)}
+                            >
+                                {rejectText}
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

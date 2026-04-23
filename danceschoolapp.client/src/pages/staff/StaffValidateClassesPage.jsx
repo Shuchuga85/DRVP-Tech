@@ -152,7 +152,7 @@ function StaffValidateClassesPage() {
                 <ClassValidationCard
                     key={aula.ClassId ?? aula.classId ?? aula.id}
                     aula={aula}
-                    tipo={isRequested ? 'coach-request' : 'professor'}
+                    tipo={isRequested ? 'coach-request' : 'staff'}
                     variant={isRequested ? 'purple' : 'amber'}
                     showParticipants
                     showCoachValidation={!isRequested}

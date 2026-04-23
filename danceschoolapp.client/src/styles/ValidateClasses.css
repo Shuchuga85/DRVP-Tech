@@ -134,6 +134,11 @@
     border-left-color: #10b981;
 }
 
+.class-card--contested {
+    border-left-color: #dc2626;
+    background: #fff7f7;
+}
+
 .class-card-header {
     display: flex;
     align-items: flex-start;
@@ -298,6 +303,10 @@
     background: linear-gradient(135deg, #ffffff, rgba(255, 237, 213, 0.15));
 }
 
+.class-card-expanded--contested {
+    background: linear-gradient(135deg, #ffffff, rgba(254, 226, 226, 0.2));
+}
+
 .class-card-section-title {
     font-size: 0.88rem;
     font-weight: 700;
@@ -376,6 +385,49 @@
 .validation-summary-card-date {
     font-size: 0.78rem;
     color: #9ca3af;
+}
+
+/* --- Per-participant inline action buttons (parent validation view) --- */
+.participant-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.btn-participant-confirm {
+    font-size: 0.74rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid #d1fae5;
+    background: #ecfdf5;
+    color: #059669;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+
+.btn-participant-confirm:hover {
+    background: #d1fae5;
+    border-color: #6ee7b7;
+}
+
+.btn-participant-reject {
+    font-size: 0.74rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid #fee2e2;
+    background: #fff7f7;
+    color: #dc2626;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+
+.btn-participant-reject:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
 }
 
 /* --- Action buttons in expanded --- */

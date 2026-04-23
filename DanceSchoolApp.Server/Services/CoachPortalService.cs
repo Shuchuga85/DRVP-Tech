@@ -225,9 +225,12 @@ namespace DanceSchoolApp.Server.Services
             var items = classes.Select(c => new CoachValidationItem
             {
                 ClassId               = c.ClassId,
-                StudentNames          = c.Participants
-                    .Select(p => ResolveStudentName(p.IdStudentNavigation))
-                    .ToList(),
+                Participants          = c.Participants.Select(p => new ParticipantSummaryItem
+                {
+                    ParticipantId    = p.ParticipantId,
+                    StudentName      = ResolveStudentName(p.IdStudentNavigation),
+                    ValidationStatus = p.ValidationStatus
+                }).ToList(),
                 StartDatetime         = c.StartDatetime,
                 StudioName            = c.IdStudioNavigation.Name,
                 ModalityName          = c.IdModalityNavigation.Name,

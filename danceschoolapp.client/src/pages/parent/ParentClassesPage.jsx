@@ -85,32 +85,40 @@ function ParentClassesPage() {
     const handleValidate = async (participantId, attended) => {
         try {
             await parentValidateParticipant(participantId, attended)
-            setValidateItems((prev) => prev.map((p) => {
-                const pId = p.participantId ?? p.id
-                if (pId === participantId) {
-                    return { ...p, eeConfirmed: attended, validationStatus: attended ? 1 : 2 }
+            // Update the participant inside its class item
+            setValidateItems((prev) => prev.map((cls) => {
+                const parts = cls.Participants ?? cls.participants ?? []
+                if (!parts.some(p => (p.ParticipantId ?? p.participantId) === participantId)) return cls
+                const updateParts = (list) => list?.map(p => {
+                    if ((p.ParticipantId ?? p.participantId) === participantId)
+                        return { ...p, ValidationStatus: attended ? 1 : 2, validationStatus: attended ? 1 : 2 }
+                    return p
+                })
+                return {
+                    ...cls,
+                    Participants: updateParts(cls.Participants),
+                    participants: updateParts(cls.participants),
                 }
-                return p
             }))
         } catch (err) {
             alert(err.message)
         }
     }
 
+    // Classes where at least one of my students is still pending
     const pendingValidations = useMemo(() =>
-        validateItems.filter(p => {
-            const vs = p.validationStatus ?? p.ValidationStatus
-            const ee = p.eeConfirmed
-            return vs === 0 || vs === undefined || ee === null || ee === undefined
+        validateItems.filter(cls => {
+            const parts = cls.Participants ?? cls.participants ?? []
+            return parts.some(p => (p.ValidationStatus ?? p.validationStatus ?? 0) === 0)
         }),
         [validateItems]
     )
 
+    // Classes where all of my students have already voted
     const doneValidations = useMemo(() =>
-        validateItems.filter(p => {
-            const vs = p.validationStatus ?? p.ValidationStatus
-            const ee = p.eeConfirmed
-            return vs === 1 || vs === 2 || ee === true || ee === false
+        validateItems.filter(cls => {
+            const parts = cls.Participants ?? cls.participants ?? []
+            return parts.length > 0 && parts.every(p => (p.ValidationStatus ?? p.validationStatus ?? 0) !== 0)
         }),
         [validateItems]
     )
@@ -185,22 +193,17 @@ function ParentClassesPage() {
                             <h3 className="validate-section-heading">
                                 Aguardam Validação ({pendingValidations.length})
                             </h3>
-                            {pendingValidations.map((p, idx) => {
-                                const id = p.participantId ?? p.id ?? idx
-                                return (
-                                    <ClassValidationCard
-                                        key={id}
-                                        aula={p}
-                                        tipo="professor"
-                                        variant="amber"
-                                        showParticipants={false}
-                                        onConfirm={() => handleValidate(id, true)}
-                                        onReject={() => handleValidate(id, false)}
-                                        confirmLabel="Realizada"
-                                        rejectLabel="Não realizada"
-                                    />
-                                )
-                            })}
+                            {pendingValidations.map((cls, idx) => (
+                                <ClassValidationCard
+                                    key={cls.ClassId ?? cls.classId ?? idx}
+                                    aula={cls}
+                                    tipo="professor"
+                                    variant="amber"
+                                    showParticipants
+                                    onConfirm={(pId) => handleValidate(pId, true)}
+                                    onReject={(pId) => handleValidate(pId, false)}
+                                />
+                            ))}
                         </>
                     )}
 
@@ -210,55 +213,49 @@ function ParentClassesPage() {
                             <h3 className="validate-section-heading">
                                 Já Validadas ({doneValidations.length})
                             </h3>
-                            {doneValidations.map((p, idx) => {
-                                const id = p.participantId ?? p.id ?? idx
-                                const eeConfirmed = p.eeConfirmed ?? (p.validationStatus === 1 || p.ValidationStatus === 1)
-                                const profConfirmed = p.profConfirmed ?? p.coachValidated ?? null
+                            {doneValidations.map((cls, idx) => {
+                                const parts = cls.Participants ?? cls.participants ?? []
+                                const allConfirmed = parts.every(p => (p.ValidationStatus ?? p.validationStatus) === 1)
 
                                 return (
-                                    <div key={id} className="class-card class-card--green" style={{ opacity: 0.75 }}>
+                                    <div key={cls.ClassId ?? cls.classId ?? idx} className="class-card class-card--green" style={{ opacity: 0.75 }}>
                                         <div style={{ padding: '16px' }}>
                                             <div className="class-card-title-row">
                                                 <h3 className="class-card-title">
-                                                    {p.modalityName ?? p.modality ?? p.name ?? 'Aula'}
+                                                    {cls.ModalityName ?? cls.modalityName ?? 'Aula'}
                                                 </h3>
-                                                {eeConfirmed
+                                                {allConfirmed
                                                     ? <span className="status-pill status-pill--confirmed">{'\u2713'} Confirmada</span>
-                                                    : <span className="status-pill status-pill--rejected">{'\u2717'} Não realizada</span>
+                                                    : <span className="status-pill status-pill--rejected">{'\u2717'} Contestada</span>
                                                 }
                                             </div>
                                             <div className="class-card-info-grid">
                                                 <div>
                                                     <span className="label">Data: </span>
-                                                    {fmtDate(p.startDatetime ?? p.date)} às {fmtTime(p.startDatetime ?? p.date)}
+                                                    {fmtDate(cls.StartDatetime ?? cls.startDatetime)} às {fmtTime(cls.StartDatetime ?? cls.startDatetime)}
                                                 </div>
-                                                {(p.coachName ?? p.teacherName ?? p.coach) && (
+                                                {(cls.CoachName ?? cls.coachName) && (
                                                     <div>
-                                                        <span className="label">Prof. </span>
-                                                        {p.coachName ?? p.teacherName ?? p.coach}
-                                                    </div>
-                                                )}
-                                                {(p.studentName ?? p.student) && (
-                                                    <div>
-                                                        <span className="label">Aluno: </span>
-                                                        {p.studentName ?? p.student?.name ?? p.student}
+                                                        <span className="label">Coach: </span>
+                                                        {cls.CoachName ?? cls.coachName}
                                                     </div>
                                                 )}
                                             </div>
-                                            <p style={{ marginTop: '8px', fontSize: '0.88rem' }}>
-                                                <strong>Validações: </strong>
-                                                <span style={{ color: eeConfirmed ? '#059669' : '#dc2626', fontWeight: 600 }}>
-                                                    EE: {eeConfirmed ? '\u2713' : '\u2717'}
-                                                </span>
-                                                {profConfirmed !== null && profConfirmed !== undefined && (
-                                                    <>
-                                                        {' | '}
-                                                        <span style={{ color: profConfirmed ? '#059669' : '#dc2626', fontWeight: 600 }}>
-                                                            Prof: {profConfirmed ? '\u2713' : '\u2717'}
-                                                        </span>
-                                                    </>
-                                                )}
-                                            </p>
+                                            {parts.length > 0 && (
+                                                <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                    {parts.map((p, pi) => {
+                                                        const vs = p.ValidationStatus ?? p.validationStatus ?? 0
+                                                        return (
+                                                            <div key={pi} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.86rem', color: '#475569' }}>
+                                                                <span>{p.StudentName ?? p.studentName}</span>
+                                                                <span style={{ fontWeight: 600, color: vs === 1 ? '#059669' : '#dc2626' }}>
+                                                                    {vs === 1 ? '\u2713 Realizada' : '\u2717 Não realizada'}
+                                                                </span>
+                                                            </div>
+                                                        )
+                                                    })}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )
