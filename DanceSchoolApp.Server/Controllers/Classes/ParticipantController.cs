@@ -3,12 +3,14 @@ using DanceSchoolApp.Server.DTOs.Classes;
 using DanceSchoolApp.Server.Services.Classes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace DanceSchoolApp.Server.Controllers.Classes
 {
     [ApiController]
     [Route("api/participants")]
+    [EnableRateLimiting("api")]
     public class ParticipantController : ControllerBase
     {
         private readonly ParticipantService _participantService;
@@ -18,7 +20,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
             _participantService = participantService;
         }
 
-        // ─── GET /api/participants/class/{classId} ─────────────────────────────
+        //  GET /api/participants/class/{classId} 
         // Staff use — full enrollment list for a class with validation statuses.
         [Authorize(Roles = "staff,coach")]
         [HttpGet("class/{classId}")]
@@ -39,7 +41,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
             }
         }
 
-        // ─── POST /api/participants ────────────────────────────────────────────
+        //  POST /api/participants 
         // Parent use — enroll a student in an open class.
         // Checks: class is Approved + has space, student is active,
         // no duplicate enrollment, no time conflict with other classes.
@@ -78,7 +80,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
             }
         }
 
-        // ─── PATCH /api/participants/{id}/parent-validate ──────────────────────
+        //  PATCH /api/participants/{id}/parent-validate 
         // Parent use — confirm whether their student attended the class.
         // Only available when class status is Finished.
         // Sets ValidationStatus to ParentConfirmed (1) or Disputed (2).
@@ -86,15 +88,14 @@ namespace DanceSchoolApp.Server.Controllers.Classes
         // automatically advanced to Pending for staff final review.
         [Authorize(Roles = "parent")]
         [HttpPatch("{id}/parent-validate")]
-        public async Task<IActionResult> ParentValidate(
-            int id, [FromBody] ParticipantValidateRequest request)
+        public async Task<IActionResult> ParentValidate(int id, [FromBody] ParticipantValidateRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             try
             {
-                await _participantService.ParentValidateAsync(id, request.Attended);
+                await _participantService.ParentValidateAsync(id, request.Attended, GetUserId());
                 return NoContent();
             }
             catch (KeyNotFoundException ex)
@@ -105,13 +106,17 @@ namespace DanceSchoolApp.Server.Controllers.Classes
             {
                 return Conflict(ex.Message);
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, ex.Message);
+            }
             catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
-        // ─── DELETE /api/participants/{id} ─────────────────────────────────────
+        //  DELETE /api/participants/{id} 
         // Parent or staff use — remove a student from a class.
         // Only allowed when class is Requested or Approved.
         // Blocked if this would leave the class with zero participants —
@@ -126,7 +131,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
                 return NoContent();
             }
             catch (KeyNotFoundException ex)
-            {
+            {   
                 return NotFound(ex.Message);
             }
             catch (InvalidOperationException ex)
@@ -138,5 +143,9 @@ namespace DanceSchoolApp.Server.Controllers.Classes
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
+        //  Helpers 
+        private int GetUserId() =>
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace DanceSchoolApp.Server.DTOs.Classes
 {
-    // ─── Validation status enum ───────────────────────────────────────────────
+    //  Validation status enum 
     // Per-participant attendance confirmation, separate from CoachClassStatus.
     public enum ParticipantValidationStatus : byte
     {
@@ -11,7 +11,7 @@ namespace DanceSchoolApp.Server.DTOs.Classes
         Disputed = 2   // parent said student did not attend
     }
 
-    // ─── Responses ────────────────────────────────────────────────────────────
+    //  Responses 
 
     public class ParticipantListResponse
     {
@@ -21,12 +21,11 @@ namespace DanceSchoolApp.Server.DTOs.Classes
         public string StudentName { get; set; } = null!;
         public int ParentUserId { get; set; }
         public DateOnly JoinedAt { get; set; }
-        public decimal ClassPrice { get; set; }
         public ParticipantValidationStatus ValidationStatus { get; set; }
         public DateTime? ParentValidatedAt { get; set; }
     }
 
-    // ─── Requests ─────────────────────────────────────────────────────────────
+    //  Requests 
 
     public class ParticipantJoinRequest
     {
@@ -36,9 +35,6 @@ namespace DanceSchoolApp.Server.DTOs.Classes
         [Required]
         public int StudentId { get; set; }
 
-        // Priority: custom override (staff-set) > AppSetting rate (weekend/weekday) > default fallback.
-        // Null means "resolve from app settings at enrollment time".
-        public decimal? ClassPrice { get; set; }
     }
 
     public class ParticipantValidateRequest

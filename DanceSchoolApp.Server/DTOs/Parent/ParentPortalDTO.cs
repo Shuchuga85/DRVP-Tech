@@ -39,6 +39,7 @@ namespace DanceSchoolApp.Server.DTOs.Parent
         public int CurrentParticipants { get; set; }
         public int MaxParticipants { get; set; }
         public int SpotsAvailable { get; set; }
+        public List<string> EnrolledStudents { get; set; } = new();
     }
 
     // ─── Validate ─────────────────────────────────────────────────────────────
@@ -54,6 +55,7 @@ namespace DanceSchoolApp.Server.DTOs.Parent
         public string CoachName { get; set; } = null!;
         public DateTime ExpiresAt { get; set; }            // StartDatetime + 48h, computed
         public int MaxParticipants { get; set; }
+        public int TotalParticipants { get; set; }
         public string CreatedByName { get; set; } = null!;
         public List<ParticipantSummaryItem> Participants { get; set; } = new();
     }

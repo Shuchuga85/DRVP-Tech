@@ -33,13 +33,16 @@ public class CoachClassCreateTests
 
         var coachUser  = SeedData.SeedUserWithRole(db, "coach1", "coach");
         var coach      = SeedData.SeedCoach(db, coachUser);
+        // Ensure coach teaches the modality used in tests
+        coach.IdModalities.Add(modality);
+        db.SaveChanges();
         var parentUser = SeedData.SeedUserWithRole(db, "parent1", "parent");
         var student    = SeedData.SeedStudent(db, parentUser);
 
         return (db, coach.CoachId, modality.ModalityId, parentUser.UserId, student.StudentId, coach);
     }
 
-    // ─── availability missing ─────────────────────────────────────────────────
+    //  availability missing 
 
     [Fact]
     public async Task CreateAsync_CoachHasNoAvailability_ThrowsInvalidOperation()
@@ -64,7 +67,7 @@ public class CoachClassCreateTests
             .WithMessage("*availability*");
     }
 
-    // ─── availability present but expired ────────────────────────────────────
+    //  availability present but expired 
 
     [Fact]
     public async Task CreateAsync_CoachAvailabilityExpired_ThrowsInvalidOperation()
@@ -95,7 +98,7 @@ public class CoachClassCreateTests
             .WithMessage("*availability*");
     }
 
-    // ─── availability on wrong weekday ────────────────────────────────────────
+    //  availability on wrong weekday 
 
     [Fact]
     public async Task CreateAsync_AvailabilityOnWrongWeekday_ThrowsInvalidOperation()
@@ -126,7 +129,7 @@ public class CoachClassCreateTests
             .WithMessage("*availability*");
     }
 
-    // ─── matching availability ────────────────────────────────────────────────
+    //  matching availability 
 
     [Fact]
     public async Task CreateAsync_CoachHasMatchingAvailability_ReturnsPositiveClassId()

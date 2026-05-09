@@ -1,6 +1,6 @@
 ﻿namespace DanceSchoolApp.Server.DTOs.People
 {
-    // ─── Responses ────────────────────────────────────────────────────────────
+    //  Responses 
 
     public class ModalitySummary
     {
@@ -30,6 +30,7 @@
     public class CoachListResponse
     {
         public int CoachId { get; set; }
+        public string Name { get; set; } = null!;
         public string? Biography { get; set; }
         public string? PhotoUrl { get; set; }
         public bool IsActive { get; set; }

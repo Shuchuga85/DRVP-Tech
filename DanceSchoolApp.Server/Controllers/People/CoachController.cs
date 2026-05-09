@@ -3,12 +3,19 @@ using DanceSchoolApp.Server.Services.People;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.RateLimiting;
+using System.IO;
+using System;
+using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace DanceSchoolApp.Server.Controllers.People
 {
     [Route("api/[controller]es")]
     [ApiController]
+    [EnableRateLimiting("api")]
     public class CoachController : ControllerBase
     {
 
@@ -18,7 +25,7 @@ namespace DanceSchoolApp.Server.Controllers.People
             _CoachService = CoachService;
         }
 
-        // ─── GET /api/coaches/available ───────────────────────────────────────
+        //  GET /api/coaches/available 
         // Active coaches with their modalities — slim read for booking dropdowns.
         [Authorize(Roles = "parent,staff")]
         [HttpGet("available")]
@@ -39,7 +46,7 @@ namespace DanceSchoolApp.Server.Controllers.People
             }
         }
 
-        // ─── GET /api/coaches/me ───────────────────────────────────────────────
+        //  GET /api/coaches/me 
         [Authorize(Roles = "coach")]
         [HttpGet("me")]
         public async Task<IActionResult> GetMe()
@@ -62,7 +69,53 @@ namespace DanceSchoolApp.Server.Controllers.People
         private int GetUserId() =>
             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        // ─── GET /api/coaches ──────────────────────────────────────────────────
+        [HttpPost("{id}/photo")]
+        [Authorize(Roles = "coach,staff")]
+        [EnableRateLimiting("uploads")]
+        public async Task<IActionResult> UploadPhoto(int id, [FromForm] IFormFile file)
+        {
+            // A coach may only update their own photo; staff may update any.
+            if (User.IsInRole("coach") && GetUserId() != id)
+                return Forbid();
+
+            if (file == null || file.Length == 0)
+                return BadRequest("No file provided.");
+
+            var permitted = new[] { ".jpg", ".jpeg", ".png" };
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (string.IsNullOrEmpty(ext) || !permitted.Contains(ext))
+                return BadRequest("Invalid file type.");
+
+            var env = HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
+            var webroot = env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            var coachFolder = Path.Combine(webroot, "uploads", "coach");
+            if (!Directory.Exists(coachFolder)) Directory.CreateDirectory(coachFolder);
+
+            var fileName = $"{Guid.NewGuid()}{ext}";
+            var filePath = Path.Combine(coachFolder, fileName);
+
+            using (var stream = System.IO.File.Create(filePath))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var relativePath = $"/uploads/coach/{fileName}";
+
+            try
+            {
+                await _CoachService.ReplacePhotoFileAsync(id, relativePath, webroot);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                if (System.IO.File.Exists(filePath))
+                    System.IO.File.Delete(filePath);
+                return NotFound(ex.Message);
+            }
+
+            return Ok(new { path = relativePath });
+        }
+
+        //  GET /api/coaches 
         [Authorize(Roles = "staff")]
         [HttpGet]
         public async Task<IActionResult> GetCoachs()
@@ -82,7 +135,7 @@ namespace DanceSchoolApp.Server.Controllers.People
             }
         }
 
-        // ─── GET /api/coaches/{id} ─────────────────────────────────────────────
+        //  GET /api/coaches/{id} 
         [Authorize(Roles = "staff")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCoach(int id)

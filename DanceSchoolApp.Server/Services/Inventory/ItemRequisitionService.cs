@@ -27,20 +27,37 @@ namespace DanceSchoolApp.Server.Services.Inventory
             _notificationService = notificationService;
         }
 
-        // ─── Queries ──────────────────────────────────────────────────────────────
+        //  Queries
 
         /// <summary>Returns all requisitions (staff view).</summary>
         public async Task<List<ItemRequisitionListResponse>> GetAllAsync()
         {
-            return await BuildQuery().ToListAsync();
+            var reqs = await _context.ItemRequisitions
+                .Include(r => r.ItemVariant)
+                    .ThenInclude(v => v.IdItemNavigation)
+                        .ThenInclude(i => i.ItemImages)
+                .Include(r => r.IdParentNavigation)
+                    .ThenInclude(u => u.PersonInfo)
+                .OrderByDescending(r => r.RequestedAt)
+                .ToListAsync();
+
+            return reqs.Select(MapToList).ToList();
         }
 
         /// <summary>Returns only the requisitions that belong to a given parent user.</summary>
         public async Task<List<ItemRequisitionListResponse>> GetByParentAsync(int parentUserId)
         {
-            return await BuildQuery()
+            var reqs = await _context.ItemRequisitions
+                .Include(r => r.ItemVariant)
+                    .ThenInclude(v => v.IdItemNavigation)
+                        .ThenInclude(i => i.ItemImages)
+                .Include(r => r.IdParentNavigation)
+                    .ThenInclude(u => u.PersonInfo)
                 .Where(r => r.IdParent == parentUserId)
+                .OrderByDescending(r => r.RequestedAt)
                 .ToListAsync();
+
+            return reqs.Select(MapToList).ToList();
         }
 
         public async Task<ItemRequisitionDetailResponse> GetByIdAsync(int id)
@@ -56,15 +73,37 @@ namespace DanceSchoolApp.Server.Services.Inventory
             return MapToDetail(req);
         }
 
-        // ─── Commands ─────────────────────────────────────────────────────────────
+        //  Commands 
 
         public async Task<int> CreateAsync(ItemRequisitionCreateRequest request, int parentUserId)
         {
             var variant = await _context.ItemVariants
+                .Include(v => v.IdItemNavigation) // ← adicionar este Include
                 .FirstOrDefaultAsync(v => v.VariantId == request.ItemVariantId && v.IsActive == true);
 
             if (variant is null)
                 throw new KeyNotFoundException($"Variant with id {request.ItemVariantId} was not found or is inactive.");
+
+            //  Só itens da escola podem ser requisitados 
+            if (!variant.IdItemNavigation.FromSchool)
+                throw new InvalidOperationException(
+                    "Only school items can be requisitioned. Community items cannot be requisitioned.");
+            //  Validação de datas 
+            var today = DateTime.Now.Date;
+
+            if (request.NeedFrom.HasValue && request.NeedFrom.Value.Date < today)
+                throw new InvalidOperationException(
+                    "NeedFrom cannot be in the past.");
+
+            if (request.NeedUntil.HasValue && request.NeedUntil.Value.Date < today)
+                throw new InvalidOperationException(
+                    "NeedUntil cannot be in the past.");
+
+            if (request.NeedFrom.HasValue && request.NeedUntil.HasValue
+                && request.NeedUntil.Value.Date < request.NeedFrom.Value.Date)
+                throw new InvalidOperationException(
+                    "NeedUntil cannot be before NeedFrom.");
+
 
             if (variant.Quantity < request.Quantity)
                 throw new InvalidOperationException(
@@ -75,7 +114,7 @@ namespace DanceSchoolApp.Server.Services.Inventory
                 ItemVariantId = request.ItemVariantId,
                 IdParent = parentUserId,
                 Quantity = request.Quantity,
-                RequestedAt = DateTime.UtcNow,
+                RequestedAt = DateTime.Now,
                 NeedFrom = request.NeedFrom,
                 NeedUntil = request.NeedUntil,
                 Note = request.Note,
@@ -127,10 +166,10 @@ namespace DanceSchoolApp.Server.Services.Inventory
             {
                 await _notificationService.SendAsync(
                     userId: requisition.IdParent,
-                    title: "Requisition Approved",
+                    title: "Requisição Aprovada",
                     message: request.ExpectedReturnDate.HasValue
-                        ? $"Your requisition for '{requisition.ItemVariant.IdItemNavigation.Name}' has been approved. Please return it by {request.ExpectedReturnDate.Value:dd/MM/yyyy}."
-                        : $"Your requisition for '{requisition.ItemVariant.IdItemNavigation.Name}' has been approved.",
+                        ? $"A sua requisição de '{requisition.ItemVariant.IdItemNavigation.Name}' foi aprovada. Por favor, devolva até {request.ExpectedReturnDate.Value:dd/MM/yyyy}."
+                        : $"A sua requisição de '{requisition.ItemVariant.IdItemNavigation.Name}' foi aprovada.",
                     type: NotificationType.Success,
                     entityType: "ItemRequisition",
                     entityId: requisition.RequisitionId);
@@ -139,8 +178,8 @@ namespace DanceSchoolApp.Server.Services.Inventory
             {
                 await _notificationService.SendAsync(
                     userId: requisition.IdParent,
-                    title: "Requisition Rejected",
-                    message: $"Your requisition for '{requisition.ItemVariant.IdItemNavigation.Name}' was not approved.",
+                    title: "Requisição Rejeitada",
+                    message: $"A sua requisição de '{requisition.ItemVariant.IdItemNavigation.Name}' não foi aprovada.",
                     type: NotificationType.Warning,
                     entityType: "ItemRequisition",
                     entityId: requisition.RequisitionId);
@@ -167,7 +206,7 @@ namespace DanceSchoolApp.Server.Services.Inventory
             // Restore stock
             requisition.ItemVariant.Quantity += request.ReturnQuantity;
             requisition.ReturnQuantity = request.ReturnQuantity;
-            requisition.ReturnedAt = DateTime.UtcNow;
+            requisition.ReturnedAt = DateTime.Now;
             requisition.Status = RequisitionStatus.Returned;
             if (request.ReturnNote is not null) requisition.Note = request.ReturnNote;
 
@@ -192,30 +231,33 @@ namespace DanceSchoolApp.Server.Services.Inventory
             await _context.SaveChangesAsync();
         }
 
-        // ─── Helpers ──────────────────────────────────────────────────────────────
+        //  Helpers
 
-        private IQueryable<ItemRequisitionListResponse> BuildQuery()
+        private static ItemRequisitionListResponse MapToList(ItemRequisition r)
         {
-            return _context.ItemRequisitions
-                .Include(r => r.ItemVariant)
-                    .ThenInclude(v => v.IdItemNavigation)
-                .Select(r => new ItemRequisitionListResponse
-                {
-                    RequisitionId = r.RequisitionId,
-                    ItemVariantId = r.ItemVariantId,
-                    ItemName = r.ItemVariant.IdItemNavigation.Name,
-                    VariantColor = r.ItemVariant.Color,
-                    VariantSize = r.ItemVariant.Size,
-                    IdParent = r.IdParent,
-                    Quantity = r.Quantity,
-                    RequestedAt = r.RequestedAt,
-                    NeedFrom = r.NeedFrom,
-                    NeedUntil = r.NeedUntil,
-                    ExpectedReturnDate = r.ExpectedReturnDate,
-                    ReturnedAt = r.ReturnedAt,
-                    Status = r.Status,
-                    Note = r.Note
-                });
+            var p = r.IdParentNavigation?.PersonInfo;
+            return new ItemRequisitionListResponse
+            {
+                RequisitionId = r.RequisitionId,
+                ItemId        = r.ItemVariant.IdItemNavigation.ItemId,
+                ItemVariantId = r.ItemVariantId,
+                ItemName      = r.ItemVariant.IdItemNavigation.Name,
+                ItemImageUrl  = r.ItemVariant.IdItemNavigation.ItemImages.FirstOrDefault()?.ImageUrl,
+                VariantColor  = r.ItemVariant.Color,
+                VariantSize   = r.ItemVariant.Size,
+                IdParent      = r.IdParent,
+                ParentName    = p is not null
+                    ? $"{p.FirstName} {p.LastName}".Trim()
+                    : r.IdParentNavigation?.Username,
+                Quantity          = r.Quantity,
+                RequestedAt       = r.RequestedAt,
+                NeedFrom          = r.NeedFrom,
+                NeedUntil         = r.NeedUntil,
+                ExpectedReturnDate = r.ExpectedReturnDate,
+                ReturnedAt        = r.ReturnedAt,
+                Status            = r.Status,
+                Note              = r.Note
+            };
         }
 
         private static ItemRequisitionDetailResponse MapToDetail(ItemRequisition r) => new()

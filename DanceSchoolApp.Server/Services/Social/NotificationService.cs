@@ -15,7 +15,7 @@ namespace DanceSchoolApp.Server.Services.Social
             _context = context;
         }
 
-        // ─── Queries ──────────────────────────────────────────────────────────
+        //  Queries 
 
         public async Task<NotificationPagedResult> GetByUserAsync(int userId, PagedQuery query)
         {
@@ -48,7 +48,7 @@ namespace DanceSchoolApp.Server.Services.Social
             };
         }
 
-        // ─── Commands ─────────────────────────────────────────────────────────
+        //  Commands 
 
         public async Task<int> CreateAsync(NotificationCreateRequest request)
         {
@@ -71,7 +71,7 @@ namespace DanceSchoolApp.Server.Services.Social
                 Type = (byte)request.Type,
                 EntityType = request.EntityType,
                 EntityId = request.EntityId,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 IsSent = false,
                 IsDeleted = false
             };
@@ -96,7 +96,7 @@ namespace DanceSchoolApp.Server.Services.Social
             // Idempotent — marking an already-read notification as read is fine.
             if (notification.ReadAt is null)
             {
-                notification.ReadAt = DateTime.UtcNow;
+                notification.ReadAt = DateTime.Now;
                 await _context.SaveChangesAsync();
             }
         }
@@ -115,7 +115,7 @@ namespace DanceSchoolApp.Server.Services.Social
                     n.ReadAt == null &&
                     (n.IsDeleted == null || n.IsDeleted == false))
                 .ExecuteUpdateAsync(n =>
-                    n.SetProperty(x => x.ReadAt, DateTime.UtcNow));
+                    n.SetProperty(x => x.ReadAt, DateTime.Now));
         }
 
         public async Task SoftDeleteAsync(int notificationId)
@@ -133,7 +133,7 @@ namespace DanceSchoolApp.Server.Services.Social
             await _context.SaveChangesAsync();
         }
 
-        // ─── Internal helper ──────────────────────────────────────────────────
+        //  Internal helper 
         // Called by other services (CoachClassService, ParticipantService, etc.)
         // to send notifications without going through the HTTP layer.
         // Example usage in CoachClassService.RejectAsync:
@@ -155,7 +155,7 @@ namespace DanceSchoolApp.Server.Services.Social
                 Type = (byte)type,
                 EntityType = entityType,
                 EntityId = entityId,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 IsSent = true,   // internally sent = already dispatched
                 IsDeleted = false
             };
@@ -164,7 +164,7 @@ namespace DanceSchoolApp.Server.Services.Social
             await _context.SaveChangesAsync();
         }
 
-        // ─── Private helpers ──────────────────────────────────────────────────
+        //  Private helpers 
 
         private static NotificationResponse MapToResponse(Notification n) =>
             new NotificationResponse

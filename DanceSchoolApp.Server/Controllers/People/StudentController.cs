@@ -3,12 +3,14 @@ using DanceSchoolApp.Server.Services.People;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace DanceSchoolApp.Server.Controllers.People
 {
     [Route("api/students")]
     [ApiController]
+    [EnableRateLimiting("api")]
     public class StudentController : ControllerBase
     {
 
@@ -18,7 +20,7 @@ namespace DanceSchoolApp.Server.Controllers.People
             _studentService = studentService;
         }
 
-        // ─── GET /api/students ─────────────────────────────────────────────────
+        //  GET /api/students 
         [Authorize(Roles = "staff")]
         [HttpGet]
         public async Task<IActionResult> GetStudents()
@@ -38,7 +40,7 @@ namespace DanceSchoolApp.Server.Controllers.People
             }
         }
 
-        // ─── GET /api/students/{id} ────────────────────────────────────────────
+        //  GET /api/students/{id} 
         [Authorize(Roles = "staff,parent")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetStudent(int id)
@@ -62,7 +64,7 @@ namespace DanceSchoolApp.Server.Controllers.People
             }
         }
 
-        // ─── GET /api/students/parent/{parentId} ───────────────────────────────
+        //  GET /api/students/parent/{parentId} 
         [Authorize(Roles = "staff,parent")]
         [HttpGet("parent/{parentId}")]
         public async Task<IActionResult> GetStudentsByParent(int parentId)
@@ -89,13 +91,13 @@ namespace DanceSchoolApp.Server.Controllers.People
             }
         }
 
-        // ─── Helpers ──────────────────────────────────────────────────────────
+        //  Helpers 
         private int GetUserId() =>
             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         private bool IsStaff() => User.IsInRole("staff");
 
-        // ─── POST /api/students ────────────────────────────────────────────────
+        //  POST /api/students 
         [Authorize(Roles = "staff,parent")]
         [HttpPost]
         public async Task<IActionResult> CreateStudent([FromBody] StudentCreateRequest request)
@@ -103,9 +105,11 @@ namespace DanceSchoolApp.Server.Controllers.People
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (!IsStaff())
-                request.ParentId = GetUserId();
-
+            if (!IsStaff()) {
+                if(request.ParentId != 0 && request.ParentId != GetUserId())
+                    return Forbid("The parent must be the owner of the student!");
+            }
+                
             try
             {
                 var newId = await _studentService.CreateStudentAsync(request);
@@ -121,8 +125,8 @@ namespace DanceSchoolApp.Server.Controllers.People
             }
         }
 
-        // ─── PUT /api/students/{id} ───────────────────────────────────────────
-        // Parent use — updates PersonInfo fields only (does NOT reset AcceptanceStatus).
+        //  PUT /api/students/{id} 
+        // Staff use — updates PersonInfo fields only (does NOT reset AcceptanceStatus).
         [Authorize(Roles = "staff")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateStudentPersonInfo(
@@ -145,7 +149,7 @@ namespace DanceSchoolApp.Server.Controllers.People
             catch (Exception ex) { return StatusCode(500, ex.Message); }
         }
 
-        // ─── PATCH /api/students/{id} ──────────────────────────────────────────
+        //  PATCH /api/students/{id} 
         [Authorize(Roles = "staff,parent")]
         [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateStudent(int id, [FromBody] StudentUpdateRequest request)
@@ -179,7 +183,7 @@ namespace DanceSchoolApp.Server.Controllers.People
             }
         }
 
-        // ─── PATCH /api/students/{id}/activate ────────────────────────────────
+        //  PATCH /api/students/{id}/activate 
         [Authorize(Roles = "staff")]
         [HttpPatch("{id}/activate")]
         public async Task<IActionResult> ActivateStudent(int id)
@@ -199,7 +203,7 @@ namespace DanceSchoolApp.Server.Controllers.People
             }
         }
 
-        // ─── PATCH /api/students/{id}/deactivate ──────────────────────────────
+        //  PATCH /api/students/{id}/deactivate 
         [Authorize(Roles = "staff")]
         [HttpPatch("{id}/deactivate")]
         public async Task<IActionResult> DeactivateStudent(int id)
@@ -219,7 +223,7 @@ namespace DanceSchoolApp.Server.Controllers.People
             }
         }
 
-        // ─── PATCH /api/students/{id}/accept ──────────────────────────────────
+        //  PATCH /api/students/{id}/accept 
         [Authorize(Roles = "staff")]
         [HttpPatch("{id}/accept")]
         public async Task<IActionResult> AcceptStudent(int id)
@@ -234,7 +238,7 @@ namespace DanceSchoolApp.Server.Controllers.People
             catch (Exception ex) { return StatusCode(500, ex.Message); }
         }
 
-        // ─── PATCH /api/students/{id}/reject ──────────────────────────────────
+        //  PATCH /api/students/{id}/reject 
         [Authorize(Roles = "staff")]
         [HttpPatch("{id}/reject")]
         public async Task<IActionResult> RejectStudent(int id,
@@ -249,7 +253,7 @@ namespace DanceSchoolApp.Server.Controllers.People
             catch (Exception ex) { return StatusCode(500, ex.Message); }
         }
 
-        // ─── GET /api/students/{id}/classes ───────────────────────────────────
+        //  GET /api/students/{id}/classes 
         // Returns full class history for a student.
         // Staff: any student. Parent: only their own students.
         [Authorize(Roles = "staff,parent")]

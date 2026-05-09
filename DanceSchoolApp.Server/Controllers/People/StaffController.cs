@@ -2,21 +2,25 @@
 using DanceSchoolApp.Server.Services.People;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace DanceSchoolApp.Server.Controllers.People
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableRateLimiting("api")]
     public class StaffController : ControllerBase
     {
         private readonly StaffService _StaffService;
-        public StaffController(StaffService StaffService)
+        private readonly IWebHostEnvironment _env;
+        public StaffController(StaffService StaffService, IWebHostEnvironment env)
         {
             _StaffService = StaffService;
+            _env = env;
         }
 
-        // ─── GET /api/staff/me ─────────────────────────────────────────────────
+        //  GET /api/staff/me 
         [Authorize(Roles = "staff")]
         [HttpGet("me")]
         public async Task<IActionResult> GetMe()
@@ -39,17 +43,29 @@ namespace DanceSchoolApp.Server.Controllers.People
         private int GetUserId() =>
             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        // ─── GET /api/staff ───────────────────────────────────────────────────
+        //  GET /api/staff 
         [Authorize(Roles = "staff")]
         [HttpGet]
-        public async Task<IActionResult> GetStaffs()
+        public async Task<IActionResult> GetStaffs(
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 7,
+    [FromQuery] string? search = "",
+    [FromQuery] string? sortBy = "",
+    [FromQuery] string? sortDir = "asc")
         {
+            // Development-only endpoint: staff listing is internal; frontend uses /api/staff/me and specific staff pages
+            if (!_env.IsDevelopment())
+                return StatusCode(StatusCodes.Status403Forbidden, "This endpoint is available only in development.");
+
             try
             {
-                var result = await _StaffService.GetStaffsAsync();
-
-                if (!result.Any())
-                    return NoContent();
+                var result = await _StaffService.GetStaffsAsync(
+                    page,
+                    pageSize,
+                    search,
+                    sortBy,
+                    sortDir
+                );
 
                 return Ok(result);
             }
@@ -58,11 +74,15 @@ namespace DanceSchoolApp.Server.Controllers.People
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
-        // ─── GET /api/staff/{id} ──────────────────────────────────────────────
+        //  GET /api/staff/{id} 
         [Authorize(Roles = "staff")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetStaff(int id)
         {
+            // Development-only endpoint: only allowed in Development environment
+            if (!_env.IsDevelopment())
+                return StatusCode(StatusCodes.Status403Forbidden, "This endpoint is available only in development.");
+
             try
             {
                 var result = await _StaffService.GetStaffAsync(id);

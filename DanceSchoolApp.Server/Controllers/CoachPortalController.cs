@@ -1,6 +1,7 @@
 using DanceSchoolApp.Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace DanceSchoolApp.Server.Controllers
@@ -8,6 +9,7 @@ namespace DanceSchoolApp.Server.Controllers
     [ApiController]
     [Route("api/coach")]
     [Authorize(Roles = "coach")]
+    [EnableRateLimiting("api")]
     public class CoachPortalController : ControllerBase
     {
         private readonly CoachPortalService _coachPortalService;
@@ -17,7 +19,7 @@ namespace DanceSchoolApp.Server.Controllers
             _coachPortalService = coachPortalService;
         }
 
-        // ─── GET /api/coach/dashboard ─────────────────────────────────────────
+        //  GET /api/coach/dashboard 
         [HttpGet("dashboard")]
         public async Task<IActionResult> GetDashboard()
         {
@@ -37,7 +39,7 @@ namespace DanceSchoolApp.Server.Controllers
             }
         }
 
-        // ─── GET /api/coach/agenda ────────────────────────────────────────────
+        //  GET /api/coach/agenda 
         // Query: from, to (DateOnly, required). Range capped at 60 days.
         [HttpGet("agenda")]
         public async Task<IActionResult> GetAgenda(
@@ -70,7 +72,7 @@ namespace DanceSchoolApp.Server.Controllers
             }
         }
 
-        // ─── GET /api/coach/validate ──────────────────────────────────────────
+        //  GET /api/coach/validate 
         // Query: tab ("requests"|"validations", default "requests"),
         //        page (default 1), pageSize (default 10, max 50)
         [HttpGet("validate")]
@@ -118,7 +120,7 @@ namespace DanceSchoolApp.Server.Controllers
             }
         }
 
-        // ─── Private helpers ──────────────────────────────────────────────────
+        //  Private helpers 
 
         private int GetUserId() =>
             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);

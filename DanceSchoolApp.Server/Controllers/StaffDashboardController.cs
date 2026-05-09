@@ -3,6 +3,7 @@ using DanceSchoolApp.Server.DTOs.Staff;
 using DanceSchoolApp.Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Globalization;
 
 namespace DanceSchoolApp.Server.Controllers
@@ -10,6 +11,7 @@ namespace DanceSchoolApp.Server.Controllers
     [ApiController]
     [Route("api/staff")]
     [Authorize(Roles = "staff,admin")]
+    [EnableRateLimiting("api")]
     public class StaffDashboardController : ControllerBase
     {
         private readonly StaffDashboardService _staffService;
@@ -26,7 +28,7 @@ namespace DanceSchoolApp.Server.Controllers
             _appSettingService = appSettingService;
         }
 
-        // ─── GET /api/staff/dashboard ─────────────────────────────────────────
+        //  GET /api/staff/dashboard 
         [HttpGet("dashboard")]
         public async Task<IActionResult> GetDashboard()
         {
@@ -41,7 +43,7 @@ namespace DanceSchoolApp.Server.Controllers
             }
         }
 
-        // ─── GET /api/staff/agenda ────────────────────────────────────────────
+        //  GET /api/staff/agenda 
         // Query: from, to (DateOnly, required), studioId?, status?
         // Range capped at 60 days.
         [HttpGet("agenda")]
@@ -72,7 +74,7 @@ namespace DanceSchoolApp.Server.Controllers
             }
         }
 
-        // ─── GET /api/staff/validate-classes ──────────────────────────────────
+        //  GET /api/staff/validate-classes 
         // Query: tab ("requested"|"finished"|"pending", default "requested"),
         //        page (default 1), pageSize (default 15, max 50)
         [HttpGet("validate-classes")]
@@ -100,7 +102,7 @@ namespace DanceSchoolApp.Server.Controllers
             }
         }
 
-        // ─── GET /api/staff/validate-students ─────────────────────────────────
+        //  GET /api/staff/validate-students 
         // Query: status ("pending"|"approved"|"all", default "pending"),
         //        page (default 1), pageSize (default 10, max 50)
         [HttpGet("validate-students")]
@@ -128,7 +130,7 @@ namespace DanceSchoolApp.Server.Controllers
             }
         }
 
-        // ─── GET /api/staff/billing/students ──────────────────────────────────
+        //  GET /api/staff/billing/students 
         // Query: month (YYYY-MM, required), search?, page, pageSize (default 25)
         [HttpGet("billing/students")]
         public async Task<IActionResult> GetBillingStudents(
@@ -156,7 +158,7 @@ namespace DanceSchoolApp.Server.Controllers
             }
         }
 
-        // ─── GET /api/staff/billing/coaches ───────────────────────────────────
+        //  GET /api/staff/billing/coaches 
         // Query: month (YYYY-MM, required), search?, page, pageSize (default 25)
         [HttpGet("billing/coaches")]
         public async Task<IActionResult> GetBillingCoaches(
@@ -184,45 +186,42 @@ namespace DanceSchoolApp.Server.Controllers
             }
         }
 
-        // ─── GET /api/staff/appsettings ───────────────────────────────────────
-        [HttpGet("appsettings")]
-        public async Task<IActionResult> GetAppSettings()
+        [HttpGet("billing/students/export")]
+        public async Task<IActionResult> ExportBillingStudents(
+            [FromQuery] string month,
+            [FromQuery] string? search = null)
         {
-            try
-            {
-                var result = await _appSettingService.GetAllAsync();
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            if (!TryParseYearMonth(month, out int year, out int monthInt))
+                return BadRequest("Invalid month format. Expected YYYY-MM.");
+
+            var fileBytes = await _billingService.ExportStudentBillingAsync(year, monthInt, search);
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"billing_students_{year}-{monthInt:D2}.xlsx"
+            );
         }
 
-        // ─── PATCH /api/staff/appsettings/{key} ───────────────────────────────
-        [HttpPatch("appsettings/{key}")]
-        public async Task<IActionResult> UpdateAppSetting(
-            string key, [FromBody] AppSettingUpdateRequest request)
+        [HttpGet("billing/coaches/export")]
+        public async Task<IActionResult> ExportBillingCoaches(
+            [FromQuery] string month,
+            [FromQuery] string? search = null)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (!TryParseYearMonth(month, out int year, out int monthInt))
+                return BadRequest("Invalid month format. Expected YYYY-MM.");
 
-            try
-            {
-                await _appSettingService.UpdateAsync(key, request.Value);
-                return NoContent();
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            var fileBytes = await _billingService.ExportCoachBillingAsync(year, monthInt, search);
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"billing_coaches_{year}-{monthInt:D2}.xlsx"
+            );
         }
 
-        // ─── Private helpers ──────────────────────────────────────────────────
+
+        //  Private helpers 
 
         private static bool TryParseYearMonth(string? input, out int year, out int month)
         {

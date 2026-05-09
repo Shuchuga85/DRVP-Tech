@@ -1,12 +1,14 @@
 using DanceSchoolApp.Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DanceSchoolApp.Server.Controllers
 {
     [ApiController]
     [Route("api/admin")]
     [Authorize(Roles = "admin")]
+    [EnableRateLimiting("api")]
     public class AdminPortalController : ControllerBase
     {
         private readonly AdminPortalService _adminService;
@@ -16,7 +18,7 @@ namespace DanceSchoolApp.Server.Controllers
             _adminService = adminService;
         }
 
-        // ─── GET /api/admin/dashboard ─────────────────────────────────────────
+        //  GET /api/admin/dashboard 
         [HttpGet("dashboard")]
         public async Task<IActionResult> GetDashboard()
         {
@@ -31,20 +33,22 @@ namespace DanceSchoolApp.Server.Controllers
             }
         }
 
-        // ─── GET /api/admin/users ─────────────────────────────────────────────
+        //  GET /api/admin/users 
         // Query: search? (string), page (default 1), pageSize (default 20)
         [HttpGet("users")]
         public async Task<IActionResult> GetUsers(
-            [FromQuery] string? search   = null,
-            [FromQuery] int     page     = 1,
-            [FromQuery] int     pageSize = 20)
+            [FromQuery] string? search = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? sortBy = null,
+            [FromQuery] string? sortDir = "asc")
         {
-            if (page < 1)     page     = 1;
+            if (page < 1) page = 1;
             if (pageSize < 1) pageSize = 1;
 
             try
             {
-                var result = await _adminService.GetStaffUsersAsync(search, page, pageSize);
+                var result = await _adminService.GetStaffUsersAsync(search, page, pageSize, sortBy, sortDir);
 
                 if (result.TotalCount == 0)
                     return NoContent();

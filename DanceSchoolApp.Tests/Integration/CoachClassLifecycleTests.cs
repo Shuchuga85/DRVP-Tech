@@ -26,7 +26,7 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
         });
     }
 
-    // ── helpers ───────────────────────────────────────────────────────────────
+    //  helpers 
 
     private async Task<string> LoginAndGetCookie(string username, string password = "Test1234!")
     {
@@ -39,10 +39,10 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
 
         var setCookie = response.Headers
             .GetValues("Set-Cookie")
-            .FirstOrDefault(h => h.StartsWith("jwt="));
+            .FirstOrDefault(h => h.StartsWith("access_token="));
 
-        setCookie.Should().NotBeNull(because: "login response must set the jwt cookie");
-        return setCookie!.Split(';')[0].Substring("jwt=".Length);
+        setCookie.Should().NotBeNull(because: "login response must set the access_token cookie");
+        return setCookie!.Split(';')[0].Substring("access_token=".Length);
     }
 
     /// <summary>
@@ -53,7 +53,7 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
         HttpMethod method, string url, string jwt, object? body = null)
     {
         var req = new HttpRequestMessage(method, url);
-        req.Headers.Add("Cookie", $"jwt={jwt}");
+        req.Headers.Add("Cookie", $"access_token={jwt}");
 
         if (body is not null)
         {
@@ -66,12 +66,12 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
         return req;
     }
 
-    // ── test ──────────────────────────────────────────────────────────────────
+    //  test 
 
     [Fact]
     public async Task FullClassLifecycle_RequestedToValidated_AllTransitionsSucceed()
     {
-        // ── Seed ─────────────────────────────────────────────────────────────
+        //  Seed 
         // Capture the generated IDs so they can be used in the HTTP calls below.
         // The SeedDatabase lambda is synchronous — no await inside it.
         int coachId = 0, modalityId = 0, studentId = 0;
@@ -93,6 +93,9 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
             var coachUser = SeedData.SeedUserWithRole(db, "coach_lc", "coach");
             var coach = SeedData.SeedCoach(db, coachUser);
             coachId = coach.CoachId; // CoachId == coachUser.UserId
+            // Ensure the coach teaches the modality used in this scenario
+            coach.IdModalities.Add(modality);
+            db.SaveChanges();
 
             // Coach available every Monday 09:00–12:00 (covers the 10–11h test window)
             SeedData.SeedCoachAvailability(db, coach,
@@ -118,10 +121,10 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
             DateTimeKind.Utc);
         var endDt = startDt.AddHours(1);
 
-        // ── Log in once per role — cookies are kept for the whole test ────────
+        //  Log in once per role — cookies are kept for the whole test 
         var parentJwt = await LoginAndGetCookie("parent_lc");
 
-        // ── Step 1 — Parent creates the class request ─────────────────────────
+        //  Step 1 — Parent creates the class request 
         var createResp = await _client.SendAsync(
             MakeRequest(HttpMethod.Post, "/api/coachclasses", parentJwt, new
             {
@@ -142,23 +145,25 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
         classId.Should().BeGreaterThan(0, because: "response body must contain a positive classId");
 
 
-        // ── Step 2 — Staff approves (Requested → StaffApproved) ───────────────
+        //  Step 2 — Staff approves (Requested → StaffApproved)
         var staffJwt = await LoginAndGetCookie("staff_lc");
         var approveResp = await _client.SendAsync(
-            MakeRequest(HttpMethod.Patch, $"/api/coachclasses/{classId}/staff-approve", staffJwt));
+            MakeRequest(HttpMethod.Patch, $"/api/coachclasses/{classId}/staff-respond", staffJwt,
+                new { approve = true }));
 
         approveResp.StatusCode.Should().Be(HttpStatusCode.NoContent,
-            because: "staff-approve on a Requested class must return 204");
+            because: "staff-respond (approve=true) on a Requested class must return 204");
 
-        // ── Step 3 — Coach accepts (StaffApproved → Approved) ─────────────────
+        //  Step 3 — Coach accepts (StaffApproved → Approved)
         var coachJwt = await LoginAndGetCookie("coach_lc");
         var acceptResp = await _client.SendAsync(
-            MakeRequest(HttpMethod.Patch, $"/api/coachclasses/{classId}/coach-accept", coachJwt));
+            MakeRequest(HttpMethod.Patch, $"/api/coachclasses/{classId}/coach-respond", coachJwt,
+                new { accept = true }));
 
         acceptResp.StatusCode.Should().Be(HttpStatusCode.NoContent,
-            because: "coach-accept on a StaffApproved class must return 204");
+            because: "coach-respond (accept=true) on a StaffApproved class must return 204");
 
-        // ── Step 4 — Simulate worker transitioning Approved → Finished ──────────
+        //  Step 4 — Simulate worker transitioning Approved → Finished 
         // The /finish endpoint has been removed; the transition is now automated
         // by ClassLifecycleWorker. Directly update DB state to replicate what
         // the worker does so the rest of the lifecycle can proceed.
@@ -169,7 +174,7 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
             cls.FinishedAt = DateTime.UtcNow.AddHours(-1);
         });
 
-        // ── Step 5 — Coach validates (records DidTeach; class stays Finished  ──
+        //  Step 5 — Coach validates (records DidTeach; class stays Finished  
         //            until the single participant also responds in step 6)
         coachJwt = await LoginAndGetCookie("coach_lc");
         var coachValidateResp = await _client.SendAsync(
@@ -179,7 +184,7 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
         coachValidateResp.StatusCode.Should().Be(HttpStatusCode.NoContent,
             because: "coach-validate on a Finished class must return 204");
 
-        // ── Step 6a — Staff retrieves the participant list to get the ID ───────
+        //  Step 6a — Staff retrieves the participant list to get the ID 
         staffJwt = await LoginAndGetCookie("staff_lc");
         var participantsResp = await _client.SendAsync(
             MakeRequest(HttpMethod.Get, $"/api/participants/class/{classId}", staffJwt));
@@ -195,7 +200,7 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
             .GetInt32();
         participantId.Should().BeGreaterThan(0);
 
-        // ── Step 6b — Parent validates participant attendance ─────────────────
+        //  Step 6b — Parent validates participant attendance 
         // This is the LAST required response (coach already validated in step 5),
         // so ParticipantService.TryAdvanceClassToStaffReviewAsync auto-advances
         // the class from Finished → Pending.
@@ -207,7 +212,7 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
         parentValidateResp.StatusCode.Should().Be(HttpStatusCode.NoContent,
             because: "parent-validate on a Finished-class participant must return 204");
 
-        // ── Step 7 — Staff final sign-off (Pending → Validated) ───────────────
+        //  Step 7 — Staff final sign-off (Pending → Validated) 
         staffJwt = await LoginAndGetCookie("staff_lc");
         var staffValidateResp = await _client.SendAsync(
             MakeRequest(HttpMethod.Patch, $"/api/coachclasses/{classId}/staff-validate", staffJwt));
@@ -215,7 +220,7 @@ public class CoachClassLifecycleTests : IClassFixture<CustomWebApplicationFactor
         staffValidateResp.StatusCode.Should().Be(HttpStatusCode.NoContent,
             because: "staff-validate on a Pending class must return 204");
 
-        // ── Step 8 — Verify final status == Validated (5) ─────────────────────
+        //  Step 8 — Verify final status == Validated (5) 
         var getClassResp = await _client.SendAsync(
             MakeRequest(HttpMethod.Get, $"/api/coachclasses/{classId}", staffJwt));
 

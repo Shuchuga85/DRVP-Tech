@@ -2,7 +2,7 @@
 
 namespace DanceSchoolApp.Server.DTOs.Classes
 {
-    // ─── Coach validation status enum ────────────────────────────────────────
+    //  Coach validation status enum 
     public enum CoachValidationStatus : byte
     {
         Pending   = 0,
@@ -10,7 +10,7 @@ namespace DanceSchoolApp.Server.DTOs.Classes
         Denied    = 2
     }
 
-    // ─── Status enum ──────────────────────────────────────────────────────────
+    //  Status enum 
     public enum CoachClassStatus : byte
     {
         Requested     = 0,
@@ -23,7 +23,7 @@ namespace DanceSchoolApp.Server.DTOs.Classes
         StaffApproved = 7   // staff approved, awaiting coach acceptance
     }
 
-    // ─── Responses ────────────────────────────────────────────────────────────
+    //  Responses 
 
     public class CoachClassListResponse
     {
@@ -103,7 +103,7 @@ namespace DanceSchoolApp.Server.DTOs.Classes
         public int SpotsAvailable { get; set; }
     }
 
-    // ─── Requests ─────────────────────────────────────────────────────────────
+    //  Requests 
 
     public class CoachClassCreateRequest : IValidatableObject
     {
@@ -136,7 +136,7 @@ namespace DanceSchoolApp.Server.DTOs.Classes
                     "EndDatetime must be after StartDatetime.",
                     new[] { nameof(EndDatetime) });
 
-            if (StartDatetime < DateTime.UtcNow)
+            if (StartDatetime < DateTime.Now)
                 yield return new ValidationResult(
                     "StartDatetime cannot be in the past.",
                     new[] { nameof(StartDatetime) });
@@ -152,24 +152,32 @@ namespace DanceSchoolApp.Server.DTOs.Classes
                     new[] { nameof(StudentIds) });
         }
     }
-
-    // Staff-only reject request — reason is optional but useful for
-    // the notification sent back to the parent.
-    public class CoachClassRejectRequest
+    public class StaffRespondRequest
     {
-        [MaxLength(256)]
+        [Required]
+        public bool Approve { get; set; }
         public string? Reason { get; set; }
     }
 
-    public class CoachClassCoachRejectRequest
+    public class CoachRespondRequest
     {
-        [MaxLength(256)]
+        [Required]
+        public bool Accept { get; set; }
         public string? Reason { get; set; }
     }
+
 
     public class CoachValidateRequest
     {
         [Required]
         public bool DidTeach { get; set; }
+    }
+
+    public class StaffValidateRequest
+    {
+        [Required]
+        public bool Confirmed { get; set; }
+
+        public string? Reason { get; set; }
     }
 }

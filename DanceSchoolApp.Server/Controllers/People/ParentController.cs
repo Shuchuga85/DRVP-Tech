@@ -1,12 +1,14 @@
 ﻿using DanceSchoolApp.Server.Services.People;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace DanceSchoolApp.Server.Controllers.People
 {
     [Route("api/[controller]s")]
     [ApiController]
+    [EnableRateLimiting("api")]
     public class ParentController : ControllerBase
     {
         private readonly ParentService _parentService;
@@ -15,7 +17,7 @@ namespace DanceSchoolApp.Server.Controllers.People
             _parentService = ParentService;
         }
 
-        // ─── GET /api/parents/me ───────────────────────────────────────────────
+        //  GET /api/parents/me 
         [Authorize(Roles = "parent")]
         [HttpGet("me")]
         public async Task<IActionResult> GetMe()
@@ -38,7 +40,7 @@ namespace DanceSchoolApp.Server.Controllers.People
         private int GetUserId() =>
             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        // ─── GET /api/parents ─────────────────────────────────────────────────
+        //  GET /api/parents 
         [Authorize(Roles = "staff")]
         [HttpGet]
         public async Task<IActionResult> GetParents()
@@ -58,7 +60,7 @@ namespace DanceSchoolApp.Server.Controllers.People
             }
         }
 
-        // ─── GET /api/parents/{id} ─────────────────────────────────────────────────
+        //  GET /api/parents/{id} 
         [Authorize(Roles = "staff")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetParent(int id)

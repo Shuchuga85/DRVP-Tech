@@ -2,11 +2,14 @@ using DanceSchoolApp.Server.DTOs;
 using DanceSchoolApp.Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DanceSchoolApp.Server.Controllers
 {
     [ApiController]
     [Route("api/appsettings")]
+    [Authorize(Roles = "admin")]
+    [EnableRateLimiting("api")]
     public class AppSettingController : ControllerBase
     {
         private readonly AppSettingService _appSettingService;
@@ -16,8 +19,7 @@ namespace DanceSchoolApp.Server.Controllers
             _appSettingService = appSettingService;
         }
 
-        // ─── GET /api/appsettings ──────────────────────────────────────────────
-        [Authorize(Roles = "staff")]
+        //  GET /api/appsettings 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -32,8 +34,7 @@ namespace DanceSchoolApp.Server.Controllers
             }
         }
 
-        // ─── PATCH /api/appsettings/{key} ─────────────────────────────────────
-        [Authorize(Roles = "staff")]
+        //  PATCH /api/appsettings/{key} 
         [HttpPatch("{key}")]
         public async Task<IActionResult> Update(string key,
             [FromBody] AppSettingUpdateRequest request)

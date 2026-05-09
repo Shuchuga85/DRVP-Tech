@@ -10,7 +10,7 @@ namespace DanceSchoolApp.Server.DTOs.People
         Rejected = 2
     }
 
-    // ─── Responses ────────────────────────────────────────────────────────────
+    //  Responses 
 
     public class StudentListResponse
     {
@@ -31,7 +31,7 @@ namespace DanceSchoolApp.Server.DTOs.People
     }
 
 
-    // ─── Requests ─────────────────────────────────────────────────────────────
+    //  Requests 
 
     public class StudentCreateRequest
     {
@@ -99,7 +99,6 @@ namespace DanceSchoolApp.Server.DTOs.People
         public DateOnly JoinedAt { get; set; }
         public ParticipantValidationStatus ValidationStatus { get; set; }
         public DateTime? ParentValidatedAt { get; set; }
-        public decimal ClassPrice { get; set; }
     }
 
 }

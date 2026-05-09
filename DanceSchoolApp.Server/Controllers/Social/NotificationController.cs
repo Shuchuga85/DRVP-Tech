@@ -3,12 +3,14 @@ using DanceSchoolApp.Server.DTOs.Social;
 using DanceSchoolApp.Server.Services.Social;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace DanceSchoolApp.Server.Controllers.Social
 {
     [ApiController]
     [Route("api/notifications")]
+    [EnableRateLimiting("api")]
     public class NotificationController : ControllerBase
     {
         private readonly NotificationService _notificationService;
@@ -18,7 +20,7 @@ namespace DanceSchoolApp.Server.Controllers.Social
             _notificationService = notificationService;
         }
 
-        // ─── GET /api/notifications/user/{userId} ──────────────────────────────
+        //  GET /api/notifications/user/{userId} 
         // Returns all non-deleted notifications for a user, newest first.
         // Includes both read and unread — client filters by IsRead if needed.
         [Authorize]
@@ -43,7 +45,7 @@ namespace DanceSchoolApp.Server.Controllers.Social
             }
         }
 
-        // ─── POST /api/notifications ───────────────────────────────────────────
+        //  POST /api/notifications 
         // Staff or system use — manual notification creation.
         // Internal services should call NotificationService.SendAsync() directly
         // rather than going through this HTTP endpoint.
@@ -69,7 +71,7 @@ namespace DanceSchoolApp.Server.Controllers.Social
             }
         }
 
-        // ─── PATCH /api/notifications/{id}/read ────────────────────────────────
+        //  PATCH /api/notifications/{id}/read 
         // Marks a single notification as read. Idempotent — safe to call twice.
         [Authorize]
         [HttpPatch("{id}/read")]
@@ -90,7 +92,7 @@ namespace DanceSchoolApp.Server.Controllers.Social
             }
         }
 
-        // ─── PATCH /api/notifications/user/{userId}/read-all ──────────────────
+        //  PATCH /api/notifications/user/{userId}/read-all 
         // Marks all unread notifications for a user as read in one operation.
         // The client calls this when the user opens the notification panel.
         [Authorize]
@@ -115,13 +117,13 @@ namespace DanceSchoolApp.Server.Controllers.Social
             }
         }
 
-        // ─── Helpers ──────────────────────────────────────────────────────────
+        //  Helpers 
         private int GetUserId() =>
             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         private bool IsStaff() => User.IsInRole("staff");
 
-        // ─── DELETE /api/notifications/{id} ────────────────────────────────────
+        //  DELETE /api/notifications/{id} 
         // Soft delete — sets IsDeleted = true.
         // Deleted notifications are excluded from GET /user/{userId} results.
         [Authorize]

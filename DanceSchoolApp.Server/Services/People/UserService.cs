@@ -26,7 +26,7 @@ namespace DanceSchoolApp.Server.Services.People
         }
 
    
-        // ─── Queries ──────────────────────────────────────────────────────────
+        //  Queries 
 
         public async Task<List<UserListResponse>> GetUsersAsync()
         {
@@ -105,7 +105,7 @@ namespace DanceSchoolApp.Server.Services.People
             };
         }
 
-        // ─── Commands ─────────────────────────────────────────────────────────
+        //  Commands 
 
         public async Task<int> CreateUserAsync(UserCreateRequest request)
         {
@@ -147,7 +147,7 @@ namespace DanceSchoolApp.Server.Services.People
                 Email = request.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(generatedPassword),
                 IsActive = true,
-                CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow),
+                CreatedAt = DateOnly.FromDateTime(DateTime.Now),
                 PersonInfo = request.PersonInfo is null ? null : new PersonInfo
                 {
                     FirstName = request.PersonInfo.FirstName,
@@ -220,11 +220,11 @@ namespace DanceSchoolApp.Server.Services.People
             await _context.SaveChangesAsync();
         }
 
-        // ─── Private helpers ──────────────────────────────────────────────────
+        //  Private helpers 
 
         private static void ValidateBirthDate(DateOnly birthDate)
         {
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var today = DateOnly.FromDateTime(DateTime.Now);
             if (birthDate > today)
                 throw new InvalidOperationException("BirthDate cannot be in the future.");
 

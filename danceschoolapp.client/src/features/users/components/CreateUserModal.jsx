@@ -27,19 +27,20 @@ function CreateUserModal({
         <Modal open={open} title={title} onClose={onClose}>
             <p>{description}</p>
 
-            <div className="form-grid">
-                <div className="form-field">
+            {/* Email + Data */}
+            <div className="form-row">
+                <div>
                     <label htmlFor="newEmail">Email *</label>
                     <Input
                         id="newEmail"
                         type="email"
                         value={email}
-                        placeholder="carlos@entartes.pt"
+                        placeholder="user@entartes.pt"
                         onChange={onEmailChange}
                     />
                 </div>
 
-                <div className="form-field">
+                <div>
                     <label htmlFor="birthDate">Data de Nascimento *</label>
                     <Input
                         id="birthDate"
@@ -48,8 +49,11 @@ function CreateUserModal({
                         onChange={onBirthDateChange}
                     />
                 </div>
+            </div>
 
-                <div className="form-field">
+            {/* Nome + Apelido */}
+            <div className="form-row">
+                <div>
                     <label htmlFor="firstName">Nome *</label>
                     <Input
                         id="firstName"
@@ -60,7 +64,7 @@ function CreateUserModal({
                     />
                 </div>
 
-                <div className="form-field">
+                <div>
                     <label htmlFor="lastName">Apelido *</label>
                     <Input
                         id="lastName"
@@ -70,8 +74,11 @@ function CreateUserModal({
                         onChange={onLastNameChange}
                     />
                 </div>
+            </div>
 
-                <div className="form-field">
+            {/* NIF + Username */}
+            <div className="form-row">
+                <div>
                     <label htmlFor="nif">NIF *</label>
                     <Input
                         id="nif"
@@ -82,13 +89,13 @@ function CreateUserModal({
                     />
                 </div>
 
-                <div className="form-field">
+                <div>
                     <label htmlFor="username">Username (opcional)</label>
                     <Input
                         id="username"
                         type="text"
                         value={username}
-                        placeholder="deixe em branco para usar a parte antes do @"
+                        placeholder="user"
                         onChange={onUsernameChange}
                     />
                 </div>

@@ -15,14 +15,94 @@ namespace DanceSchoolApp.Server.Services.Inventory
             _context = context;
         }
 
-        // ─── Item Queries ─────────────────────────────────────────────────────────
+        //  Item Queries 
 
-        public async Task<PagedResult<ItemListResponse>> GetItemsAsync(bool? fromSchool, PagedQuery query)
+        public async Task<PagedResult<ItemListResponse>> GetItemsAsync(
+            bool? fromSchool, PagedQuery query, int? categoryId = null)
         {
             var dbQuery = _context.Items
                 .Include(i => i.IdCategoryNavigation)
                 .Include(i => i.ItemImages)
                 .Where(i => i.IsActive)
+                .AsQueryable();
+
+            if (fromSchool.HasValue)
+                dbQuery = dbQuery.Where(i => i.FromSchool == fromSchool.Value);
+
+            if (!string.IsNullOrWhiteSpace(query.Search))
+            {
+                var term = query.Search.Trim().ToLower();
+                dbQuery = dbQuery.Where(i => i.Name.ToLower().Contains(term));
+            }
+
+            if (categoryId.HasValue)
+                dbQuery = dbQuery.Where(i => i.IdCategory == categoryId.Value);
+
+            var total = await dbQuery.CountAsync();
+
+            var items = await dbQuery
+                .OrderByDescending(i => i.CreatedAt)
+                .Skip((query.Page - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .Select(i => new ItemListResponse
+                {
+                    ItemId = i.ItemId,
+                    Name = i.Name,
+                    Description = i.Description,
+                    FromSchool = i.FromSchool,
+                    IdOwner = i.IdOwner,
+                    IsActive = i.IsActive,
+                    CreatedAt = i.CreatedAt,
+                    Category = i.IdCategoryNavigation == null ? null : new ItemCategorySummaryResponse
+                    {
+                        CategoryId = i.IdCategoryNavigation.CategoryId,
+                        CatgName = i.IdCategoryNavigation.CatgName
+                    },
+                    Images = i.ItemImages.Select(img => new ItemImageResponse
+                    {
+                        ImageId = img.ImageId,
+                        ImageUrl = img.ImageUrl
+                    }).ToList(),
+                    VariantCount = i.ItemVariants.Count(v => v.IsActive == true)
+                })
+                .ToListAsync();
+
+            return new PagedResult<ItemListResponse>
+            {
+                Items = items,
+                TotalCount = total,
+                Page = query.Page,
+                PageSize = query.PageSize
+            };
+        }
+
+        public async Task<ItemDetailResponse> GetItemAsync(int id)
+        {
+            var item = await _context.Items
+                .Include(i => i.IdCategoryNavigation)
+                .Include(i => i.ItemImages)
+                .Include(i => i.ItemVariants)
+                .FirstOrDefaultAsync(i => i.ItemId == id);
+
+            if (item is null)
+                throw new KeyNotFoundException($"Item with id {id} was not found.");
+
+            return MapToDetail(item);
+        }
+
+        public async Task<PagedResult<ItemListResponse>> GetItemsByCategoryAsync(
+    int categoryId, bool? fromSchool, PagedQuery query)
+        {
+            var categoryExists = await _context.ItemCategories
+                .AnyAsync(c => c.CategoryId == categoryId && c.IsActive);
+
+            if (!categoryExists)
+                throw new KeyNotFoundException($"Category with id {categoryId} was not found.");
+
+            var dbQuery = _context.Items
+                .Include(i => i.IdCategoryNavigation)
+                .Include(i => i.ItemImages)
+                .Where(i => i.IsActive && i.IdCategory == categoryId)
                 .AsQueryable();
 
             if (fromSchool.HasValue)
@@ -52,7 +132,8 @@ namespace DanceSchoolApp.Server.Services.Inventory
                     {
                         ImageId = img.ImageId,
                         ImageUrl = img.ImageUrl
-                    }).ToList()
+                    }).ToList(),
+                    VariantCount = i.ItemVariants.Count(v => v.IsActive == true)
                 })
                 .ToListAsync();
 
@@ -65,21 +146,7 @@ namespace DanceSchoolApp.Server.Services.Inventory
             };
         }
 
-        public async Task<ItemDetailResponse> GetItemAsync(int id)
-        {
-            var item = await _context.Items
-                .Include(i => i.IdCategoryNavigation)
-                .Include(i => i.ItemImages)
-                .Include(i => i.ItemVariants)
-                .FirstOrDefaultAsync(i => i.ItemId == id);
-
-            if (item is null)
-                throw new KeyNotFoundException($"Item with id {id} was not found.");
-
-            return MapToDetail(item);
-        }
-
-        // ─── Item Commands ────────────────────────────────────────────────────────
+        //  Item Commands
 
         public async Task<int> CreateItemAsync(ItemCreateRequest request, int ownerUserId, bool fromSchool)
         {
@@ -93,7 +160,7 @@ namespace DanceSchoolApp.Server.Services.Inventory
                 ContactPhone = request.ContactPhone,
                 ContactEmail = request.ContactEmail,
                 ContactAddress = request.ContactAddress,
-                CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow),
+                CreatedAt = DateOnly.FromDateTime(DateTime.Now),
                 IsActive = true
             };
 
@@ -130,7 +197,7 @@ namespace DanceSchoolApp.Server.Services.Inventory
                 throw new KeyNotFoundException($"Item with id {id} was not found.");
         }
 
-        // ─── Images ───────────────────────────────────────────────────────────────
+        //  Images 
 
         public async Task<int> AddImageAsync(int itemId, ItemImageAddRequest request)
         {
@@ -138,10 +205,30 @@ namespace DanceSchoolApp.Server.Services.Inventory
             if (!exists)
                 throw new KeyNotFoundException($"Item with id {itemId} was not found.");
 
+            // Ensure we store only relative path (already expected by client)
             var image = new ItemImage
             {
                 IdItem = itemId,
-                ImageUrl = request.ImageUrl
+                ImageUrl = request.ImageUrl?.Trim()
+            };
+
+            _context.ItemImages.Add(image);
+            await _context.SaveChangesAsync();
+
+            return image.ImageId;
+        }
+
+        public async Task<int> AddImageFromFileAsync(int itemId, string relativePath)
+        {
+            var exists = await _context.Items.AnyAsync(i => i.ItemId == itemId);
+
+            if (!exists)
+                throw new KeyNotFoundException($"Item with id {itemId} was not found.");
+
+            var image = new ItemImage
+            {
+                IdItem = itemId,
+                ImageUrl = relativePath.Trim()
             };
 
             _context.ItemImages.Add(image);
@@ -158,11 +245,16 @@ namespace DanceSchoolApp.Server.Services.Inventory
             if (image is null)
                 throw new KeyNotFoundException($"Image with id {imageId} not found on item {itemId}.");
 
+            var imageCount = await _context.ItemImages.CountAsync(img => img.IdItem == itemId);
+            if (imageCount <= 1)
+                throw new InvalidOperationException(
+                    "An item must have at least one image. Add a replacement image before removing this one.");
+
             _context.ItemImages.Remove(image);
             await _context.SaveChangesAsync();
         }
 
-        // ─── Variants ─────────────────────────────────────────────────────────────
+        //  Variants 
 
         public async Task<List<ItemVariantDetailResponse>> GetVariantsAsync(int itemId)
         {
@@ -237,11 +329,16 @@ namespace DanceSchoolApp.Server.Services.Inventory
             if (hasActiveRequisitions)
                 throw new InvalidOperationException("Cannot delete a variant with active requisitions.");
 
+            var variantCount = await _context.ItemVariants.CountAsync(v => v.IdItem == itemId);
+            if (variantCount <= 1)
+                throw new InvalidOperationException(
+                    "An item must have at least one variant. Add a replacement variant before removing this one.");
+
             _context.ItemVariants.Remove(variant);
             await _context.SaveChangesAsync();
         }
 
-        // ─── Ownership ────────────────────────────────────────────────────────────
+        //  Ownership 
 
         /// <summary>
         /// Returns true when the given user owns the item (community item with
@@ -259,7 +356,7 @@ namespace DanceSchoolApp.Server.Services.Inventory
             return !item.FromSchool && item.IdOwner == userId;
         }
 
-        // ─── Helpers ──────────────────────────────────────────────────────────────
+        //  Helpers 
 
         private static ItemDetailResponse MapToDetail(Item item) => new()
         {
@@ -293,5 +390,16 @@ namespace DanceSchoolApp.Server.Services.Inventory
                 IsActive = v.IsActive
             }).ToList()
         };
+        public async Task<bool> IsSchoolItemAsync(int itemId)
+        {
+            var item = await _context.Items
+                .AsNoTracking()
+                .FirstOrDefaultAsync(i => i.ItemId == itemId);
+
+            if (item is null)
+                throw new KeyNotFoundException($"Item with id {itemId} was not found.");
+
+            return item.FromSchool;
+        }
     }
 }

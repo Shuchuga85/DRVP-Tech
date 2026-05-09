@@ -17,7 +17,7 @@ namespace DanceSchoolApp.Server.Services.People
             _context = context;
         }
 
-        // ─── Queries ──────────────────────────────────────────────────────────
+        //  Queries 
 
         public async Task<List<CoachAvailableResponse>> GetAvailableCoachesAsync()
         {
@@ -54,25 +54,29 @@ namespace DanceSchoolApp.Server.Services.People
 
         public async Task<List<CoachListResponse>> GetCoachsAsync()
         {
-            return await _context.Users
+            var users = await _context.Users
                 .Include(u => u.PersonInfo)
                 .Include(u => u.IdRoles)
                 .Include(u => u.Coach)
                 .Where(u => u.IdRoles.Any(r => r.RoleId == Roles.Coach))
-                .Select(r => new CoachListResponse
-                {
-                    CoachId = r.UserId,
-                    Biography = r.Coach == null ? null : r.Coach.Biography,
-                    PhotoUrl = r.Coach == null ? null : r.Coach.PhotoUrl,
-                    IsActive = r.IsActive,
-                    PersonInfo = r.PersonInfo == null ? null : new PersonListResponse
-                    {
-                        PersonId = r.PersonInfo.PersonId,
-                        FirstName = r.PersonInfo.FirstName,
-                        LastName = r.PersonInfo.LastName
-                    }
-                })
                 .ToListAsync();
+
+            return users.Select(r => new CoachListResponse
+            {
+                CoachId   = r.UserId,
+                Name      = r.PersonInfo is not null
+                    ? $"{r.PersonInfo.FirstName} {r.PersonInfo.LastName}".Trim()
+                    : r.Username,
+                Biography = r.Coach?.Biography,
+                PhotoUrl  = r.Coach?.PhotoUrl,
+                IsActive  = r.IsActive,
+                PersonInfo = r.PersonInfo is null ? null : new PersonListResponse
+                {
+                    PersonId  = r.PersonInfo.PersonId,
+                    FirstName = r.PersonInfo.FirstName,
+                    LastName  = r.PersonInfo.LastName
+                }
+            }).ToList();
         }
 
         public async Task<CoachMeResponse> GetCoachMeAsync(int userId)
@@ -160,6 +164,43 @@ namespace DanceSchoolApp.Server.Services.People
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task SetPhotoAsync(int coachId, string? photoUrl)
+        {
+            var coach = await _context.Coaches.FirstOrDefaultAsync(c => c.CoachId == coachId);
+
+            if (coach is null)
+                throw new KeyNotFoundException($"Coach with id {coachId} was not found.");
+
+            coach.PhotoUrl = photoUrl?.Trim();
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task ReplacePhotoFileAsync(int coachId, string? newPhotoUrl, string webRootPath)
+        {
+            var coach = await _context.Coaches.FirstOrDefaultAsync(c => c.CoachId == coachId);
+
+            if (coach is null)
+                throw new KeyNotFoundException($"Coach with id {coachId} was not found.");
+
+            // if existing photo exists, attempt to delete physical file
+            if (!string.IsNullOrEmpty(coach.PhotoUrl))
+            {
+                var existing = coach.PhotoUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+                var existingFull = Path.Combine(webRootPath, existing);
+                try
+                {
+                    if (File.Exists(existingFull)) File.Delete(existingFull);
+                }
+                catch
+                {
+                    // swallow exceptions for file delete to avoid failing the request
+                }
+            }
+
+            coach.PhotoUrl = newPhotoUrl?.Trim();
+            await _context.SaveChangesAsync();
         }
 
 

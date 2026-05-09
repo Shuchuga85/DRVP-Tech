@@ -16,11 +16,11 @@ namespace DanceSchoolApp.Server.Services
             _context = context;
         }
 
-        // ─── Dashboard ────────────────────────────────────────────────────────
+        //  Dashboard 
 
         public async Task<StaffDashboardResponse> GetDashboardAsync()
         {
-            var now       = DateTime.UtcNow;
+            var now       = DateTime.Now;
             int thisYear  = now.Year;
             int thisMonth = now.Month;
 
@@ -80,7 +80,7 @@ namespace DanceSchoolApp.Server.Services
             };
         }
 
-        // ─── Agenda ───────────────────────────────────────────────────────────
+        //  Agenda 
 
         public async Task<List<AgendaClassItem>> GetAgendaAsync(
             DateOnly from, DateOnly to, int? studioId, byte? status)
@@ -126,7 +126,7 @@ namespace DanceSchoolApp.Server.Services
             }).ToList();
         }
 
-        // ─── Validate classes ─────────────────────────────────────────────────
+        //  Validate classes 
 
         public async Task<PagedResult<ValidateClassItem>> GetValidateClassesAsync(
             string tab, int page, int pageSize)
@@ -140,6 +140,7 @@ namespace DanceSchoolApp.Server.Services
 
             var dbQuery = _context.CoachClasses
                 .Include(c => c.IdModalityNavigation)
+                .Include(c => c.IdStudioNavigation)
                 .Include(c => c.IdCoachNavigation)
                     .ThenInclude(coach => coach.CoachNavigation)
                         .ThenInclude(u => u.PersonInfo)
@@ -169,6 +170,7 @@ namespace DanceSchoolApp.Server.Services
                 {
                     ClassId               = c.ClassId,
                     ModalityName          = c.IdModalityNavigation.Name,
+                    StudioName            = c.IdStudioNavigation?.Name,
                     StartDatetime         = c.StartDatetime,
                     EndDatetime           = c.EndDatetime,
                     MaxParticipants       = c.MaxParticipants,
@@ -204,7 +206,7 @@ namespace DanceSchoolApp.Server.Services
             };
         }
 
-        // ─── Validate students ────────────────────────────────────────────────
+        //  Validate students 
 
         public async Task<PagedResult<ValidateStudentItem>> GetValidateStudentsAsync(
             string status, int page, int pageSize)
@@ -254,7 +256,7 @@ namespace DanceSchoolApp.Server.Services
             };
         }
 
-        // ─── Private helpers ──────────────────────────────────────────────────
+        //  Private helpers 
 
         private static string ResolveCoachName(Coach coach)
         {
@@ -272,8 +274,9 @@ namespace DanceSchoolApp.Server.Services
                 : $"Student {student.StudentId}";
         }
 
-        private static string ResolveUserName(User user)
+        private static string? ResolveUserName(User? user)
         {
+            if (user is null) return null;
             var p = user.PersonInfo;
             return p is not null
                 ? $"{p.FirstName} {p.LastName}".Trim()

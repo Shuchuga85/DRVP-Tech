@@ -67,13 +67,15 @@ namespace DanceSchoolApp.Server.Services
             var notifications = scope.ServiceProvider.GetRequiredService<NotificationService>();
             var appSettings = scope.ServiceProvider.GetRequiredService<AppSettingService>();
 
-            var now = DateTime.UtcNow;
+            // StartDatetime/EndDatetime are stored in server local time (as sent by the client).
+            // Use DateTime.Now so the comparison matches the stored timezone.
+            var now = DateTime.Now;
 
             await AutoFinishApprovedClassesAsync(db, notifications, now, ct);
             await AutoAdvanceExpiredFinishedClassesAsync(db, notifications, appSettings, now, ct);
         }
 
-        // ── Rule 1: Approved → Finished ──────────────────────────────────────
+        //  Rule 1: Approved → Finished 
         // Picks up any Approved class whose EndDatetime <= now.
         // Cancelled classes are excluded by the status filter.
         private static async Task AutoFinishApprovedClassesAsync(
@@ -90,21 +92,28 @@ namespace DanceSchoolApp.Server.Services
                     c.EndDatetime <= now)
                 .ToListAsync(ct);
 
+            if (classes.Count == 0) return;
+
             foreach (var cls in classes)
             {
                 cls.Status = (byte)CoachClassStatus.Finished;
                 cls.FinishedAt = now;
+            }
 
-                // Notify coach
+            // Persist status changes before sending notifications so a notification
+            // failure never leaves classes stuck in Approved indefinitely.
+            await db.SaveChangesAsync(ct);
+
+            foreach (var cls in classes)
+            {
                 await notifications.SendAsync(
                     userId: cls.IdCoach,
-                    title: "Class Validation Required",
-                    message: $"Please confirm you taught the class on {cls.StartDatetime:dd/MM/yyyy HH:mm}. You have 48 hours to respond.",
+                    title: "Validação de Aula Necessária",
+                    message: $"Por favor, confirme que lecionou a aula de {cls.StartDatetime:dd/MM/yyyy HH:mm}. Tem 48 horas para responder.",
                     type: NotificationType.ValidationRequest,
                     entityType: "CoachClass",
                     entityId: cls.ClassId);
 
-                // Notify each distinct parent
                 var parentIds = cls.Participants
                     .Select(p => p.IdStudentNavigation.ParentUserId)
                     .Distinct();
@@ -113,19 +122,16 @@ namespace DanceSchoolApp.Server.Services
                 {
                     await notifications.SendAsync(
                         userId: parentId,
-                        title: "Class Validation Required",
-                        message: $"Please confirm attendance for the class on {cls.StartDatetime:dd/MM/yyyy HH:mm}. You have 48 hours to respond.",
+                        title: "Validação de Aula Necessária",
+                        message: $"Por favor, confirme a presença na aula de {cls.StartDatetime:dd/MM/yyyy HH:mm}. Tem 48 horas para responder.",
                         type: NotificationType.ValidationRequest,
                         entityType: "CoachClass",
                         entityId: cls.ClassId);
                 }
             }
-
-            if (classes.Count > 0)
-                await db.SaveChangesAsync(ct);
         }
 
-        // ── Rule 2: Finished → Pending (window expired) ───────────────────────
+        //  Rule 2: Finished → Pending (window expired) 
         // Any Finished class where FinishedAt + validation_window_hours <= now
         // is forced to Pending so staff can still do final sign-off.
         // Staff notifications include the names of everyone who failed to respond.
@@ -203,9 +209,9 @@ namespace DanceSchoolApp.Server.Services
                 {
                     await notifications.SendAsync(
                         userId: staffId,
-                        title: "Validation Window Expired",
-                        message: $"The 48-hour validation window for class id {cls.ClassId} " +
-                                 $"(scheduled {cls.StartDatetime:dd/MM/yyyy HH:mm}) has expired." +
+                        title: "Janela de Validação Expirada",
+                        message: $"A janela de validação de 48 horas para a aula ID {cls.ClassId}" +
+                                 $"(agendada para {cls.StartDatetime:dd/MM/yyyy HH:mm}) expirou." +
                                  nonRespondersSummary,
                         type: NotificationType.Warning,
                         entityType: "CoachClass",

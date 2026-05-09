@@ -79,10 +79,19 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 | Page mount | `GET /api/auth/me` |
 | User table (initial load) | `GET /api/admin/users?page=1&pageSize=20` |
 | Search box (on change/submit) | `GET /api/admin/users?search={query}&page=1&pageSize=20` |
+| Column sort | `GET /api/admin/users?sortBy={field}&sortDir={asc\|desc}&page=1&pageSize=20` |
 | Pagination arrows | `GET /api/admin/users?page={n}&pageSize=20` |
 | "Nova Conta" button → form submit | `POST /api/users` body: `{ username, email, firstRole: 1 }` |
 | Edit icon (✏) → form submit | `PATCH /api/users/{id}/personinfo` body: `{ firstName, lastName, ... }` |
-| Deactivate icon (×) | `PATCH /api/users/{id}/deactivate` |
+| Deactivate icon (×) | `PATCH /api/users/{id}/deactivate` |   
+
+### `/admin/appsettings` — Configurações (not yet in mockup sidebar, but needed for US19)
+
+| Element | Call |
+|---|---|
+| Page mount | `GET /api/auth/me` |
+| Settings form load | `GET /api/appsettings` |
+| Save a value | `PATCH /api/appsettings/{key}` body: `{ value }` |   
 
 ---
 
@@ -131,8 +140,8 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 | Tab "Requisitadas" (default) | `GET /api/staff/validate-classes?tab=requested&page=1&pageSize=15` |
 | Tab "Pendentes" | `GET /api/staff/validate-classes?tab=pending&page=1&pageSize=15` |
 | Pagination | `GET /api/staff/validate-classes?tab={tab}&page={n}` |
-| "Aceitar Aula" button (Requisitadas) | `PATCH /api/coachclasses/{id}/staff-approve` |
-| "Recusar Aula" button (Requisitadas) | `PATCH /api/coachclasses/{id}/reject` body: `{ reason? }` |
+| "Aceitar Aula" button (Requisitadas) | `PATCH /api/coachclasses/{id}/staff-respond` body: `{ "approve": true }` |
+| "Recusar Aula" button (Requisitadas) | `PATCH /api/coachclasses/{id}/staff-respond` body: `{ "approve": false, "reason"?: "..." }` |
 | "Validar" button (Pendentes tab) | `PATCH /api/coachclasses/{id}/staff-validate` |
 | "Cancelar" button (Pendentes tab) | `PATCH /api/coachclasses/{id}/cancel` |
 
@@ -177,7 +186,7 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 
 > Note: Mockup shows event "type" tags (Espetáculo, Reunião, etc.) but there is no `event_type` column in the DB. The mockup itself flagged this as wrong — do not implement until the field is added.
 
-### `/staff/inventory` — Inventário (3-tab page: Escolar, Comunidade, Requisições)
+### `/staff/inventario` — Inventário (lista: tabs Escolar, Comunidade, Requisições)
 
 | Element | Call |
 |---|---|
@@ -186,19 +195,30 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 | Item grid (Comunidade tab) | `GET /api/items?fromSchool=false&page=1&pageSize=12` |
 | Category filter | `GET /api/item-categories` (populate dropdown) then re-call with `&categoryId={id}` |
 | Search | re-call with `&search={query}` |
-| Item card click → detail view | `GET /api/items/{id}` (returns images, variants, category) |
-| "Novo Item Escolar" → form submit | `POST /api/items/school` body: `{ name, description?, idCategory?, contactPhone?, contactEmail?, contactAddress? }` |
+| Pagination | re-call with `&page={n}&pageSize=12` |
+| Item card click → detail page | navigate to `/staff/inventario/:itemId` (no API call on list page) |
+| "Novo Item Escolar" → form submit | `POST /api/items/school` body: `{ name, description?, idCategory?, contactPhone?, contactEmail?, contactAddress? }` → navigates to new item's detail page |
+| Requisition list (Requisições tab) | `GET /api/requisitions` (staff sees all) |
+| Approve/reject requisition | `PATCH /api/requisitions/{id}/review` body: `{ approve, expectedReturnDate?, note? }` |
+| Record return | `PATCH /api/requisitions/{id}/return` body: `{ returnQuantity, note? }` |
+
+### `/staff/inventario/:itemId` — Detalhe do Item (staff)
+
+| Element | Call |
+|---|---|
+| Page mount | `GET /api/items/{id}` (returns item with images, category, variants embedded) |
+| Variants list | `GET /api/items/{id}/variants` |
+| Category dropdown (edit form) | `GET /api/item-categories` |
 | Edit item metadata | `PATCH /api/items/{id}` body: `{ name?, description?, idCategory?, contactPhone?, contactEmail?, contactAddress? }` |
 | Deactivate item (soft-delete) | `DELETE /api/items/{id}` |
-| Add image to item | `POST /api/items/{id}/images` body: `{ imageUrl }` |
-| Remove image from item | `DELETE /api/items/{id}/images/{imageId}` |
-| List variants | `GET /api/items/{id}/variants` |
+| Add image | `POST /api/items/{id}/images` multipart/form-data, field: `file` |
+| Remove image | `DELETE /api/items/{id}/images/{imageId}` |
 | Add variant | `POST /api/items/{id}/variants` body: `{ color?, size?, quantity, price? }` |
 | Edit variant (incl. activate/deactivate) | `PATCH /api/items/{id}/variants/{variantId}` body: `{ color?, size?, quantity?, price?, isActive? }` |
 | Delete variant (hard-delete, fails if active requisitions) | `DELETE /api/items/{id}/variants/{variantId}` |
-| Requisition list (Requisições tab) | `GET /api/requisitions` (staff sees all) |
-| Approve/reject requisition | `PATCH /api/requisitions/{id}/review` body: `{ approve, expectedReturnDate?, note? }` |
-| Record return | `PATCH /api/requisitions/{id}/return` body: `{ returnQuantity }` |
+| Requisitions for this item (inline list) | `GET /api/requisitions` → filtered client-side by `itemId` |
+| Approve/reject requisition (inline modal) | `PATCH /api/requisitions/{id}/review` body: `{ approve, expectedReturnDate?, note? }` |
+| Record return (inline modal) | `PATCH /api/requisitions/{id}/return` body: `{ returnQuantity, note? }` |
 
 ### `/staff/blocked-periods` — Bloqueios
 
@@ -241,13 +261,7 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 | Pagination | re-calls with `&page={n}` |
 | "Exportar Excel" button | `GET /api/staff/billing/students/export?month={YYYY-MM}` *(deferred — not yet implemented)* |
 
-### `/staff/appsettings` — Configurações (not yet in mockup sidebar, but needed for US19)
 
-| Element | Call |
-|---|---|
-| Page mount | `GET /api/auth/me` |
-| Settings form load | `GET /api/staff/appsettings` |
-| Save a value | `PATCH /api/staff/appsettings/{key}` body: `{ value }` |
 
 ---
 
@@ -282,8 +296,8 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 | Tab "Pedidos de Aula" (default) | `GET /api/coach/validate?tab=requests&page=1&pageSize=10` |
 | Tab "Validações" | `GET /api/coach/validate?tab=validations&page=1&pageSize=10` |
 | Pagination | re-calls with `&page={n}` |
-| "Aceitar Aula" button | `PATCH /api/coachclasses/{id}/coach-accept` |
-| "Recusar Aula" button | `PATCH /api/coachclasses/{id}/coach-reject` body: `{ reason? }` |
+| "Aceitar Aula" button | `PATCH /api/coachclasses/{id}/coach-respond` body: `{ "accept": true }` |
+| "Recusar Aula" button | `PATCH /api/coachclasses/{id}/coach-respond` body: `{ "accept": false, "reason"?: "..." }` |
 | "Realizada" button (validations tab) | `PATCH /api/coachclasses/{id}/coach-validate` body: `{ didTeach: true }` |
 | "Não Realizada" button (validations tab) | `PATCH /api/coachclasses/{id}/coach-validate` body: `{ didTeach: false }` |
 
@@ -302,7 +316,7 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 | Element | Call |
 |---|---|
 | Page mount | `GET /api/auth/me` |
-| Events list | `GET /api/events` |
+| Events list | `GET /api/events/active` (coach/parent use `/active` — `GET /api/events` is staff-only) |
 
 ---
 
@@ -331,7 +345,7 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 | Element | Call |
 |---|---|
 | Modality dropdown populate | `GET /api/modalities` |
-| Coach dropdown populate | `GET /api/coaches` *(currently staff-only — needs opening to parent role for this dropdown, or provide via a dedicated parent-facing coach list endpoint)* |
+| Coach dropdown populate | `GET /api/ee/coaches` (parent-facing endpoint — returns active coaches with modalities) |
 | Calendar slot grid (on dropdown change or initial) | `GET /api/ee/classes/available-slots?from={weekStart}&to={weekEnd}&modalityId={id}&coachId={id}` |
 | Navigation arrows on slot calendar | re-calls with new date range |
 | "Pedir Aula" button on a slot → modal open | no API call yet (just opens modal) |
@@ -371,7 +385,7 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 | "Editar" → modal → form submit | `PUT /api/students/{id}` body: `{ firstName, lastName, birthDate, phone, address, nif }` |
 | "Remover" button | `PATCH /api/students/{id}/deactivate` |
 
-### `/ee/inventory` — Inventário (2-tab page)
+### `/ee/inventario` — Inventário (lista: tabs Escolar, Comunidade)
 
 #### Tab: Escolar
 
@@ -381,9 +395,9 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 | Category filter dropdown | `GET /api/item-categories` (populate) then re-call with `&categoryId={id}` |
 | Search box | re-call with `&search={query}` |
 | Pagination | `GET /api/ee/inventory/school?page={n}` |
-| Item card click → item detail page | `GET /api/items/{id}` |
-| "Pedir Empréstimo" on item detail | `POST /api/requisitions` body: `{ itemVariantId, quantity, needFrom?, needUntil?, note? }` |
-| My requisitions | `GET /api/requisitions` (parent sees own only) |
+| Item card click → detail page | navigate to `/ee/inventario/:itemId` (no API call on list page) |
+| My Requisitions (section below grid) | `GET /api/requisitions` (parent sees own only) |
+| Return requisition | `PATCH /api/requisitions/{id}/return` body: `{ returnQuantity }` |
 
 #### Tab: Comunidade
 
@@ -394,26 +408,50 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 | Max price filter | re-call with `&maxPrice={value}` |
 | Search | re-call with `&search={query}` |
 | Pagination | `GET /api/ee/inventory/community?page={n}` |
-| "Ligar/Contactar" button | No API call — shows `contactPhone`/`contactEmail` from item card data |
-| "Anunciar Item" → form submit | `POST /api/items/personal` body: `{ name, description?, contactPhone?, contactEmail?, contactAddress?, idCategory? }` |
-| "Itens Publicados" badge count | use `totalCount` from the community inventory response, filtered by `idOwner = me` |
-| **Own item management (owner only):** | |
-| Edit own community item | `PATCH /api/items/{id}` body: `{ name?, description?, ... }` (ownership checked server-side) |
-| Deactivate own community item | `DELETE /api/items/{id}` (ownership checked server-side) |
-| Add image to own item | `POST /api/items/{id}/images` body: `{ imageUrl }` |
-| Remove image from own item | `DELETE /api/items/{id}/images/{imageId}` |
-| Add variant to own item | `POST /api/items/{id}/variants` body: `{ color?, size?, quantity, price? }` |
-| Edit variant on own item | `PATCH /api/items/{id}/variants/{variantId}` body: `{ color?, size?, quantity?, price?, isActive? }` |
-| Delete variant on own item | `DELETE /api/items/{id}/variants/{variantId}` |
+| Item card click → detail page | navigate to `/ee/inventario/:itemId` (no API call on list page) |
+| "Anunciar Item" → form submit | `POST /api/items/personal` body: `{ name, description?, contactPhone?, contactEmail?, contactAddress?, idCategory? }` → navigates to new item's detail page |
 
-> Note: Parents can only manage community items they own (`IdOwner` matches their user ID). The API returns 403 Forbidden if a parent tries to modify another user's item or a school item. Staff can manage all items regardless.
+### `/ee/inventario/:itemId` — Detalhe do Item (parent)
+
+Three access modes determined client-side by `item.fromSchool` and `item.idOwner === user.userId`:
+
+#### Mode A — School item (read-only + loan form)
+
+| Element | Call |
+|---|---|
+| Page mount | `GET /api/items/{id}` |
+| Variants for loan dropdown | embedded in `GET /api/items/{id}` response |
+| "Pedir Empréstimo" → form submit | `POST /api/requisitions` body: `{ itemVariantId, quantity, needFrom?, needUntil?, note? }` |
+
+#### Mode B — Community item, not owner (read-only + contact info)
+
+| Element | Call |
+|---|---|
+| Page mount | `GET /api/items/{id}` |
+| Contact info display | no API call — `contactPhone`/`contactEmail` from loaded item |
+
+#### Mode C — Community item, owner (full management)
+
+| Element | Call |
+|---|---|
+| Page mount | `GET /api/items/{id}` + `GET /api/items/{id}/variants` |
+| Category dropdown (edit form) | `GET /api/item-categories` |
+| Edit item metadata | `PATCH /api/items/{id}` body: `{ name?, description?, contactPhone?, contactEmail?, contactAddress?, idCategory? }` |
+| Deactivate own item | `DELETE /api/items/{id}` |
+| Add image | `POST /api/items/{id}/images` multipart/form-data, field: `file` |
+| Remove image | `DELETE /api/items/{id}/images/{imageId}` |
+| Add variant | `POST /api/items/{id}/variants` body: `{ color?, size?, quantity, price? }` |
+| Edit variant (incl. activate/deactivate) | `PATCH /api/items/{id}/variants/{variantId}` body: `{ color?, size?, quantity?, price?, isActive? }` |
+| Delete variant | `DELETE /api/items/{id}/variants/{variantId}` |
+
+> Note: The API returns 403 Forbidden if a parent tries to modify another user's item or a school item. Mode is checked client-side for UX; the server enforces ownership.
 
 ### `/ee/events` — Eventos (read-only)
 
 | Element | Call |
 |---|---|
 | Page mount | `GET /api/auth/me` |
-| Events list | `GET /api/events` |
+| Events list | `GET /api/events/active` (non-staff use `/active` — `GET /api/events` is staff-only) |
 
 ---
 
@@ -421,10 +459,14 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 
 | Gap | Impact | Fix |
 |---|---|---|
-| `GET /api/coaches` is staff-only | Parent cannot populate coach dropdown in "Criar Aula" | Add `parent` to the `[Authorize]` on `GET /api/coaches`, or add `GET /api/ee/coaches` returning only `{ coachId, name, modalities[] }` for active coaches |
+| ~~`GET /api/coaches` is staff-only~~ | ~~Parent cannot populate coach dropdown~~ | **Resolved** — `GET /api/ee/coaches` exists (ParentPortalController) returning active coaches with modalities for parent dropdown |
 | `GET /api/users/me` does not exist as a unified endpoint | Header must branch by role to call the correct `/me` | Either keep the 3 role-specific calls (recommended — they return richer data anyway), or add `GET /api/users/me` that resolves PersonInfo for any role |
 | Coach cannot create blocked periods for own absences | Mockup shows "Adicionar Bloco" implies absences too | This is intentional — blocked periods are staff-managed. Coach UI should only show their availability slots, not blocked periods. Clarify in frontend design. |
 | `PUT /api/students/{id}` — verify it exists | Parent "Editar" student modal | Was in prompt 5 as a task. Confirm it's in StudentController before implementing the modal. |
 | `PATCH /api/users/{id}/personinfo` — verify it exists | Profile editing for coach/parent/staff | Was in prompt 6 task B. Confirm it exists in UserController. |
 | Staff "cancel" on coach agenda | Mockup shows "Cancelar" button in coach agenda view | `PATCH /api/coachclasses/{id}/cancel` is staff-only — this button should not appear in coach view, or only appear on Requested/StaffApproved classes where coach-reject is the right action. |
 | No `GET /api/newsposts` page in React | News posts API exists but no frontend page | Add a simple `/news` or integrate into home/dashboard. Not blocking. |
+| `GET /api/events` is staff-only; coach/parent use `/active` | Docs and frontend may incorrectly call `/api/events` | Coach and parent pages must call `GET /api/events/active` — `GET /api/events` returns all including inactive and is staff-only. |
+| Staff approve/reject merged into one endpoint | Old docs called separate `staff-approve` / `staff-reject` — both are gone | Use `PATCH /api/coachclasses/{id}/staff-respond` with body `{ "approve": bool, "reason"?: "..." }` |
+| Coach accept/reject merged into one endpoint | Old docs called separate `coach-accept` / `coach-reject` — both are gone | Use `PATCH /api/coachclasses/{id}/coach-respond` with body `{ "accept": bool, "reason"?: "..." }` |
+| `GET /api/admin/users` accepts `sortBy` and `sortDir` params | Not documented in EndpointsMapping | Add `?sortBy={field}&sortDir={asc|desc}` to the admin users table entry. |

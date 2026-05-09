@@ -14,7 +14,7 @@ namespace DanceSchoolApp.Server.Services.Scheduling
             _context = context;
         }
 
-        // ─── Queries ──────────────────────────────────────────────────────────
+        //  Queries 
 
         public async Task<List<BlockedPeriodListResponse>> GetAllAsync()
         {
@@ -55,7 +55,7 @@ namespace DanceSchoolApp.Server.Services.Scheduling
 
         public async Task<List<BlockedPeriodListResponse>> GetActiveAsync()
         {
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
 
             return await _context.BlockedPeriods
                 .Include(b => b.IdStudioNavigation)
@@ -120,7 +120,7 @@ namespace DanceSchoolApp.Server.Services.Scheduling
                 .ToListAsync();
         }
 
-        // ─── Commands ─────────────────────────────────────────────────────────
+        //  Commands 
 
         public async Task<int> CreateAsync(BlockedPeriodCreateRequest request)
         {
@@ -178,14 +178,14 @@ namespace DanceSchoolApp.Server.Services.Scheduling
                 throw new KeyNotFoundException($"Blocked period with id {id} was not found.");
         }
 
-        // ─── Private helpers ──────────────────────────────────────────────────
+        //  Private helpers 
 
         private static void ValidateFutureDateRange(DateTime start, DateTime end)
         {
             if (end <= start)
                 throw new ArgumentException("EndDatetime must be after StartDatetime.");
 
-            if (start <= DateTime.UtcNow)
+            if (start <= DateTime.Now)
                 throw new ArgumentException("Blocked periods must start in the future.");
         }
 

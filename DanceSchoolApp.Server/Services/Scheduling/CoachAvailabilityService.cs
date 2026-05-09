@@ -14,7 +14,7 @@ namespace DanceSchoolApp.Server.Services.Scheduling
             _context = context;
         }
 
-        // ─── Queries ──────────────────────────────────────────────────────────
+        //  Queries 
 
         public async Task<List<CoachAvailabilityListResponse>> GetAllAsync()
         {
@@ -86,7 +86,7 @@ namespace DanceSchoolApp.Server.Services.Scheduling
                 .ToListAsync();
         }
 
-        // ─── Commands ─────────────────────────────────────────────────────────
+        //  Commands 
 
         public async Task<int> CreateAsync(CoachAvailabilityCreateRequest request)
         {
@@ -167,7 +167,7 @@ namespace DanceSchoolApp.Server.Services.Scheduling
                 throw new KeyNotFoundException($"Availability slot with id {id} was not found.");
         }
 
-        // ─── Private helpers ──────────────────────────────────────────────────
+        //  Private helpers 
 
         private static void ValidateTimeRange(TimeOnly start, TimeOnly end)
         {
@@ -186,10 +186,10 @@ namespace DanceSchoolApp.Server.Services.Scheduling
         // today's date so creating a slot for earlier today will be rejected.
         private static void ValidateNotInPast(TimeOnly startTime, DateOnly? validFrom)
         {
-            var effectiveDate = validFrom ?? DateOnly.FromDateTime(DateTime.UtcNow);
-            var startDateTimeUtc = effectiveDate.ToDateTime(startTime, DateTimeKind.Utc);
+            var effectiveDate = validFrom ?? DateOnly.FromDateTime(DateTime.Now);
+            var startDateTime = effectiveDate.ToDateTime(startTime);
 
-            if (startDateTimeUtc < DateTime.UtcNow)
+            if (startDateTime < DateTime.Now)
                 throw new ArgumentException("Start time cannot be in the past.");
         }
 

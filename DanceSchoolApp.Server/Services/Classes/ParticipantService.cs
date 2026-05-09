@@ -12,18 +12,15 @@ namespace DanceSchoolApp.Server.Services.Classes
     {
         private readonly AppDbContext _context;
         private readonly NotificationService _notificationService;
-        private readonly AppSettingService _appSettings;
 
         public ParticipantService(AppDbContext context,
-            NotificationService notificationService,
-            AppSettingService appSettings)
+            NotificationService notificationService)
         {
             _context = context;
             _notificationService = notificationService;
-            _appSettings = appSettings;
         }
 
-        // ─── Queries ──────────────────────────────────────────────────────────
+        //  Queries 
 
         public async Task<PagedResult<ParticipantListResponse>> GetByClassAsync(int classId, PagedQuery query)
         {
@@ -55,7 +52,6 @@ namespace DanceSchoolApp.Server.Services.Classes
                         : "Student " + p.IdStudent.ToString(),
                     ParentUserId      = p.IdStudentNavigation.ParentUserId,
                     JoinedAt          = p.JoinedAt,
-                    ClassPrice        = p.ClassPrice,
                     ValidationStatus  = (ParticipantValidationStatus)p.ValidationStatus,
                     ParentValidatedAt = p.ParentValidatedAt
                 })
@@ -70,11 +66,11 @@ namespace DanceSchoolApp.Server.Services.Classes
             };
         }
 
-        // ─── Commands ─────────────────────────────────────────────────────────
+        //  Commands 
 
         public async Task<int> JoinClassAsync(ParticipantJoinRequest request, int callingUserId)
         {
-            // ── 1. Class must exist and be open (Approved + has space) ─────────
+            //  1. Class must exist and be open (Approved + has space) 
             var coachClass = await _context.CoachClasses
                 .Include(c => c.Participants)
                 .FirstOrDefaultAsync(c => c.ClassId == request.ClassId);
@@ -91,7 +87,7 @@ namespace DanceSchoolApp.Server.Services.Classes
                 throw new InvalidOperationException(
                     "This class is full. No spots available.");
 
-            // ── 2. Student must exist and be active ───────────────────────────
+            //  2. Student must exist and be active 
             var student = await _context.Students
                 .FirstOrDefaultAsync(s => s.StudentId == request.StudentId
                                        && s.IsActive);
@@ -107,9 +103,9 @@ namespace DanceSchoolApp.Server.Services.Classes
                 throw new InvalidOperationException(
                     "This student has not been accepted by staff yet and cannot join classes.");
 
-            // ── 3. Student must belong to the requesting parent ───────────────
+            //  3. Student must belong to the requesting parent 
 
-            // ── 4. Student not already enrolled in this class ─────────────────
+            //  4. Student not already enrolled in this class 
             // The DB has a unique constraint UQ_ClassStudent, but we catch it
             // here for a clean error message rather than a constraint exception.
             bool alreadyEnrolled = coachClass.Participants
@@ -119,7 +115,7 @@ namespace DanceSchoolApp.Server.Services.Classes
                 throw new InvalidOperationException(
                     $"Student {request.StudentId} is already enrolled in this class.");
 
-            // ── 5. Student not already in another class at the same time ──────
+            //  5. Student not already in another class at the same time 
             bool timeConflict = await _context.Participants
                 .Include(p => p.IdCoachClassNavigation)
                 .AnyAsync(p =>
@@ -133,28 +129,12 @@ namespace DanceSchoolApp.Server.Services.Classes
                 throw new InvalidOperationException(
                     "This student is already enrolled in another class at this time.");
 
-            // ── 6. Resolve class price ────────────────────────────────────────
-            decimal classPrice;
-            if (request.ClassPrice.HasValue)
-            {
-                classPrice = request.ClassPrice.Value;
-            }
-            else
-            {
-                var dow = coachClass.StartDatetime.DayOfWeek;
-                bool isWeekend = dow == DayOfWeek.Saturday || dow == DayOfWeek.Sunday;
-                classPrice = isWeekend
-                    ? await _appSettings.GetDecimalAsync("class_price_weekend", 43.20m)
-                    : await _appSettings.GetDecimalAsync("class_price_weekday", 36.00m);
-            }
-
-            // ── 7. Enroll ─────────────────────────────────────────────────────
+            //  6. Enroll 
             var participant = new Participant
             {
                 IdCoachClass = request.ClassId,
                 IdStudent = request.StudentId,
-                JoinedAt = DateOnly.FromDateTime(DateTime.UtcNow),
-                ClassPrice = classPrice,
+                JoinedAt = DateOnly.FromDateTime(DateTime.Now),
                 ValidationStatus = (byte)ParticipantValidationStatus.Pending
             };
 
@@ -169,8 +149,8 @@ namespace DanceSchoolApp.Server.Services.Classes
             {
                 await _notificationService.SendAsync(
                     userId: classInfo.IdCoach,
-                    title: "New Student Joined",
-                    message: $"A student has joined your class on {classInfo.StartDatetime:dd/MM/yyyy HH:mm}.",
+                    title: "Novo aluno inscrito",
+                    message: $"Um aluno inscreveu-se na sua aula em {classInfo.StartDatetime:dd/MM/yyyy HH:mm}.",
                     type: NotificationType.ClassUpdate,
                     entityType: "CoachClass",
                     entityId: request.ClassId);
@@ -179,23 +159,26 @@ namespace DanceSchoolApp.Server.Services.Classes
             return participant.ParticipantId;
         }
 
-        public async Task ParentValidateAsync(int participantId, bool attended)
+        public async Task ParentValidateAsync(int participantId, bool attended, int callingUserId)
         {
             var participant = await _context.Participants
                 .Include(p => p.IdCoachClassNavigation)
+                .Include(p => p.IdStudentNavigation)
                 .FirstOrDefaultAsync(p => p.ParticipantId == participantId);
 
             if (participant is null)
                 throw new KeyNotFoundException(
                     $"Participant record with id {participantId} was not found.");
 
-            // Validation only makes sense after the class is finished (or pending
-            // when the 48h window expired and the worker already advanced it).
+            if (participant.IdStudentNavigation.ParentUserId != callingUserId)
+                throw new UnauthorizedAccessException(
+                    "You can only validate attendance for your own students.");
+
+            // Validation only makes sense after the class is finished
             var status = participant.IdCoachClassNavigation.Status;
-            if (status != (byte)CoachClassStatus.Finished &&
-                status != (byte)CoachClassStatus.Pending)
+            if (status != (byte)CoachClassStatus.Finished)
                 throw new InvalidOperationException(
-                    "Validation is only available for Finished or Pending classes.");
+                    "Validation is only available for Finished classes.");
 
             // Parent can only validate after the coach validates first.
             if (participant.IdCoachClassNavigation.CoachValidatedAt is null)
@@ -211,31 +194,9 @@ namespace DanceSchoolApp.Server.Services.Classes
                 ? (byte)ParticipantValidationStatus.ParentConfirmed
                 : (byte)ParticipantValidationStatus.Disputed;
 
-            participant.ParentValidatedAt = DateTime.UtcNow;
+            participant.ParentValidatedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();
-
-            // If the class is already Pending (48h window expired), notify staff
-            // that a parent is validating past due.
-            if (status == (byte)CoachClassStatus.Pending)
-            {
-                var staffIds = await _context.Users
-                    .Include(u => u.IdRoles)
-                    .Where(u => u.IdRoles.Any(r => r.RoleId == 1) && u.IsActive)
-                    .Select(u => u.UserId)
-                    .ToListAsync();
-
-                foreach (var staffId in staffIds)
-                {
-                    await _notificationService.SendAsync(
-                        userId: staffId,
-                        title: "Past-Due Parent Validation",
-                        message: $"A parent submitted a validation for class id {participant.IdCoachClass} while the class is already pending staff review.",
-                        type: NotificationType.Warning,
-                        entityType: "CoachClass",
-                        entityId: participant.IdCoachClass);
-                }
-            }
 
             // After saving, check if all participants in this class have now
             // responded — if so, the class can be moved to Pending for staff
@@ -280,11 +241,10 @@ namespace DanceSchoolApp.Server.Services.Classes
             await _context.SaveChangesAsync();
         }
 
-        // ─── Private helpers ──────────────────────────────────────────────────
+        //  Private helpers 
 
-        // Once all participants have validated, move the class to Pending
-        // so staff know it is ready for final sign-off.
-        // Called automatically after each parent validation.
+        
+ 
         private async Task TryAdvanceClassToStaffReviewAsync(int classId)
         {
             var allParticipants = await _context.Participants
@@ -300,32 +260,6 @@ namespace DanceSchoolApp.Server.Services.Classes
                 .FirstOrDefaultAsync(c => c.ClassId == classId);
 
             if (coachClass is null) return;
-
-            var staffIds = await _context.Users
-                .Include(u => u.IdRoles)
-                .Where(u => u.IdRoles.Any(r => r.RoleId == 1) && u.IsActive)
-                .Select(u => u.UserId)
-                .ToListAsync();
-
-            // If the worker already expired the window and moved the class to Pending,
-            // skip the status change but notify staff that a late parent response arrived.
-            if (coachClass.Status == (byte)CoachClassStatus.Pending)
-            {
-                foreach (var staffId in staffIds)
-                {
-                    await _notificationService.SendAsync(
-                        userId: staffId,
-                        title: "Late Parent Validation Received",
-                        message: $"A parent submitted a validation for class id {classId} after the validation window closed.",
-                        type: NotificationType.Warning,
-                        entityType: "CoachClass",
-                        entityId: classId);
-                }
-                return;
-            }
-
-            // Normal path: class is still Finished — check coach has also responded
-            // before advancing to Pending for staff sign-off.
             if (coachClass.Status != (byte)CoachClassStatus.Finished)
                 return;
 
@@ -334,17 +268,6 @@ namespace DanceSchoolApp.Server.Services.Classes
 
             coachClass.Status = (byte)CoachClassStatus.Pending;
             await _context.SaveChangesAsync();
-
-            foreach (var staffId in staffIds)
-            {
-                await _notificationService.SendAsync(
-                    userId: staffId,
-                    title: "Class Ready for Validation",
-                    message: $"All participants have responded for class id {classId}. Final staff sign-off required.",
-                    type: NotificationType.ValidationRequest,
-                    entityType: "CoachClass",
-                    entityId: classId);
-            }
         }
     }
 }

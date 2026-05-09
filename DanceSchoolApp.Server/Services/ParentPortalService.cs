@@ -16,11 +16,11 @@ namespace DanceSchoolApp.Server.Services
             _context = context;
         }
 
-        // ─── Dashboard ────────────────────────────────────────────────────────
+        //  Dashboard 
 
         public async Task<ParentDashboardResponse> GetDashboardAsync(int userId)
         {
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
 
             var user = await _context.Users
                 .Include(u => u.PersonInfo)
@@ -66,7 +66,7 @@ namespace DanceSchoolApp.Server.Services
             };
         }
 
-        // ─── My classes (calendar) ────────────────────────────────────────────
+        //  My classes (calendar) 
 
         public async Task<List<ParentUpcomingClass>> GetMyClassesAsync(
             int userId, DateOnly from, DateOnly to)
@@ -93,37 +93,37 @@ namespace DanceSchoolApp.Server.Services
             return classes.Select(MapToUpcomingClass).ToList();
         }
 
-        // ─── Open classes ─────────────────────────────────────────────────────
+        //  Open classes
 
-        public async Task<PagedResult<OpenClassItem>> GetOpenClassesAsync(
-            int? modalityId, int page, int pageSize)
+        public async Task<List<OpenClassItem>> GetOpenClassesAsync(
+            int? modalityId, DateOnly from, DateOnly to)
         {
-            var now = DateTime.UtcNow;
+            var fromDt = from.ToDateTime(TimeOnly.MinValue);
+            var toDt   = to.ToDateTime(new TimeOnly(23, 59, 59, 999));
 
-            var baseQuery = _context.CoachClasses
+            var query = _context.CoachClasses
                 .Include(c => c.IdModalityNavigation)
                 .Include(c => c.IdStudioNavigation)
                 .Include(c => c.IdCoachNavigation)
                     .ThenInclude(coach => coach.CoachNavigation)
                         .ThenInclude(u => u.PersonInfo)
                 .Include(c => c.Participants)
+                    .ThenInclude(p => p.IdStudentNavigation)
+                        .ThenInclude(s => s.PersonInfo)
                 .Where(c =>
                     c.Status == (byte)CoachClassStatus.Approved &&
-                    c.StartDatetime > now &&
+                    c.StartDatetime >= fromDt &&
+                    c.StartDatetime <= toDt &&
                     c.Participants.Count < c.MaxParticipants);
 
             if (modalityId.HasValue)
-                baseQuery = baseQuery.Where(c => c.IdModality == modalityId.Value);
+                query = query.Where(c => c.IdModality == modalityId.Value);
 
-            var total = await baseQuery.CountAsync();
-
-            var classes = await baseQuery
+            var classes = await query
                 .OrderBy(c => c.StartDatetime)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
                 .ToListAsync();
 
-            var items = classes.Select(c =>
+            return classes.Select(c =>
             {
                 int current = c.Participants.Count;
                 return new OpenClassItem
@@ -137,20 +137,15 @@ namespace DanceSchoolApp.Server.Services
                     StudioName          = c.IdStudioNavigation.Name,
                     CurrentParticipants = current,
                     MaxParticipants     = c.MaxParticipants,
-                    SpotsAvailable      = c.MaxParticipants - current
+                    SpotsAvailable      = c.MaxParticipants - current,
+                    EnrolledStudents    = c.Participants
+                        .Select(p => ResolveStudentName(p.IdStudentNavigation))
+                        .ToList()
                 };
             }).ToList();
-
-            return new PagedResult<OpenClassItem>
-            {
-                Items      = items,
-                TotalCount = total,
-                Page       = page,
-                PageSize   = pageSize
-            };
         }
 
-        // ─── Pending validations ──────────────────────────────────────────────
+        //  Pending validations 
 
         // Returns one entry per CLASS (not per participant).
         // Only shows classes that have at least one of this parent's students
@@ -194,15 +189,16 @@ namespace DanceSchoolApp.Server.Services
 
                 return new ParentValidateItem
                 {
-                    ClassId       = c.ClassId,
-                    ModalityName  = c.IdModalityNavigation.Name,
-                    StartDatetime = c.StartDatetime,
-                    EndDatetime   = c.EndDatetime,
-                    CoachName     = ResolveCoachName(c.IdCoachNavigation),
-                    ExpiresAt     = c.StartDatetime.AddHours(48),
-                    MaxParticipants = c.MaxParticipants,
-                    CreatedByName = ResolveUserName(c.CreatedByNavigation),
-                    Participants  = myParticipants.Select(p => new ParticipantSummaryItem
+                    ClassId           = c.ClassId,
+                    ModalityName      = c.IdModalityNavigation.Name,
+                    StartDatetime     = c.StartDatetime,
+                    EndDatetime       = c.EndDatetime,
+                    CoachName         = ResolveCoachName(c.IdCoachNavigation),
+                    ExpiresAt         = c.StartDatetime.AddHours(48),
+                    MaxParticipants   = c.MaxParticipants,
+                    TotalParticipants = c.Participants.Count,
+                    CreatedByName     = ResolveUserName(c.CreatedByNavigation),
+                    Participants      = myParticipants.Select(p => new ParticipantSummaryItem
                     {
                         ParticipantId    = p.ParticipantId,
                         StudentName      = ResolveStudentName(p.IdStudentNavigation),
@@ -220,7 +216,7 @@ namespace DanceSchoolApp.Server.Services
             };
         }
 
-        // ─── My students ──────────────────────────────────────────────────────
+        //  My students 
 
         public async Task<List<ParentStudentItem>> GetMyStudentsAsync(int userId)
         {
@@ -244,7 +240,7 @@ namespace DanceSchoolApp.Server.Services
             }).ToList();
         }
 
-        // ─── School inventory ─────────────────────────────────────────────────
+        //  School inventory 
 
         public async Task<PagedResult<InventoryItemCard>> GetSchoolInventoryAsync(
             int? categoryId, string? search, int page, int pageSize)
@@ -304,7 +300,7 @@ namespace DanceSchoolApp.Server.Services
             };
         }
 
-        // ─── Community inventory ──────────────────────────────────────────────
+        //  Community inventory 
 
         public async Task<PagedResult<CommunityItemCard>> GetCommunityInventoryAsync(
             int? categoryId, decimal? maxPrice, string? search, int page, int pageSize)
@@ -315,7 +311,7 @@ namespace DanceSchoolApp.Server.Services
                 .Include(i => i.IdCategoryNavigation)
                 .Include(i => i.IdOwnerNavigation)
                     .ThenInclude(u => u!.PersonInfo)
-                .Where(i => i.IsActive && !i.FromSchool);
+                .Where(i => i.IsActive && !i.FromSchool && i.ItemVariants.Any(v => v.IsActive == true));
 
             if (categoryId.HasValue)
                 baseQuery = baseQuery.Where(i => i.IdCategory == categoryId.Value);
@@ -370,7 +366,7 @@ namespace DanceSchoolApp.Server.Services
             };
         }
 
-        // ─── Private helpers ──────────────────────────────────────────────────
+        //  Private helpers 
 
         private static ParentUpcomingClass MapToUpcomingClass(CoachClass c) =>
             new ParentUpcomingClass
@@ -414,7 +410,7 @@ namespace DanceSchoolApp.Server.Services
         private static int? ComputeAge(DateOnly? birthDate)
         {
             if (birthDate is null) return null;
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var today = DateOnly.FromDateTime(DateTime.Now);
             int age = today.Year - birthDate.Value.Year;
             if (today < birthDate.Value.AddYears(age)) age--;
             return age;

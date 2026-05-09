@@ -2,11 +2,13 @@
 using DanceSchoolApp.Server.Services.School;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DanceSchoolApp.Server.Controllers.School
 {
     [ApiController]
     [Route("api/modalities")]
+    [EnableRateLimiting("api")]
     public class ModalityController : ControllerBase
     {
         private readonly ModalityService _modalityService;
@@ -16,7 +18,7 @@ namespace DanceSchoolApp.Server.Controllers.School
             _modalityService = modalityService;
         }
 
-        // ─── GET /api/modalities ───────────────────────────────────────────────
+        //  GET /api/modalities 
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetModalities()
@@ -36,7 +38,7 @@ namespace DanceSchoolApp.Server.Controllers.School
             }
         }
 
-        // ─── GET /api/modalities/{id} ──────────────────────────────────────────
+        //  GET /api/modalities/{id} 
         [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetModality(int id)
@@ -56,7 +58,7 @@ namespace DanceSchoolApp.Server.Controllers.School
             }
         }
 
-        // ─── POST /api/modalities ──────────────────────────────────────────────
+        //  POST /api/modalities 
         [Authorize(Roles = "staff")]
         [HttpPost]
         public async Task<IActionResult> CreateModality([FromBody] ModalityCreateRequest request)
@@ -79,7 +81,7 @@ namespace DanceSchoolApp.Server.Controllers.School
             }
         }
 
-        // ─── PATCH /api/modalities/{id} ────────────────────────────────────────
+        //  PATCH /api/modalities/{id} 
         [Authorize(Roles = "staff")]
         [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateModality(int id, [FromBody] ModalityUpdateRequest request)
@@ -106,7 +108,7 @@ namespace DanceSchoolApp.Server.Controllers.School
             }
         }
 
-        // ─── PATCH /api/modalities/{id}/activate ──────────────────────────────
+        //  PATCH /api/modalities/{id}/activate 
         [Authorize(Roles = "staff")]
         [HttpPatch("{id}/activate")]
         public async Task<IActionResult> ActivateModality(int id)
@@ -126,7 +128,7 @@ namespace DanceSchoolApp.Server.Controllers.School
             }
         }
 
-        // ─── PATCH /api/modalities/{id}/deactivate ────────────────────────────
+        //  PATCH /api/modalities/{id}/deactivate 
         [Authorize(Roles = "staff")]
         [HttpPatch("{id}/deactivate")]
         public async Task<IActionResult> DeactivateModality(int id)
@@ -146,7 +148,7 @@ namespace DanceSchoolApp.Server.Controllers.School
             }
         }
 
-        // ─── POST /api/modalities/{id}/coaches/{coachId} ──────────────────────
+        //  POST /api/modalities/{id}/coaches/{coachId} 
         // Staff only — assign a coach to this modality.
         [Authorize(Roles = "staff")]
         [HttpPost("{id}/coaches/{coachId}")]
@@ -171,7 +173,7 @@ namespace DanceSchoolApp.Server.Controllers.School
             }
         }
 
-        // ─── DELETE /api/modalities/{id}/coaches/{coachId} ────────────────────
+        //  DELETE /api/modalities/{id}/coaches/{coachId} 
         // Staff only — unassign a coach from this modality.
         [Authorize(Roles = "staff")]
         [HttpDelete("{id}/coaches/{coachId}")]
