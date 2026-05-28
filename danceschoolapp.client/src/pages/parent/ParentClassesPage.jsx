@@ -1,12 +1,15 @@
-// Tabs: minhas-marcacoes | marcar | grupo | validar
-// Tab 1 — GET /api/ee/classes/my?from=&to=  (monthly calendar, ParentUpcomingClass[])
+// Tabs: minhas-marcacoes | marcar | grupo | inscricoes | validar
+// Tab 1 — GET /api/coachclasses/parent/{userId}  (all classes for parent's students)
 // Tab 2 — GET /api/ee/classes/available-slots?from=&to=&modalityId=&coachId=
 //          Response: DaySlotResponse[] → [{ Date:"YYYY-MM-DD", Slots:[{ CoachId, CoachName, StartTime, EndTime, ModalityIds, ModalityNames }] }]
-//          POST /api/coachclasses body: { coachId, modalityId, startDatetime, endDatetime, maxParticipants, studentIds[] }
+//          POST /api/coachclasses body: { coachId, modalityId, startDatetime, endDatetime, studentId }  (individual, no maxParticipants)
 // Tab 3 — GET /api/ee/classes/open?page=1&pageSize=50
 //          Response: PagedResult<OpenClassItem> → { Items:[...], TotalCount }
 //          POST /api/participants body: { classId, studentId }
-// Tab 4 — GET /api/ee/classes/validate  (PagedResult<ParentValidateItem>)
+// Tab 4 — Coach-created enrollment approvals
+//          GET /api/coachclasses/{id} for each CoachCreated+Requested class → ClassParticipantSummary[]
+//          PATCH /api/participants/{id}/parent-approve-enrollment body: { approve: bool }
+// Tab 5 — GET /api/ee/classes/validate  (PagedResult<ParentValidateItem>)
 //          PATCH /api/participants/{id}/parent-validate body: { attended: bool }
 import { useEffect, useMemo, useState } from 'react'
 import PageCard from '../../components/common/PageCard'
@@ -14,14 +17,19 @@ import ClassValidationCard from '../../components/common/ClassValidationCard'
 import Modal from '../../components/common/Modal'
 import Button from '../../components/common/Button'
 import Select from '../../components/common/Select'
+import MonthCalendar, { isoDate, getMonthRange, fmtDateLong } from '../../components/common/MonthCalendar'
 import {
     getClassesByParent,
     getAvailableSlots,
     getOpenClasses,
     getValidateClasses,
     parentValidateParticipant,
-    createClass,
+    parentCreateClass,
     enrollInClass,
+    enrollByInvite,
+    getJoinClassStatus,
+    getClassById,
+    approveEnrollment,
 } from '../../services/classesService'
 import { getModalities } from '../../services/modalitiesService'
 import { getCoachesForParent } from '../../services/coachService'
@@ -33,28 +41,9 @@ import '../../styles/ParentClasses.css'
 
 // ---- Utilities ----
 
-function isoDate(d) {
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
-function getMonthRange(date) {
-    const y = date.getFullYear(), m = date.getMonth()
-    return { from: isoDate(new Date(y, m, 1)), to: isoDate(new Date(y, m + 1, 0)) }
-}
-
-function fmtMonthLabel(date) {
-    return date.toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' })
-}
-
 function fmtDate(iso) {
     if (!iso) return ''
     try { return new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' }) }
-    catch { return iso }
-}
-
-function fmtDateLong(iso) {
-    if (!iso) return ''
-    try { return new Date(iso + 'T00:00:00').toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) }
     catch { return iso }
 }
 
@@ -91,16 +80,16 @@ const STATUS_LABEL = {
     3: 'Cancelada', 4: 'Finalizada', 5: 'Validada', 6: 'Pendente', 7: 'Staff Aprovada',
 }
 
-// Chip colors per status (for calendar chips in Tab 1)
+// Chip colors per status (for calendar chips in Tab 1) — use CSS variables
 const STATUS_CHIP = {
-    0: { background: '#fef3c7', color: '#92400e' },
-    1: { background: '#ede9fe', color: '#6d28d9' },
-    2: { background: '#fee2e2', color: '#991b1b' },
-    3: { background: '#f3f4f6', color: '#6b7280' },
-    4: { background: '#d1fae5', color: '#065f46' },
-    5: { background: '#d1fae5', color: '#065f46' },
-    6: { background: '#ffedd5', color: '#9a3412' },
-    7: { background: '#ede9fe', color: '#6d28d9' },
+    0: { background: 'var(--warning-bg)', color: 'var(--warning)' },
+    1: { background: 'var(--accent-soft)', color: 'var(--accent)' },
+    2: { background: 'var(--danger-bg)', color: 'var(--danger)' },
+    3: { background: 'var(--surface-2)', color: 'var(--text-2)' },
+    4: { background: 'var(--success-bg)', color: 'var(--success)' },
+    5: { background: 'var(--success-bg)', color: 'var(--success)' },
+    6: { background: 'var(--warning-bg)', color: 'var(--warning)' },
+    7: { background: 'var(--accent-soft)', color: 'var(--accent)' },
 }
 
 function statusCardClass(s) {
@@ -111,49 +100,16 @@ function statusCardClass(s) {
     return ''  // default purple
 }
 
-const DAYS_PT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
-
 const TABS = [
-    { id: 'minhas-marcacoes', label: 'Minhas Marcações', activeExtra: '' },
-    { id: 'marcar',           label: 'Criar Aula',       activeExtra: '' },
-    { id: 'grupo',            label: 'Aulas Existentes', activeExtra: '-teal' },
-    { id: 'validar',          label: 'Validar Aulas',    activeExtra: '-orange' },
+    { id: 'minhas-marcacoes', label: 'Minhas Marcações',     activeExtra: '' },
+    { id: 'marcar',           label: 'Criar Coaching',       activeExtra: '' },
+    { id: 'grupo',            label: 'Coachings Existentes', activeExtra: '-teal' },
+    { id: 'inscricoes',       label: 'Inscrições',           activeExtra: '-orange' },
+    { id: 'validar',          label: 'Validar Coachings',    activeExtra: '-orange' },
 ]
 
-// ---- Shared MonthCalendar ----
-
-function MonthCalendar({ month, onPrev, onNext, renderDay, loading }) {
-    const year = month.getFullYear()
-    const mon  = month.getMonth()
-    const daysInMonth = new Date(year, mon + 1, 0).getDate()
-    const firstDow    = new Date(year, mon, 1).getDay()
-
-    return (
-        <div className="pc-card">
-            <div className="pc-cal-header">
-                <h3 className="pc-cal-title">{fmtMonthLabel(month)}</h3>
-                <div className="pc-cal-nav">
-                    <button className="pc-cal-nav-btn" onClick={onPrev} aria-label="Mês anterior">‹</button>
-                    <button className="pc-cal-nav-btn" onClick={onNext} aria-label="Próximo mês">›</button>
-                </div>
-            </div>
-            {loading ? (
-                <div className="validate-empty"><p>Carregando...</p></div>
-            ) : (
-                <div className="pc-month-grid">
-                    {DAYS_PT.map(d => <div key={d} className="pc-dow-label">{d}</div>)}
-                    {Array.from({ length: firstDow }, (_, i) => (
-                        <div key={`e${i}`} className="pc-day-cell pc-day-cell--empty" />
-                    ))}
-                    {Array.from({ length: daysInMonth }, (_, i) => {
-                        const key = isoDate(new Date(year, mon, i + 1))
-                        return renderDay(key, i + 1)
-                    })}
-                </div>
-            )}
-        </div>
-    )
-}
+// ParentEnrollmentStatus enum (mirrors backend)
+const ENROLLMENT_STATUS = { NotRequired: 0, Pending: 1, Approved: 2, Rejected: 3 }
 
 // ---- Component ----
 
@@ -164,16 +120,19 @@ function ParentClassesPage() {
     const [modalities, setModalities] = useState([])
     const [coaches, setCoaches]       = useState([])
     const [myStudents, setMyStudents] = useState([])
+    const [joinEnabled, setJoinEnabled] = useState(true)
 
     useEffect(() => {
         Promise.allSettled([
             getModalities(),
             getCoachesForParent(),
             getMyStudents(),
-        ]).then(([modsRes, coachesRes, studentsRes]) => {
+            getJoinClassStatus(),
+        ]).then(([modsRes, coachesRes, studentsRes, joinRes]) => {
             if (modsRes.status === 'fulfilled')     setModalities(normalizeItems(modsRes.value))
             if (coachesRes.status === 'fulfilled')  setCoaches(normalizeItems(coachesRes.value))
             if (studentsRes.status === 'fulfilled') setMyStudents(normalizeItems(studentsRes.value))
+            if (joinRes.status === 'fulfilled')     setJoinEnabled(joinRes.value?.enabled ?? joinRes.value?.Enabled ?? true)
         })
     }, [])
 
@@ -224,6 +183,12 @@ function ParentClassesPage() {
     const [t1Loading, setT1Loading]           = useState(false)
     const [t1Error, setT1Error]               = useState('')
     const [t1SelectedDate, setT1SelectedDate] = useState(null)
+
+    // Invite modal (Tab 1 — add student to existing class)
+    const [inviteTarget, setInviteTarget]       = useState(null)
+    const [inviteStudentId, setInviteStudentId] = useState('')
+    const [inviteSubmitting, setInviteSubmitting] = useState(false)
+    const [inviteError, setInviteError]         = useState('')
 
     useEffect(() => {
         if (activeTab !== 'minhas-marcacoes' || !user?.userId) return
@@ -282,7 +247,6 @@ function ParentClassesPage() {
     const [bookingDate, setBookingDate]           = useState('')     // "YYYY-MM-DD"
     const [bookingModalityId, setBookingModalityId] = useState('')
     const [bookingStudentId, setBookingStudentId]   = useState('')
-    const [bookingMaxParts, setBookingMaxParts]     = useState(1)
     const [bookingStartTime, setBookingStartTime]   = useState('')  // "HH:MM"
     const [bookingEndTime, setBookingEndTime]       = useState('')  // "HH:MM"
     const [bookingSubmitting, setBookingSubmitting] = useState(false)
@@ -324,7 +288,6 @@ function ParentClassesPage() {
         const firstModalityId = (slot.ModalityIds ?? slot.modalityIds ?? [])[0]
         setBookingModalityId(firstModalityId ? String(firstModalityId) : '')
         setBookingStudentId('')
-        setBookingMaxParts(1)
         setBookingStartTime(fmtTime24(slot.StartTime ?? slot.startTime))
         setBookingEndTime(fmtTime24(slot.EndTime ?? slot.endTime))
         setBookingError('')
@@ -350,13 +313,12 @@ function ParentClassesPage() {
         setBookingSubmitting(true); setBookingError('')
         try {
             const coachId = bookingSlot.CoachId ?? bookingSlot.coachId
-            await createClass({
+            await parentCreateClass({
                 coachId,
-                modalityId:      Number(bookingModalityId),
-                startDatetime:   `${bookingDate}T${bookingStartTime}:00`,
-                endDatetime:     `${bookingDate}T${bookingEndTime}:00`,
-                maxParticipants: Number(bookingMaxParts),
-                studentIds:      [Number(bookingStudentId)],
+                modalityId:    Number(bookingModalityId),
+                startDatetime: `${bookingDate}T${bookingStartTime}:00`,
+                endDatetime:   `${bookingDate}T${bookingEndTime}:00`,
+                studentId:     Number(bookingStudentId),
             })
             setBookingSuccess(true)
             setTimeout(() => {
@@ -493,6 +455,97 @@ function ParentClassesPage() {
         }
     }
 
+    const handleInviteSubmit = async (e) => {
+        e.preventDefault()
+        if (!inviteStudentId) { setInviteError('Selecione um aluno.'); return }
+        setInviteSubmitting(true); setInviteError('')
+        try {
+            await enrollByInvite({
+                classId:   inviteTarget.ClassId ?? inviteTarget.classId,
+                studentId: Number(inviteStudentId),
+            })
+            setInviteTarget(null)
+            // Refresh the parent's class list
+            getClassesByParent(user.userId)
+                .then(d => setT1AllClasses(normalizeItems(d)))
+                .catch(() => {})
+        } catch (err) {
+            setInviteError(err.message)
+        } finally {
+            setInviteSubmitting(false)
+        }
+    }
+
+    // ===================================================
+    // TAB 4 — Inscrições (coach-created enrollment approvals)
+    // For each CoachCreated+Requested class, load detail to get participant IDs.
+    // Filter participants where student belongs to this parent + status=Pending(1).
+    // ===================================================
+    const [t5Items, setT5Items]     = useState([])  // [{ classId, modalityName, coachName, start, end, participantId, studentName, studentId }]
+    const [t5Loading, setT5Loading] = useState(false)
+    const [t5Error, setT5Error]     = useState('')
+
+    const loadEnrollments = async () => {
+        if (!user?.userId) return
+        setT5Loading(true); setT5Error('')
+        try {
+            // Use the already-loaded class list; if not loaded yet, fetch it
+            let classes = t1AllClasses
+            if (classes.length === 0) {
+                const data = await getClassesByParent(user.userId)
+                classes = normalizeItems(data)
+                setT1AllClasses(classes)
+            }
+            const myStudentIds = new Set(myStudents.map(s => s.StudentId ?? s.studentId))
+            const coachCreatedRequested = classes.filter(c =>
+                (c.ClassOrigin ?? c.classOrigin) === 1 &&
+                (c.Status ?? c.status) === 0
+            )
+            const results = []
+            await Promise.all(coachCreatedRequested.map(async cls => {
+                try {
+                    const detail = await getClassById(cls.ClassId ?? cls.classId)
+                    const participants = detail?.Participants ?? detail?.participants ?? []
+                    for (const p of participants) {
+                        const sId = p.StudentId ?? p.studentId
+                        const enrollStatus = p.ParentEnrollmentStatus ?? p.parentEnrollmentStatus ?? 0
+                        if (myStudentIds.has(sId) && enrollStatus === ENROLLMENT_STATUS.Pending) {
+                            results.push({
+                                classId:       cls.ClassId ?? cls.classId,
+                                modalityName:  cls.ModalityName ?? cls.modalityName ?? '',
+                                coachName:     cls.CoachName ?? cls.coachName ?? '',
+                                start:         cls.StartDatetime ?? cls.startDatetime,
+                                end:           cls.EndDatetime ?? cls.endDatetime,
+                                participantId: p.ParticipantId ?? p.participantId,
+                                studentId:     sId,
+                                studentName:   p.StudentName ?? p.studentName ?? '',
+                            })
+                        }
+                    }
+                } catch { /* ignore individual class errors */ }
+            }))
+            setT5Items(results)
+        } catch (e) {
+            setT5Error(e.message)
+        } finally {
+            setT5Loading(false)
+        }
+    }
+
+    useEffect(() => {
+        if (activeTab === 'inscricoes') loadEnrollments()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTab])
+
+    const handleEnrollmentApprove = async (participantId, approve) => {
+        try {
+            await approveEnrollment(participantId, approve)
+            setT5Items(prev => prev.filter(i => i.participantId !== participantId))
+        } catch (err) {
+            alert(err.message)
+        }
+    }
+
     const t4Pending = useMemo(() =>
         t4Items.filter(cls =>
             (cls.Participants ?? cls.participants ?? []).some(p => (p.ValidationStatus ?? p.validationStatus ?? 0) === 0)
@@ -538,7 +591,7 @@ function ParentClassesPage() {
 
         return (
             <div>
-                <p className="tab-description">Visualize as aulas marcadas para os seus educandos no mês.</p>
+                <p className="tab-description">Visualize os coachings marcados para os seus educandos no mês.</p>
                 {t1Error && <p className="admin-error">{t1Error}</p>}
 
                 <MonthCalendar
@@ -562,6 +615,18 @@ function ParentClassesPage() {
                                 const studioName   = c.StudioName  ?? c.studioName
                                 const start        = c.StartDatetime ?? c.startDatetime
                                 const end          = c.EndDatetime   ?? c.endDatetime
+                                const studentNames     = c.StudentNames ?? c.studentNames ?? []
+                                const maxParts         = c.MaxParticipants ?? c.maxParticipants ?? 0
+                                const currentParts     = c.CurrentParticipants ?? c.currentParticipants ?? 0
+                                const modalityId       = c.ModalityId ?? c.modalityId ?? 0
+                                const isFull           = currentParts >= maxParts && maxParts > 0
+                                const canInvite        = !isFull && (status === 0 || status === 1 || status === 7)
+                                // Students assigned to this class's modality, not yet enrolled
+                                const invitableStudents = myStudents.filter(s => {
+                                    const sIds = s.ModalityIds ?? s.modalityIds ?? []
+                                    return sIds.includes(modalityId)
+                                })
+
                                 return (
                                     <div key={c.ClassId ?? c.classId ?? i} className={`class-card ${statusCardClass(status)}`}>
                                         <div className="class-card-header" style={{ cursor: 'default' }}>
@@ -579,8 +644,32 @@ function ParentClassesPage() {
                                                     </div>
                                                     {coachName  && <div><span className="label">Coach: </span>{coachName}</div>}
                                                     {studioName && <div><span className="label">Estúdio: </span>{studioName}</div>}
+                                                    {maxParts > 0 && (
+                                                        <div>
+                                                            <span className="label">Vagas: </span>
+                                                            {currentParts}/{maxParts}
+                                                        </div>
+                                                    )}
                                                 </div>
+                                                {studentNames.length > 0 && (
+                                                    <div style={{ marginTop: '6px', fontSize: '0.875rem' }}>
+                                                        <span className="label">Alunos: </span>
+                                                        {studentNames.join(', ')}
+                                                    </div>
+                                                )}
                                             </div>
+                                            {canInvite && invitableStudents.length > 0 && (
+                                                <Button
+                                                    variant="secondary"
+                                                    onClick={() => {
+                                                        setInviteTarget(c)
+                                                        setInviteStudentId('')
+                                                        setInviteError('')
+                                                    }}
+                                                >
+                                                    + Aluno
+                                                </Button>
+                                            )}
                                         </div>
                                     </div>
                                 )
@@ -591,8 +680,8 @@ function ParentClassesPage() {
                 {t1SelectedDate && dayList.length === 0 && !t1Loading && (
                     <div className="validate-empty">
                         <div className="validate-empty-icon">📅</div>
-                        <h3>Sem aulas</h3>
-                        <p>Nenhuma aula marcada para este dia.</p>
+                        <h3>Sem coachings</h3>
+                        <p>Nenhum coaching marcado para este dia.</p>
                     </div>
                 )}
 
@@ -601,7 +690,7 @@ function ParentClassesPage() {
                     <div className="validate-empty">
                         <div className="validate-empty-icon">📅</div>
                         <h3>Sem marcações</h3>
-                        <p>Não tem aulas marcadas. Crie uma aula no separador "Criar Aula".</p>
+                        <p>Não tem coachings marcados. Crie um coaching no separador "Criar Coaching".</p>
                     </div>
                 )}
 
@@ -610,11 +699,11 @@ function ParentClassesPage() {
                     <div className="validate-empty" style={{ padding: '20px' }}>
                         <p style={{ color: '#6b7280', marginBottom: '8px' }}>
                             Não tem aulas marcadas este mês.
-                            {t1AllClasses.length > 0 && ` Tem ${t1AllClasses.length} aula${t1AllClasses.length > 1 ? 's' : ''} noutros meses.`}
+                        {t1AllClasses.length > 0 && ` Tem ${t1AllClasses.length} coaching${t1AllClasses.length > 1 ? 's' : ''} noutros meses.`}
                         </p>
                         {t1NextClass && (
-                            <p style={{ color: '#7c3aed', fontWeight: 600, fontSize: '0.92rem' }}>
-                                Próxima aula: {fmtDateLong((t1NextClass.StartDatetime ?? t1NextClass.startDatetime ?? '').slice(0, 10))} às {fmtTime(t1NextClass.StartDatetime ?? t1NextClass.startDatetime)} — {t1NextClass.ModalityName ?? t1NextClass.modalityName}
+                            <p style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '0.92rem' }}>
+                                Próximo coaching: {fmtDateLong((t1NextClass.StartDatetime ?? t1NextClass.startDatetime ?? '').slice(0, 10))} às {fmtTime(t1NextClass.StartDatetime ?? t1NextClass.startDatetime)} — {t1NextClass.ModalityName ?? t1NextClass.modalityName}
                             </p>
                         )}
                     </div>
@@ -631,13 +720,15 @@ function ParentClassesPage() {
         const selectedSlots = t2SelectedDate ? (t2SlotsByDate[t2SelectedDate] ?? []) : []
         const hasAnySlots = Object.keys(t2SlotsByDate).length > 0
 
+        const todayIso = isoDate(new Date())
+
         const renderDay = (key, dayNum) => {
-            const slots = t2SlotsByDate[key] ?? []
+            const slots = key < todayIso ? [] : (t2SlotsByDate[key] ?? [])
             const isSelected = key === t2SelectedDate
             return (
                 <div
                     key={key}
-                    className={`pc-day-cell${slots.length ? ' pc-day-cell--has-slot' : ''}${isSelected ? ' pc-day-cell--selected' : ''}`}
+                    className={`pc-day-cell${slots.length ? ' pc-day-cell--has-slot' : ''}${isSelected ? ' pc-day-cell--selected' : ''}${key < todayIso ? ' pc-day-cell--past' : ''}`}
                     onClick={() => slots.length && setT2SelectedDate(isSelected ? null : key)}
                 >
                     <span className="pc-day-num">{dayNum}</span>
@@ -654,7 +745,7 @@ function ParentClassesPage() {
         return (
             <div>
                 <p className="tab-description">
-                    Filtre por modalidade ou professor, clique num dia com vagas disponíveis e envie o pedido de aula.
+                    Filtre por modalidade ou professor, clique num dia com vagas disponíveis e envie o pedido de coaching.
                 </p>
                 {t2Error && <p className="admin-error">{t2Error}</p>}
 
@@ -712,8 +803,8 @@ function ParentClassesPage() {
                                                     {modNames  && <div><span className="label">Modalidades: </span>{modNames}</div>}
                                                 </div>
                                             </div>
-                                            <Button variant="primary" onClick={() => openBookingModal(slot, t2SelectedDate)}>
-                                                Pedir Aula
+                        <Button variant="primary" onClick={() => openBookingModal(slot, t2SelectedDate)}>
+                                                Pedir Coaching
                                             </Button>
                                         </div>
                                     </div>
@@ -744,6 +835,16 @@ function ParentClassesPage() {
     // ===================================================
 
     const renderAulasExistentes = () => {
+        if (!joinEnabled) {
+            return (
+                <div className="validate-empty">
+                    <div className="validate-empty-icon">🔒</div>
+                    <h3>Inscrições desativadas</h3>
+                    <p>A funcionalidade de inscrição em aulas existentes está temporariamente desativada.</p>
+                </div>
+            )
+        }
+
         const selectedClasses = t3SelectedDate ? (t3ByDate[t3SelectedDate] ?? []) : []
         const hasAnyClasses   = Object.keys(t3ByDate).length > 0
 
@@ -769,7 +870,7 @@ function ParentClassesPage() {
 
         return (
             <div>
-                <p className="tab-description">Aulas abertas a inscrições — clique num dia para ver as aulas disponíveis.</p>
+                <p className="tab-description">Coachings abertos a inscrições — clique num dia para ver os coachings disponíveis.</p>
                 {t3Error && <p className="admin-error">{t3Error}</p>}
 
                 {/* Modality filter */}
@@ -795,7 +896,7 @@ function ParentClassesPage() {
                 {/* Selected day class cards */}
                 {t3SelectedDate && selectedClasses.length > 0 && (
                     <div>
-                        <h3 className="validate-section-heading">Aulas para {fmtDateLong(t3SelectedDate)}</h3>
+                        <h3 className="validate-section-heading">Coachings para {fmtDateLong(t3SelectedDate)}</h3>
                         {selectedClasses
                             .sort((a, b) => (a.StartDatetime ?? a.startDatetime ?? '').localeCompare(b.StartDatetime ?? b.startDatetime ?? ''))
                             .map((c, i) => {
@@ -883,7 +984,70 @@ function ParentClassesPage() {
     }
 
     // ===================================================
-    // RENDER — TAB 4
+    // RENDER — TAB 4 — Inscrições
+    // ===================================================
+
+    const renderInscricoes = () => {
+        if (t5Loading) return <div className="validate-empty"><p>Carregando...</p></div>
+        if (t5Error)   return <p className="admin-error">{t5Error}</p>
+        if (t5Items.length === 0) return (
+            <div className="validate-empty">
+                <div className="validate-empty-icon">✓</div>
+                <h3>Sem inscrições pendentes</h3>
+                <p>Não há convites de aulas aguardando a sua resposta.</p>
+            </div>
+        )
+        return (
+            <div>
+                <p className="tab-description">
+                    O professor criou aulas com os seus educandos. Aprove ou rejeite a inscrição de cada aluno.
+                </p>
+                <div className="validate-warning">
+                    <span className="validate-warning-icon">!</span>
+                    <p>
+                        <strong>Atenção:</strong> Tem {t5Items.length} inscrição{t5Items.length > 1 ? 'ões' : ''} pendente{t5Items.length > 1 ? 's' : ''}.
+                    </p>
+                </div>
+                {t5Items.map(item => (
+                    <div key={item.participantId} className="class-card class-card--amber">
+                        <div className="class-card-header" style={{ cursor: 'default' }}>
+                            <div style={{ flex: '1 1 auto', minWidth: 0 }}>
+                                <div className="class-card-title-row">
+                                    <h3 className="class-card-title">{item.modalityName}</h3>
+                                    <span className="status-pill" style={STATUS_CHIP[0]}>Aguarda resposta</span>
+                                </div>
+                                <div className="class-card-info-grid">
+                                    <div>
+                                        <span className="label">Data: </span>
+                                        {fmtDate(item.start)} · {fmtTime(item.start)} – {fmtTime(item.end)}
+                                    </div>
+                                    {item.coachName && <div><span className="label">Coach: </span>{item.coachName}</div>}
+                                    <div><span className="label">Aluno: </span>{item.studentName}</div>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => handleEnrollmentApprove(item.participantId, false)}
+                                >
+                                    Rejeitar
+                                </Button>
+                                <Button
+                                    variant="primary"
+                                    onClick={() => handleEnrollmentApprove(item.participantId, true)}
+                                >
+                                    Aceitar
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        )
+    }
+
+    // ===================================================
+    // RENDER — TAB 5
     // ===================================================
 
     const renderValidarAulas = () => {
@@ -893,7 +1057,7 @@ function ParentClassesPage() {
             <div className="validate-empty">
                 <div className="validate-empty-icon">✓</div>
                 <h3>Tudo validado</h3>
-                <p>Não há aulas para validar neste momento.</p>
+                <p>Não há coachings para validar neste momento.</p>
             </div>
         )
         return (
@@ -974,8 +1138,8 @@ function ParentClassesPage() {
         <PageCard>
             <div className="admin-page-header">
                 <div>
-                    <h2>Aulas</h2>
-                    <p>Gerir marcações, validações e aulas de grupo.</p>
+                    <h2>Coachings</h2>
+                    <p>Gerir marcações, validações e coachings de grupo.</p>
                 </div>
             </div>
 
@@ -996,20 +1160,21 @@ function ParentClassesPage() {
                 {activeTab === 'minhas-marcacoes' && renderMinhasMarcacoes()}
                 {activeTab === 'marcar'           && renderCriarAula()}
                 {activeTab === 'grupo'            && renderAulasExistentes()}
+                {activeTab === 'inscricoes'       && renderInscricoes()}
                 {activeTab === 'validar'          && renderValidarAulas()}
             </div>
 
             {/* ====== Booking Modal (Tab 2 — Pedir Aula) ====== */}
             <Modal
                 open={bookingSlot !== null}
-                title="Pedir Aula"
+                title="Pedir Coaching"
                 onClose={() => setBookingSlot(null)}
             >
                 {bookingSuccess ? (
                     <div className="validate-empty" style={{ padding: '24px' }}>
                         <div className="validate-empty-icon">✓</div>
                         <h3>Pedido enviado!</h3>
-                        <p>O seu pedido de aula foi submetido e aguarda aprovação da direção.</p>
+                        <p>O seu pedido de coaching foi submetido e aguarda aprovação da direção.</p>
                     </div>
                 ) : (
                     <form onSubmit={handleBookingSubmit} className="modal-form">
@@ -1066,18 +1231,6 @@ function ParentClassesPage() {
                             </div>
                         </div>
 
-                        <div className="modal-field">
-                            <label className="modal-label">Número máximo de alunos (1–8)</label>
-                            <input
-                                type="number"
-                                className="input"
-                                min={1}
-                                max={8}
-                                value={bookingMaxParts}
-                                onChange={e => setBookingMaxParts(Number(e.target.value))}
-                            />
-                        </div>
-
                         {bookingError && <p className="admin-error">{bookingError}</p>}
 
                         <div className="modal-actions">
@@ -1092,6 +1245,54 @@ function ParentClassesPage() {
                 )}
             </Modal>
 
+            {/* ====== Invite Modal (Tab 1 — Adicionar Aluno) ====== */}
+            <Modal
+                open={inviteTarget !== null}
+                title="Adicionar Aluno ao Coaching"
+                onClose={() => setInviteTarget(null)}
+            >
+                <form onSubmit={handleInviteSubmit} className="modal-form">
+                    {inviteTarget && (() => {
+                        const modalityId = inviteTarget.ModalityId ?? inviteTarget.modalityId ?? 0
+                        const filteredStudents = myStudents
+                            .filter(s => (s.ModalityIds ?? s.modalityIds ?? []).includes(modalityId))
+                            .map(s => ({ value: String(s.StudentId ?? s.studentId ?? ''), label: studentLabel(s) }))
+                        return (
+                            <>
+                                <div className="reject-class-summary">
+                                    <div>💃 {inviteTarget.ModalityName ?? inviteTarget.modalityName ?? 'Coaching'}</div>
+                                    <div>📅 {fmtDateLong((inviteTarget.StartDatetime ?? inviteTarget.startDatetime ?? '').slice(0, 10))} · {fmtTime(inviteTarget.StartDatetime ?? inviteTarget.startDatetime)} – {fmtTime(inviteTarget.EndDatetime ?? inviteTarget.endDatetime)}</div>
+                                </div>
+                                <div className="modal-field">
+                                    <label className="modal-label">Selecionar Aluno *</label>
+                                    {filteredStudents.length === 0 ? (
+                                        <p style={{ color: 'var(--text-2)', fontSize: '0.875rem' }}>
+                                            Não tem alunos inscritos na modalidade desta aula.
+                                        </p>
+                                    ) : (
+                                        <Select
+                                            value={inviteStudentId}
+                                            onChange={setInviteStudentId}
+                                            placeholder="Selecione o aluno"
+                                            options={filteredStudents}
+                                        />
+                                    )}
+                                </div>
+                            </>
+                        )
+                    })()}
+                    {inviteError && <p className="admin-error">{inviteError}</p>}
+                    <div className="modal-actions">
+                        <Button type="button" variant="secondary" onClick={() => setInviteTarget(null)}>
+                            Cancelar
+                        </Button>
+                        <Button type="submit" variant="primary" disabled={inviteSubmitting}>
+                            {inviteSubmitting ? 'A adicionar...' : 'Adicionar'}
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
+
             {/* ====== Enroll Modal (Tab 3 — Inscrever) ====== */}
             <Modal
                 open={enrollTarget !== null}
@@ -1101,7 +1302,7 @@ function ParentClassesPage() {
                 <form onSubmit={handleEnrollSubmit} className="modal-form">
                     {enrollTarget && (
                         <div className="reject-class-summary">
-                            <div>💃 {enrollTarget.ModalityName ?? 'Aula'}</div>
+                            <div>💃 {enrollTarget.ModalityName ?? 'Coaching'}</div>
                             <div>📅 {fmtDateLong((enrollTarget.StartDatetime ?? '').slice(0, 10))} · {fmtTime(enrollTarget.StartDatetime)} – {fmtTime(enrollTarget.EndDatetime)}</div>
                             {enrollTarget.CoachName  && <div>👨‍🏫 {enrollTarget.CoachName}</div>}
                             {enrollTarget.StudioName && <div>📍 {enrollTarget.StudioName}</div>}

@@ -42,12 +42,41 @@ export function parentValidateParticipant(participantId, attended) {
     return patch(`/api/participants/${participantId}/parent-validate`, { attended })
 }
 
-/** POST /api/coachclasses — parent requests a new class on an available slot */
-export function createClass(body) {
+/** POST /api/coachclasses — parent requests an individual class on an available slot
+ *  Body: { coachId, modalityId, startDatetime, endDatetime, studentId }
+ */
+export function parentCreateClass(body) {
     return post('/api/coachclasses', body)
+}
+
+/** POST /api/coachclasses/coach-create — coach creates individual or group class
+ *  Body: { modalityId, startDatetime, endDatetime, maxParticipants, studentIds[] }
+ */
+export function coachCreateClass(body) {
+    return post('/api/coachclasses/coach-create', body)
+}
+
+/** PATCH /api/participants/{id}/parent-approve-enrollment — parent approves/rejects enrollment in a coach-created class */
+export function approveEnrollment(participantId, approve) {
+    return patch(`/api/participants/${participantId}/parent-approve-enrollment`, { approve })
 }
 
 /** POST /api/participants — parent enrolls a student in an existing open class */
 export function enrollInClass(body) {
     return post('/api/participants', body)
+}
+
+/** POST /api/participants/invite-join — enroll via invite link (Requested/CoachApproved/Approved) */
+export function enrollByInvite(body) {
+    return post('/api/participants/invite-join', body)
+}
+
+/** GET /api/coachclasses/join-class-status — returns { enabled: bool } */
+export function getJoinClassStatus() {
+    return get('/api/coachclasses/join-class-status')
+}
+
+/** GET /api/coachclasses/{id} — fetch a single class by id */
+export function getClassById(id) {
+    return get(`/api/coachclasses/${id}`)
 }

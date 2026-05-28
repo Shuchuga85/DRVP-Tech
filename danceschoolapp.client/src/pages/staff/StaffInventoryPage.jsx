@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Modal from '../../components/common/Modal'
 import Tabs from '../../components/common/Tabs'
+import { useAuth } from '../../context/useAuth'
 import {
     getItems, createSchoolItem,
     getCategories,
@@ -12,8 +13,8 @@ import '../../styles/Inventory.css'
 const PAGE_SIZE = 12
 
 const TABS = [
-    { value: 'school',       label: 'Escolar' },
-    { value: 'community',    label: 'Comunidade' },
+    { value: 'marketplace',  label: 'Marketplace' },
+    { value: 'me',           label: 'Artigos Escolares' },
     { value: 'requisitions', label: 'Requisições' },
 ]
 
@@ -38,12 +39,14 @@ function fmtDate(v) {
 
 export default function StaffInventoryPage() {
     const navigate = useNavigate()
-    const [tab, setTab] = useState('school')
+    const { user } = useAuth()
+    const [tab, setTab] = useState('marketplace')
 
     // ── Item list state ──────────────────────────────────────────────────────
     const [items, setItems]               = useState([])
     const [totalCount, setTotalCount]     = useState(0)
     const [page, setPage]                 = useState(1)
+    const [refreshKey, setRefreshKey]     = useState(0)
     const [search, setSearch]             = useState('')
     const [searchInput, setSearchInput]   = useState('')
     const [categoryId, setCategoryId]     = useState('')
@@ -90,10 +93,23 @@ export default function StaffInventoryPage() {
         setLoadingItems(true)
         setItemError(null)
         try {
-            const fromSchool = tab === 'school'
-            const result = await getItems({ fromSchool, search, categoryId: categoryId || undefined, page, pageSize: PAGE_SIZE })
+            // marketplace: all items (no fromSchool filter)
+            let result
+            if (tab === 'marketplace' || tab === 'me') {
+                // use unified marketplace endpoint
+                const { getMarketplace } = await import('../../services/inventoryService')
+                result = await getMarketplace({ search, categoryId: categoryId || undefined, page, pageSize: PAGE_SIZE })
+            } else {
+                const fromSchool = tab === 'school'
+                result = await getItems({ fromSchool, search, categoryId: categoryId || undefined, page, pageSize: PAGE_SIZE })
+            }
             const list = result?.items ?? result?.Items ?? []
-            setItems(list)
+            // if viewing 'me' filter by owner id
+            const myId = Number(user?.UserId ?? user?.userId ?? 0)
+            const finalList = tab === 'me' && myId
+                ? list.filter(i => Number(i.idOwner ?? i.IdOwner ?? i.ownerId ?? i.OwnerId ?? 0) === myId)
+                : list
+            setItems(finalList)
             setTotalCount(result?.totalCount ?? result?.TotalCount ?? 0)
         } catch (e) {
             setItemError(e.message)
@@ -263,7 +279,7 @@ export default function StaffInventoryPage() {
                         </div>
                     ) : (
                         <div className="inv-grid">
-                            {items.map(item => {
+                                {items.map(item => {
                                 const id   = item.itemId ?? item.ItemId
                                 const img  = (item.images ?? item.Images ?? [])[0]?.imageUrl
                                 const name = item.name ?? item.Name ?? ''
@@ -272,6 +288,7 @@ export default function StaffInventoryPage() {
                                 const vc   = item.variantCount ?? item.VariantCount ?? 0
                                 return (
                                     <div key={id} className="inv-card" onClick={() => navigate(`/staff/inventario/${id}`)}>
+                                        {item.fromSchool && <div className="inv-school-badge">ENT'ARTES</div>}
                                         {img
                                             ? <img src={img} alt={name} className="inv-card-img" />
                                             : <div className="inv-card-img-placeholder">{name[0]}</div>

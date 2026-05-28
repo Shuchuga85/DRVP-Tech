@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/useAuth'
 import Modal from '../../components/common/Modal'
 import Tabs from '../../components/common/Tabs'
 import {
-    getSchoolInventory, getCommunityInventory,
     createPersonalItem,
     getCategories,
     getRequisitions, cancelRequisition, returnRequisition,
@@ -13,8 +13,8 @@ import '../../styles/Inventory.css'
 const PAGE_SIZE = 12
 
 const TABS = [
-    { value: 'school',    label: 'Escolar' },
-    { value: 'community', label: 'Comunidade' },
+    { value: 'marketplace', label: 'Marketplace' },
+    { value: 'me', label: 'Meus Artigos' },
 ]
 
 const REQ_STATUS = {
@@ -39,7 +39,8 @@ function fmtPrice(v) {
 export default function ParentInventoryPage() {
     const navigate = useNavigate()
 
-    const [tab, setTab] = useState('school')
+    const { user } = useAuth()
+    const [tab, setTab] = useState('marketplace')
 
     // ── Shared filter state ───────────────────────────────────────────────────
     const [search, setSearch]             = useState('')
@@ -48,22 +49,19 @@ export default function ParentInventoryPage() {
     const [categories, setCategories]     = useState([])
     const searchTimer                     = useRef(null)
 
-    // ── School tab ────────────────────────────────────────────────────────────
-    const [schoolItems, setSchoolItems]     = useState([])
-    const [schoolTotal, setSchoolTotal]     = useState(0)
-    const [schoolPage, setSchoolPage]       = useState(1)
-    const [loadingSchool, setLoadingSchool] = useState(false)
-    const [schoolError, setSchoolError]     = useState(null)
+    // (school tab removed)
 
-    // ── Community tab ─────────────────────────────────────────────────────────
-    const [commItems, setCommItems]           = useState([])
-    const [commTotal, setCommTotal]           = useState(0)
-    const [commPage, setCommPage]             = useState(1)
-    const [loadingComm, setLoadingComm]       = useState(false)
-    const [commListError, setCommListError]   = useState(null)
-    const [maxPrice, setMaxPrice]             = useState('')
-    const [maxPriceInput, setMaxPriceInput]   = useState('')
-    const priceTimer                          = useRef(null)
+    // ── Marketplace (unified) ───────────────────────────────────────────────
+    const [marketplaceItems, setMarketplaceItems]     = useState([])
+    const [marketplaceTotal, setMarketplaceTotal]     = useState(0)
+    const [marketplacePage, setMarketplacePage]       = useState(1)
+    const [loadingMarketplace, setLoadingMarketplace] = useState(false)
+    const [marketplaceError, setMarketplaceError]     = useState(null)
+    const [debugVisible, setDebugVisible] = useState(false)
+    const [lastMyItemsResponse, setLastMyItemsResponse] = useState(null)
+    const [lastMarketplaceResponse, setLastMarketplaceResponse] = useState(null)
+
+    // (community tab removed)
 
     // ── My requisitions ───────────────────────────────────────────────────────
     const [requisitions, setRequisitions] = useState([])
@@ -90,56 +88,69 @@ export default function ParentInventoryPage() {
             .catch(() => {})
     }, [])
 
-    // ── Load school items ─────────────────────────────────────────────────────
-    const loadSchool = useCallback(async () => {
-        if (tab !== 'school') return
-        setLoadingSchool(true)
-        setSchoolError(null)
+    // (school loader removed)
+
+    // ── Load marketplace (all items) ──────────────────────────────────────────
+    const loadMarketplace = useCallback(async () => {
+        // load for both marketplace and personal (me) tab
+        if (tab !== 'marketplace' && tab !== 'me') return
+        setLoadingMarketplace(true)
+        setMarketplaceError(null)
         try {
-            const result = await getSchoolInventory({
-                categoryId: categoryId || undefined,
-                search,
-                page: schoolPage,
-                pageSize: PAGE_SIZE,
-            })
-            setSchoolItems(result?.items ?? [])
-            setSchoolTotal(result?.totalCount ?? 0)
+            if (tab === 'marketplace') {
+                const { getMarketplace } = await import('../../services/inventoryService')
+                const result = await getMarketplace({ search, categoryId: categoryId || undefined, page: marketplacePage, pageSize: PAGE_SIZE })
+                const list = result?.items ?? result?.Items ?? []
+                setMarketplaceItems(list)
+                setMarketplaceTotal(result?.totalCount ?? result?.TotalCount ?? 0)
+            } else {
+                const { getMyItems } = await import('../../services/inventoryService')
+                const result = await getMyItems({ search, categoryId: categoryId || undefined, page: marketplacePage, pageSize: PAGE_SIZE })
+                setLastMyItemsResponse(result ?? null)
+                const list = result?.items ?? result?.Items ?? []
+                // Debug logs to diagnose missing personal items
+                try {
+                    console.debug('[INV][me] user:', user)
+                    console.debug('[INV][me] getMyItems result status:', result)
+                    console.debug('[INV][me] list length:', list.length)
+                    if (list.length > 0) console.debug('[INV][me] first item owners:', list.map(i => ({ id: i.itemId ?? i.ItemId, owner: i.idOwner ?? i.IdOwner })))
+                } catch (e) {}
+                // If server returned nothing but user exists, fallback to scanning marketplace and filter by owner
+                if ((list.length === 0 || result == null) && user && user.UserId) {
+                    try {
+                        const { getMarketplace } = await import('../../services/inventoryService')
+                        // request larger page to increase chance to find personal items
+                        const all = await getMarketplace({ search, categoryId: categoryId || undefined, page: 1, pageSize: 1000 })
+                        setLastMarketplaceResponse(all ?? null)
+                        const allList = all?.items ?? all?.Items ?? []
+                        try { console.debug('[INV][me] fallback marketplace size:', allList.length) } catch (e) {}
+                        const myId = Number(user.UserId ?? user.userId ?? user.id)
+                        const filtered = allList.filter(i => Number(i.idOwner ?? i.IdOwner ?? i.ownerId ?? i.OwnerId ?? 0) === myId)
+                        try { console.debug('[INV][me] filtered count:', filtered.length, 'myId:', myId, 'sample owners:', filtered.map(i => ({ id: i.itemId ?? i.ItemId, owner: i.idOwner ?? i.IdOwner }))) } catch (e) {}
+                        setMarketplaceItems(filtered)
+                        setMarketplaceTotal(filtered.length)
+                    } catch (ex) {
+                        setMarketplaceItems([])
+                        setMarketplaceTotal(0)
+                    }
+                } else {
+                    setMarketplaceItems(list)
+                    setMarketplaceTotal(result?.totalCount ?? result?.TotalCount ?? 0)
+                }
+            }
         } catch (e) {
-            setSchoolError(e.message)
+            setMarketplaceError(e.message)
         } finally {
-            setLoadingSchool(false)
+            setLoadingMarketplace(false)
         }
-    }, [tab, search, categoryId, schoolPage])
+    }, [tab, search, categoryId, marketplacePage])
 
-    useEffect(() => { loadSchool() }, [loadSchool])
+    useEffect(() => { loadMarketplace() }, [loadMarketplace])
 
-    // ── Load community items ──────────────────────────────────────────────────
-    const loadCommunity = useCallback(async () => {
-        if (tab !== 'community') return
-        setLoadingComm(true)
-        setCommListError(null)
-        try {
-            const result = await getCommunityInventory({
-                categoryId: categoryId || undefined,
-                search,
-                maxPrice: maxPrice || undefined,
-                page: commPage,
-                pageSize: PAGE_SIZE,
-            })
-            setCommItems(result?.items ?? [])
-            setCommTotal(result?.totalCount ?? 0)
-        } catch (e) {
-            setCommListError(e.message)
-        } finally {
-            setLoadingComm(false)
-        }
-    }, [tab, search, categoryId, maxPrice, commPage])
-
-    useEffect(() => { loadCommunity() }, [loadCommunity])
+    // (community loader removed)
 
     // ── Load my requisitions ──────────────────────────────────────────────────
     const loadReqs = useCallback(async () => {
-        if (tab !== 'school') return
         setLoadingReqs(true)
         try {
             const data = await getRequisitions()
@@ -149,7 +160,7 @@ export default function ParentInventoryPage() {
         } finally {
             setLoadingReqs(false)
         }
-    }, [tab])
+    }, [])
 
     useEffect(() => { loadReqs() }, [loadReqs])
 
@@ -159,10 +170,7 @@ export default function ParentInventoryPage() {
         setSearch('')
         setSearchInput('')
         setCategoryId('')
-        setMaxPrice('')
-        setMaxPriceInput('')
-        setSchoolPage(1)
-        setCommPage(1)
+        setMarketplacePage(1)
     }
 
     // ── Search debounce ───────────────────────────────────────────────────────
@@ -171,18 +179,7 @@ export default function ParentInventoryPage() {
         clearTimeout(searchTimer.current)
         searchTimer.current = setTimeout(() => {
             setSearch(val)
-            setSchoolPage(1)
-            setCommPage(1)
-        }, 400)
-    }
-
-    // ── Max price debounce ────────────────────────────────────────────────────
-    const handleMaxPriceInput = (val) => {
-        setMaxPriceInput(val)
-        clearTimeout(priceTimer.current)
-        priceTimer.current = setTimeout(() => {
-            setMaxPrice(val)
-            setCommPage(1)
+            setMarketplacePage(1)
         }, 400)
     }
 
@@ -245,7 +242,7 @@ export default function ParentInventoryPage() {
             setAnnounceForm(emptyItemForm)
             const newId = res?.itemId ?? res?.ItemId
             if (newId) navigate(`/parent/inventario/${newId}`)
-            else loadCommunity()
+            else setMarketplacePage(1)
         } catch (e) {
             setAnnounceError(e.message)
         } finally {
@@ -254,199 +251,56 @@ export default function ParentInventoryPage() {
     }
 
     // ── Derived ───────────────────────────────────────────────────────────────
-    const schoolPages = Math.ceil(schoolTotal / PAGE_SIZE)
-    const commPages   = Math.ceil(commTotal / PAGE_SIZE)
+    const marketplacePages = Math.ceil(marketplaceTotal / PAGE_SIZE)
+    const myId = Number(user?.UserId ?? user?.userId ?? user?.id ?? 0)
+    const myItems = marketplaceItems.filter(card => {
+        const owner = Number(card.idOwner ?? card.IdOwner ?? card.ownerId ?? card.OwnerId ?? 0)
+        return owner && myId && owner === myId
+    })
 
-    const setAF = (k, v) => setAnnounceForm(f => ({ ...f, [k]: v }))
+    const setAF = (k, v) => setAnnounceForm(f => ({ ...f, [k]: v }));
 
     return (
         <section className="dashboard-page-card">
             <div style={{ marginBottom: 20 }}>
-                <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 700, color: '#1f2937' }}>Inventário</h2>
+                <h2 style={{ margin: 0 }}>Inventário</h2>
                 <p style={{ margin: '4px 0 0', color: '#6b7280', fontSize: '0.95rem' }}>
-                    Consultar artigos da escola e artigos da comunidade.
+                    Marketplace  — procurar e ver artigos disponíveis.
                 </p>
             </div>
 
             <Tabs tabs={TABS} activeTab={tab} onTabChange={handleTabChange} />
 
-            {/* ═══════════════════════════════ ESCOLAR TAB ═══════════════════════════════ */}
-            {tab === 'school' && (
+            {/* debug panel removed */}
+
+            {/* legacy school tab removed */}
+
+            {/* ═══════════════════════════ MARKETPLACE / MEUS ARTIGOS TAB ═════════════════════════════ */}
+            {(tab === 'marketplace' || tab === 'me') && (
                 <>
-                    {/* Filters */}
-                    <div className="inv-filter-bar">
+            <div className="inv-filter-bar" style={{ marginTop: 8 }}>
+                {tab === 'marketplace' ? (
+                    <>
                         <input
                             className="inv-search-input"
-                            placeholder="Pesquisar artigos..."
+                            placeholder="Pesquisar artigos no marketplace..."
                             value={searchInput}
                             onChange={e => handleSearchInput(e.target.value)}
                         />
                         <select
                             className="inv-filter-select"
                             value={categoryId}
-                            onChange={e => { setCategoryId(e.target.value); setSchoolPage(1) }}
+                            onChange={e => { setCategoryId(e.target.value); setMarketplacePage(1) }}
                         >
                             <option value="">Todas as categorias</option>
                             {categories.map(c => (
                                 <option key={c.categoryId} value={c.categoryId}>{c.catgName}</option>
                             ))}
                         </select>
-                    </div>
-
-                    {/* Item grid */}
-                    {loadingSchool ? (
-                        <p className="inv-loading">A carregar...</p>
-                    ) : schoolError ? (
-                        <p className="inv-error">{schoolError}</p>
-                    ) : schoolItems.length === 0 ? (
-                        <div className="inv-empty">
-                            <div className="inv-empty-icon">📦</div>
-                            <p>Nenhum artigo encontrado.</p>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="inv-grid">
-                                {schoolItems.map(card => (
-                                    <div key={card.itemId} className="inv-card" onClick={() => navigate(`/parent/inventario/${card.itemId}`)}>
-                                        {card.imageUrl
-                                            ? <img src={card.imageUrl} alt={card.name} className="inv-card-img" />
-                                            : <div className="inv-card-img-placeholder">{(card.name ?? '?')[0]}</div>
-                                        }
-                                        <div className="inv-card-body">
-                                            {card.categoryName && <span className="inv-card-category">{card.categoryName}</span>}
-                                            <p className="inv-card-name">{card.name}</p>
-                                            {card.description && <p className="inv-card-desc">{card.description}</p>}
-                                        </div>
-                                        <div className="inv-card-footer">
-                                            <div className="inv-card-meta">
-                                                {card.lowestPrice != null && <span className="inv-price">{fmtPrice(card.lowestPrice)}</span>}
-                                                {card.variantCount != null && (
-                                                    <span className={`inv-stock-pill ${card.variantCount === 0 ? 'inv-stock-pill--out' : 'inv-stock-pill--in'}`}>
-                                                        {card.variantCount === 0 ? 'Sem stock' : `${card.variantCount} var.`}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <span style={{ fontSize: '0.8rem', color: '#9ca3af' }}>Pedir →</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                            {schoolPages > 1 && (
-                                <div className="inv-pagination">
-                                    <button className="inv-page-btn" disabled={schoolPage <= 1} onClick={() => setSchoolPage(p => p - 1)}>‹</button>
-                                    <span className="inv-page-info">{schoolPage} / {schoolPages}</span>
-                                    <button className="inv-page-btn" disabled={schoolPage >= schoolPages} onClick={() => setSchoolPage(p => p + 1)}>›</button>
-                                </div>
-                            )}
-                        </>
-                    )}
-
-                    {/* My Requisitions */}
-                    <div className="inv-my-req-section">
-                        <h3 className="inv-my-req-title">As minhas requisições</h3>
-                        {loadingReqs ? (
-                            <p className="inv-loading">A carregar...</p>
-                        ) : requisitions.length === 0 ? (
-                            <div className="inv-empty" style={{ padding: '24px' }}>
-                                <p style={{ margin: 0 }}>Ainda não tem requisições.</p>
-                            </div>
-                        ) : (
-                            <div className="inv-req-list">
-                                {requisitions.map(r => {
-                                    const s = REQ_STATUS[r.status] ?? { label: String(r.status), cls: '' }
-                                    return (
-                                        <div key={r.requisitionId} className="inv-req-card">
-                                            {r.itemImageUrl
-                                                ? <img src={r.itemImageUrl} alt={r.itemName} className="inv-req-img" />
-                                                : <div className="inv-req-img-placeholder">{(r.itemName ?? '?')[0]}</div>
-                                            }
-                                            <div className="inv-req-body">
-                                                <p className="inv-req-title">
-                                                    {r.itemName}
-                                                    {(r.variantColor || r.variantSize) && (
-                                                        <span style={{ fontWeight: 400, color: '#6b7280' }}>
-                                                            {' — '}{[r.variantColor, r.variantSize].filter(Boolean).join(' / ')}
-                                                        </span>
-                                                    )}
-                                                </p>
-                                                <div className="inv-req-meta">
-                                                    <span className="inv-req-meta-label">Qtd:</span>
-                                                    <span>{r.quantity}</span>
-                                                    <span className="inv-req-meta-label">Pedido em:</span>
-                                                    <span>{fmtDate(r.requestedAt)}</span>
-                                                    {r.needFrom && <>
-                                                        <span className="inv-req-meta-label">Necessário de:</span>
-                                                        <span>{fmtDate(r.needFrom)}{r.needUntil ? ` → ${fmtDate(r.needUntil)}` : ''}</span>
-                                                    </>}
-                                                    {r.expectedReturnDate && <>
-                                                        <span className="inv-req-meta-label">Devolver até:</span>
-                                                        <span>{fmtDate(r.expectedReturnDate)}</span>
-                                                    </>}
-                                                    {r.note && <>
-                                                        <span className="inv-req-meta-label">Nota:</span>
-                                                        <span>{r.note}</span>
-                                                    </>}
-                                                </div>
-                                            </div>
-                                            <div className="inv-req-actions">
-                                                <span className={`inv-status-pill ${s.cls}`}>{s.label}</span>
-                                                {r.status === 0 && (
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-danger btn-sm"
-                                                        onClick={() => handleCancelReq(r)}
-                                                    >
-                                                        Cancelar
-                                                    </button>
-                                                )}
-                                                {r.status === 1 && (
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-secondary btn-sm"
-                                                        onClick={() => openReturn(r)}
-                                                    >
-                                                        Devolver
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        )}
-                    </div>
-                </>
-            )}
-
-            {/* ═══════════════════════════════ COMUNIDADE TAB ════════════════════════════ */}
-            {tab === 'community' && (
-                <>
-                    <div className="inv-filter-bar">
-                        <input
-                            className="inv-search-input"
-                            placeholder="Pesquisar artigos..."
-                            value={searchInput}
-                            onChange={e => handleSearchInput(e.target.value)}
-                        />
-                        <select
-                            className="inv-filter-select"
-                            value={categoryId}
-                            onChange={e => { setCategoryId(e.target.value); setCommPage(1) }}
-                        >
-                            <option value="">Todas as categorias</option>
-                            {categories.map(c => (
-                                <option key={c.categoryId} value={c.categoryId}>{c.catgName}</option>
-                            ))}
-                        </select>
-                        <input
-                            className="inv-price-input"
-                            type="number"
-                            placeholder="Preço máx."
-                            min="0"
-                            step="0.01"
-                            value={maxPriceInput}
-                            onChange={e => handleMaxPriceInput(e.target.value)}
-                        />
+                    </>
+                ) : (
+                    // tab === 'me' — sem filtros, apenas botão para anunciar
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
                         <button
                             type="button"
                             className="btn btn-primary"
@@ -455,56 +309,62 @@ export default function ParentInventoryPage() {
                             + Anunciar
                         </button>
                     </div>
+                )}
+            </div>
 
-                    {loadingComm ? (
+                    {loadingMarketplace ? (
                         <p className="inv-loading">A carregar...</p>
-                    ) : commListError ? (
-                        <p className="inv-error">{commListError}</p>
-                    ) : commItems.length === 0 ? (
+                    ) : marketplaceError ? (
+                        <p className="inv-error">{marketplaceError}</p>
+                    ) : marketplaceItems.length === 0 ? (
                         <div className="inv-empty">
-                            <div className="inv-empty-icon">🏷️</div>
-                            <p>Nenhum artigo encontrado.</p>
+                            <div className="inv-empty-icon">📦</div>
+                            <p>Nenhum artigo encontrado no marketplace.</p>
                         </div>
                     ) : (
                         <>
                             <div className="inv-grid">
-                                {commItems.map(card => (
-                                    <div key={card.itemId} className="inv-card" onClick={() => navigate(`/parent/inventario/${card.itemId}`)}>
-                                        {card.imageUrl
-                                            ? <img src={card.imageUrl} alt={card.name} className="inv-card-img" />
-                                            : <div className="inv-card-img-placeholder">{(card.name ?? '?')[0]}</div>
-                                        }
-                                        <div className="inv-card-body">
-                                            {card.categoryName && <span className="inv-card-category">{card.categoryName}</span>}
-                                            <p className="inv-card-name">{card.name}</p>
-                                            {card.description && <p className="inv-card-desc">{card.description}</p>}
-                                        </div>
-                                        <div className="inv-card-footer">
-                                            <div className="inv-card-meta">
-                                                {card.lowestPrice != null && <span className="inv-price">{fmtPrice(card.lowestPrice)}</span>}
-                                                {card.ownerName && <span className="inv-owner-name">{card.ownerName}</span>}
+                                {(tab === 'me' ? myItems : marketplaceItems).map(card => {
+                                    const id   = card.itemId ?? card.ItemId ?? card.itemId
+                                    const img  = (card.images ?? card.Images ?? [])[0]?.imageUrl ?? card.imageUrl
+                                    const name = card.name ?? card.Name ?? card.itemName
+                                    const desc = card.description ?? card.Description
+                                    const cat  = card.category?.catgName ?? card.Category?.CatgName ?? card.categoryName
+                                    const vc   = card.variantCount ?? card.VariantCount ?? 0
+                                    const fromSchool = card.fromSchool ?? card.FromSchool
+                                    return (
+                                        <div key={id} className="inv-card" onClick={() => navigate(`/parent/inventario/${id}`)}>
+                                            {fromSchool && <div className="inv-school-badge">ENT'ARTES</div>}
+                                            {img
+                                                ? <img src={img} alt={name} className="inv-card-img" />
+                                                : <div className="inv-card-img-placeholder">{(name ?? '?')[0]}</div>
+                                            }
+                                            <div className="inv-card-body">
+                                                {cat && <span className="inv-card-category">{cat}</span>}
+                                                <p className="inv-card-name">{name}</p>
+                                                {desc && <p className="inv-card-desc">{desc}</p>}
+                                            </div>
+                                            <div className="inv-card-footer">
+                                                <div className="inv-card-meta">{vc} var.</div>
+                                                <span style={{ fontSize: '0.8rem', color: '#9ca3af' }}>Ver →</span>
                                             </div>
                                         </div>
-                                        {(card.contactPhone || card.contactEmail) && (
-                                            <div className="inv-contact-row" style={{ padding: '0 14px 12px' }}>
-                                                {card.contactPhone && <span className="inv-contact-chip">📞 {card.contactPhone}</span>}
-                                                {card.contactEmail && <span className="inv-contact-chip">✉ {card.contactEmail}</span>}
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
+                                    )
+                                })}
                             </div>
-                            {commPages > 1 && (
+                            {Math.ceil(marketplaceTotal / PAGE_SIZE) > 1 && (
                                 <div className="inv-pagination">
-                                    <button className="inv-page-btn" disabled={commPage <= 1} onClick={() => setCommPage(p => p - 1)}>‹</button>
-                                    <span className="inv-page-info">{commPage} / {commPages}</span>
-                                    <button className="inv-page-btn" disabled={commPage >= commPages} onClick={() => setCommPage(p => p + 1)}>›</button>
+                                    <button className="inv-page-btn" disabled={marketplacePage <= 1} onClick={() => setMarketplacePage(p => p - 1)}>‹</button>
+                                    <span className="inv-page-info">{marketplacePage} / {Math.ceil(marketplaceTotal / PAGE_SIZE)}</span>
+                                    <button className="inv-page-btn" disabled={marketplacePage >= Math.ceil(marketplaceTotal / PAGE_SIZE)} onClick={() => setMarketplacePage(p => p + 1)}>›</button>
                                 </div>
                             )}
                         </>
                     )}
                 </>
             )}
+
+            {/* legacy community tab removed */}
 
             {/* ═══════════════════════ RETURN MODAL ══════════════════════════════════════ */}
             <Modal
@@ -599,7 +459,7 @@ export default function ParentInventoryPage() {
                         </select>
                     </div>
 
-                    <p style={{ margin: '4px 0 0', fontWeight: 600, fontSize: '0.9rem', color: '#374151' }}>Contacto</p>
+                    <label className="inv-form-label" style={{ margin: '8px 0 6px' }}>Contacto</label>
                     <div className="inv-form-row-3">
                         <div className="inv-form-group">
                             <label className="inv-form-label">Telefone</label>

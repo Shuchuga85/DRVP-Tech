@@ -1,5 +1,6 @@
-﻿using DanceSchoolApp.Server.DTOs;
+using DanceSchoolApp.Server.DTOs;
 using DanceSchoolApp.Server.DTOs.Classes;
+using DanceSchoolApp.Server.Services;
 using DanceSchoolApp.Server.Services.Classes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
@@ -14,13 +15,15 @@ namespace DanceSchoolApp.Server.Controllers.Classes
     public class CoachClassController : ControllerBase
     {
         private readonly CoachClassService _coachClassService;
+        private readonly AppSettingService _appSettingService;
 
-        public CoachClassController(CoachClassService coachClassService)
+        public CoachClassController(CoachClassService coachClassService, AppSettingService appSettingService)
         {
             _coachClassService = coachClassService;
+            _appSettingService = appSettingService;
         }
 
-        //  GET /api/coachclasses 
+        //  GET /api/coachclasses
         // Staff use — returns all classes regardless of status.
         [Authorize(Roles = "staff")]
         [HttpGet]
@@ -29,19 +32,17 @@ namespace DanceSchoolApp.Server.Controllers.Classes
             try
             {
                 var result = await _coachClassService.GetAllAsync(query);
-
-                if (result.TotalCount == 0)
-                    return NoContent();
-
+                if (result.TotalCount == 0) return NoContent();
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
             }
         }
 
-        //  GET /api/coachclasses/{id} 
+        //  GET /api/coachclasses/{id}
+        // Staff: unrestricted. Coach: own classes only. Parent: enrolled students only.
         [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
@@ -49,70 +50,78 @@ namespace DanceSchoolApp.Server.Controllers.Classes
             try
             {
                 var result = await _coachClassService.GetByIdAsync(id);
+
+                if (!IsStaff())
+                {
+                    var callerId = GetUserId();
+                    bool allowed = false;
+
+                    if (User.IsInRole("coach"))
+                        allowed = result.CoachId == callerId;
+                    else if (User.IsInRole("parent"))
+                        allowed = await _coachClassService.IsParentOfClassAsync(callerId, id);
+
+                    if (!allowed) return Forbid();
+                }
+
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            catch (Exception) { return StatusCode(500, "An unexpected error occurred."); }
         }
 
-        //  GET /api/coachclasses/open 
-        // Parent use — returns Approved classes with available spots.
+        //  GET /api/coachclasses/join-class-status
+        [Authorize]
+        [HttpGet("join-class-status")]
+        public async Task<IActionResult> GetJoinClassStatus()
+        {
+            var enabled = await _appSettingService.GetBoolAsync("join_class_enabled", defaultValue: true);
+            return Ok(new { enabled });
+        }
+
+        //  GET /api/coachclasses/open
+        // Parent use — Approved classes with available spots.
         [Authorize(Roles = "staff,parent")]
         [HttpGet("open")]
         public async Task<IActionResult> GetOpenClasses()
         {
+            if (!await _appSettingService.GetBoolAsync("join_class_enabled", defaultValue: true))
+                return StatusCode(StatusCodes.Status423Locked,
+                    "A funcionalidade de inscrição em aulas está desativada.");
+
             try
             {
                 var result = await _coachClassService.GetOpenClassesAsync();
-
-                if (!result.Any())
-                    return NoContent();
-
+                if (!result.Any()) return NoContent();
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(500, "An unexpected error occurred.");
             }
         }
 
-        //  GET /api/coachclasses/status/{status} 
-        // Staff use — filter classes by status.
-        // Status values: 0=Requested, 1=Approved, 2=Rejected,
-        //                3=Cancelled, 4=Finished, 5=Validated, 6=Pending, 7=StaffApproved
+        //  GET /api/coachclasses/status/{status}
         [Authorize(Roles = "staff")]
         [HttpGet("status/{status}")]
         public async Task<IActionResult> GetByStatus(byte status)
         {
             if (!Enum.IsDefined(typeof(CoachClassStatus), status))
-                return BadRequest($"Invalid status value '{status}'. " +
-                    "Valid values: 0=Requested, 1=Approved, 2=Rejected, " +
-                    "3=Cancelled, 4=Finished, 5=Validated, 6=Pending, 7=StaffApproved.");
+                return BadRequest($"Invalid status value '{status}'.");
 
             try
             {
-                var result = await _coachClassService
-                    .GetByStatusAsync((CoachClassStatus)status);
-
-                if (!result.Any())
-                    return NoContent();
-
+                var result = await _coachClassService.GetByStatusAsync((CoachClassStatus)status);
+                if (!result.Any()) return NoContent();
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(500, "An unexpected error occurred.");
             }
         }
 
-        //  GET /api/coachclasses/parent/{parentUserId} 
-        // Parent use — returns all classes where this parent's students are enrolled.
+        //  GET /api/coachclasses/parent/{parentUserId}
         [Authorize(Roles = "staff,parent")]
         [HttpGet("parent/{parentUserId}")]
         public async Task<IActionResult> GetByParent(int parentUserId)
@@ -123,24 +132,14 @@ namespace DanceSchoolApp.Server.Controllers.Classes
             try
             {
                 var result = await _coachClassService.GetByParentAsync(parentUserId);
-
-                if (!result.Any())
-                    return NoContent();
-
+                if (!result.Any()) return NoContent();
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            catch (Exception) { return StatusCode(500, "An unexpected error occurred."); }
         }
 
-        //  GET /api/coachclasses/coach/{coachId} 
-        // Coach use — view own schedule. Staff can view any coach's schedule.
+        //  GET /api/coachclasses/coach/{coachId}
         [Authorize(Roles = "staff,coach")]
         [HttpGet("coach/{coachId}")]
         public async Task<IActionResult> GetByCoach(int coachId)
@@ -151,79 +150,60 @@ namespace DanceSchoolApp.Server.Controllers.Classes
             try
             {
                 var result = await _coachClassService.GetByCoachAsync(coachId);
-
-                if (!result.Any())
-                    return NoContent();
-
+                if (!result.Any()) return NoContent();
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            catch (Exception) { return StatusCode(500, "An unexpected error occurred."); }
         }
 
-        //  POST /api/coachclasses 
-        // Parent use — creates a class request with at least one student.
-        // Runs all conflict checks before inserting.
+        //  POST /api/coachclasses
+        // Parent use — requests an individual class for one of their own students.
+        // MaxParticipants is enforced to 1 server-side.
+        // Returns 423 Locked when join_class_enabled is false.
         [Authorize(Roles = "parent")]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CoachClassCreateRequest request)
+        public async Task<IActionResult> ParentCreate([FromBody] CoachClassParentCreateRequest request)
         {
+            if (!await _appSettingService.GetBoolAsync("join_class_enabled", defaultValue: true))
+                return StatusCode(StatusCodes.Status423Locked,
+                    "A funcionalidade de pedido de aulas está desativada.");
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             try
             {
-                var newId = await _coachClassService.CreateAsync(request, GetUserId());
-                return CreatedAtAction(nameof(GetById), new { id = newId },
-                    new { classId = newId });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
-        }
-
-        //  Helpers 
-        private int GetUserId() =>
-            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-
-        private bool IsStaff() => User.IsInRole("staff");
-
-        //  PATCH /api/coachclasses/{id}/staff-respond 
-        // Staff use — Requested → StaffApproved (approve=true) or Rejected (approve=false).
-        [Authorize(Roles = "staff")]
-        [HttpPatch("{id}/staff-respond")]
-        public async Task<IActionResult> StaffRespond(int id, [FromBody] StaffRespondRequest request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            try
-            {
-                await _coachClassService.StaffRespondAsync(id, request.Approve, request.Reason);
-                return NoContent();
+                var newId = await _coachClassService.ParentCreateAsync(request, GetUserId());
+                return CreatedAtAction(nameof(GetById), new { id = newId }, new { classId = newId });
             }
             catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
             catch (InvalidOperationException ex) { return Conflict(ex.Message); }
-            catch (Exception ex) { return StatusCode(500, ex.Message); }
+            catch (Exception) { return StatusCode(500, "An unexpected error occurred."); }
         }
 
-        //  PATCH /api/coachclasses/{id}/coach-respond 
-        // Coach use — StaffApproved → Approved (accept=true) or Rejected (accept=false).
+        //  POST /api/coachclasses/coach-create
+        // Coach use — creates an individual or group class, selecting students with the modality.
+        // Parents of enrolled students must then approve enrollment before staff review.
+        [Authorize(Roles = "coach")]
+        [HttpPost("coach-create")]
+        public async Task<IActionResult> CoachCreate([FromBody] CoachClassCoachCreateRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var newId = await _coachClassService.CoachCreateAsync(request, GetUserId());
+                return CreatedAtAction(nameof(GetById), new { id = newId }, new { classId = newId });
+            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            catch (InvalidOperationException ex) { return Conflict(ex.Message); }
+            catch (Exception) { return StatusCode(500, "An unexpected error occurred."); }
+        }
+
+        //  PATCH /api/coachclasses/{id}/coach-respond
+        // Coach use — Requested → CoachApproved or Rejected (parent-created classes only).
         [Authorize(Roles = "coach")]
         [HttpPatch("{id}/coach-respond")]
         public async Task<IActionResult> CoachRespond(int id, [FromBody] CoachRespondRequest request)
@@ -241,11 +221,45 @@ namespace DanceSchoolApp.Server.Controllers.Classes
             catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
             catch (UnauthorizedAccessException) { return Forbid(); }
             catch (InvalidOperationException ex) { return Conflict(ex.Message); }
-            catch (Exception ex) { return StatusCode(500, ex.Message); }
+            catch (Exception) { return StatusCode(500, "An unexpected error occurred."); }
         }
 
-        //  PATCH /api/coachclasses/{id}/cancel 
-        //  Staff use — transitions Requested or Approved → Cancelled.
+        //  PATCH /api/coachclasses/{id}/staff-respond
+        // Staff use — CoachApproved → Approved or Rejected.
+        [Authorize(Roles = "staff")]
+        [HttpPatch("{id}/staff-respond")]
+        public async Task<IActionResult> StaffRespond(int id, [FromBody] StaffRespondRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                await _coachClassService.StaffRespondAsync(id, request.Approve, request.Reason);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            catch (InvalidOperationException ex) { return Conflict(ex.Message); }
+            catch (Exception) { return StatusCode(500, "An unexpected error occurred."); }
+        }
+
+        //  PATCH /api/coachclasses/{id}/update-details
+        // Staff use — update studio, start/end datetime; notifies coach and parents on change.
+        [Authorize(Roles = "staff")]
+        [HttpPatch("{id}/update-details")]
+        public async Task<IActionResult> UpdateDetails(int id, [FromBody] CoachClassUpdateDetailsRequest request)
+        {
+            try
+            {
+                await _coachClassService.UpdateDetailsAsync(id, request);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            catch (InvalidOperationException ex) { return Conflict(ex.Message); }
+            catch (Exception) { return StatusCode(500, "An unexpected error occurred."); }
+        }
+
+        //  PATCH /api/coachclasses/{id}/cancel
         [Authorize(Roles = "staff")]
         [HttpPatch("{id}/cancel")]
         public async Task<IActionResult> Cancel(int id)
@@ -255,27 +269,15 @@ namespace DanceSchoolApp.Server.Controllers.Classes
                 await _coachClassService.CancelAsync(id);
                 return NoContent();
             }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            catch (InvalidOperationException ex) { return Conflict(ex.Message); }
+            catch (Exception) { return StatusCode(500, "An unexpected error occurred."); }
         }
 
-        //  PATCH /api/coachclasses/{id}/coach-validate 
-        // Coach use — confirms or denies they taught the class.
-        // Only available on Finished classes.
+        //  PATCH /api/coachclasses/{id}/coach-validate
         [Authorize(Roles = "coach")]
         [HttpPatch("{id}/coach-validate")]
-        public async Task<IActionResult> CoachValidate(int id,
-            [FromBody] CoachValidateRequest request)
+        public async Task<IActionResult> CoachValidate(int id, [FromBody] CoachValidateRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -288,11 +290,10 @@ namespace DanceSchoolApp.Server.Controllers.Classes
             catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
             catch (UnauthorizedAccessException ex) { return Forbid(ex.Message); }
             catch (InvalidOperationException ex) { return Conflict(ex.Message); }
-            catch (Exception ex) { return StatusCode(500, ex.Message); }
+            catch (Exception) { return StatusCode(500, "An unexpected error occurred."); }
         }
 
-        //  PATCH /api/coachclasses/{id}/staff-validate 
-        // Staff use — final sign-off. Transitions Pending → Validated.
+        //  PATCH /api/coachclasses/{id}/staff-validate
         [Authorize(Roles = "staff")]
         [HttpPatch("{id}/staff-validate")]
         public async Task<IActionResult> StaffValidate(int id, [FromBody] StaffValidateRequest request)
@@ -307,7 +308,12 @@ namespace DanceSchoolApp.Server.Controllers.Classes
             }
             catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
             catch (InvalidOperationException ex) { return Conflict(ex.Message); }
-            catch (Exception ex) { return StatusCode(500, ex.Message); }
+            catch (Exception) { return StatusCode(500, "An unexpected error occurred."); }
         }
+
+        private int GetUserId() =>
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        private bool IsStaff() => User.IsInRole("staff");
     }
 }

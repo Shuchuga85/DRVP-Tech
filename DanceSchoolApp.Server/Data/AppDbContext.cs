@@ -186,6 +186,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.StaffValidatedAt).HasColumnName("staff_validated_at");
             entity.Property(e => e.StartDatetime).HasColumnName("start_datetime");
             entity.Property(e => e.Status).HasColumnName("status");
+            entity.Property(e => e.ClassOrigin)
+                  .HasDefaultValue((byte)0)
+                  .HasColumnName("class_origin");
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.CoachClasses)
                 .HasForeignKey(d => d.CreatedBy)
@@ -434,6 +437,10 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.JoinedAt).HasColumnName("joined_at");
             entity.Property(e => e.ParentValidatedAt).HasColumnName("parent_validated_at");
             entity.Property(e => e.ValidationStatus).HasColumnName("validation_status");
+            entity.Property(e => e.ParentEnrollmentStatus)
+                  .HasDefaultValue((byte)0)
+                  .HasColumnName("parent_enrollment_status");
+            entity.Property(e => e.ParentEnrollmentAt).HasColumnName("parent_enrollment_at");
 
             entity.HasOne(d => d.IdCoachClassNavigation).WithMany(p => p.Participants)
                 .HasForeignKey(d => d.IdCoachClass)
@@ -512,6 +519,25 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.PersonInfoId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Student_PersonInfo");
+
+            entity.HasMany(d => d.IdModalities).WithMany(p => p.IdStudents)
+                .UsingEntity<Dictionary<string, object>>(
+                    "StudentModality",
+                    r => r.HasOne<Modality>().WithMany()
+                        .HasForeignKey("modality_id")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK_StudentModality_Modality"),
+                    l => l.HasOne<Student>().WithMany()
+                        .HasForeignKey("student_id")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK_StudentModality_Student"),
+                    j =>
+                    {
+                        j.HasKey("student_id", "modality_id").HasName("PK_Student_Modality");
+                        j.ToTable("Student_Modality");
+                        j.IndexerProperty<int>("student_id").HasColumnName("student_id");
+                        j.IndexerProperty<int>("modality_id").HasColumnName("modality_id");
+                    });
         });
 
         modelBuilder.Entity<Studio>(entity =>

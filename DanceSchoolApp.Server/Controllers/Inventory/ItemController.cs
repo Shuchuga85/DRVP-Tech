@@ -1,4 +1,4 @@
-﻿using DanceSchoolApp.Server.DTOs;
+using DanceSchoolApp.Server.DTOs;
 using DanceSchoolApp.Server.DTOs.Inventory;
 using DanceSchoolApp.Server.Services.Inventory;
 using Microsoft.AspNetCore.Authorization;
@@ -87,7 +87,25 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+            }
+        }
+
+        //  GET /api/items/mine
+        [HttpGet("mine")]
+        [Authorize(Roles = "parent,staff,admin")]
+        public async Task<IActionResult> GetMyItems([FromQuery] PagedQuery? query = null, [FromQuery] int? categoryId = null, [FromQuery] string? search = null)
+        {
+            try
+            {
+                var userId = GetUserId();
+                var result = await _itemService.GetItemsByOwnerAsync(userId, query ?? new PagedQuery(), categoryId, search);
+                // Always return OK with the result (empty lists should be an empty array, not 204)
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
             }
         }
 
@@ -107,7 +125,7 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
             }
         }
 
@@ -128,7 +146,7 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
             }
         }
 
@@ -149,7 +167,7 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
             }
         }
 
@@ -169,7 +187,7 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
             }
         }
 
@@ -202,7 +220,7 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
             }
         }
 
@@ -222,7 +240,7 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
             }
         }
 
@@ -251,7 +269,7 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
             }
         }
 
@@ -277,7 +295,7 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
             }
         }
 
@@ -344,7 +362,7 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
                 if (filePath != null && System.IO.File.Exists(filePath))
                     System.IO.File.Delete(filePath);
 
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
             }
         }
 
@@ -370,7 +388,7 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
             }
         }
 
@@ -398,7 +416,7 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
             }
         }
 
@@ -427,7 +445,7 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
             }
         }
 
@@ -456,7 +474,7 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
             }
         }
 
@@ -486,7 +504,7 @@ namespace DanceSchoolApp.Server.Controllers.Inventory
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
             }
         }
     }

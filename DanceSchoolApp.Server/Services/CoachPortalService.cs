@@ -62,7 +62,7 @@ namespace DanceSchoolApp.Server.Services
             var classesUpcoming = await _context.CoachClasses
                 .CountAsync(c =>
                     c.IdCoach == coachId &&
-                    (c.Status == (byte)CoachClassStatus.StaffApproved ||
+                    (c.Status == (byte)CoachClassStatus.CoachApproved ||
                      c.Status == (byte)CoachClassStatus.Approved) &&
                     c.StartDatetime > now);
 
@@ -80,7 +80,7 @@ namespace DanceSchoolApp.Server.Services
                         .ThenInclude(s => s.PersonInfo)
                 .Where(c =>
                     c.IdCoach == coachId &&
-                    (c.Status == (byte)CoachClassStatus.StaffApproved ||
+                    (c.Status == (byte)CoachClassStatus.CoachApproved ||
                      c.Status == (byte)CoachClassStatus.Approved) &&
                     c.StartDatetime > now)
                 .OrderBy(c => c.StartDatetime)
@@ -164,7 +164,7 @@ namespace DanceSchoolApp.Server.Services
                         .ThenInclude(s => s.PersonInfo)
                 .Where(c =>
                     c.IdCoach == coachId &&
-                    c.Status == (byte)CoachClassStatus.StaffApproved);
+                    c.Status == (byte)CoachClassStatus.Requested);
 
             var total = await dbQuery.CountAsync();
 
@@ -250,7 +250,35 @@ namespace DanceSchoolApp.Server.Services
             };
         }
 
-        //  Private helpers 
+        //  Coach-create: student picker
+
+        /// <summary>
+        /// Returns active, accepted students enrolled in the given modality.
+        /// Used by the coach to pick students when creating a group/individual class.
+        /// </summary>
+        public async Task<List<CoachStudentPickerItem>> GetStudentsByModalityAsync(int modalityId)
+        {
+            var students = await _context.Students
+                .Include(s => s.PersonInfo)
+                .Include(s => s.IdModalities)
+                .Where(s =>
+                    s.IsActive &&
+                    s.AcceptanceStatus == 1 &&
+                    s.IdModalities.Any(m => m.ModalityId == modalityId))
+                .OrderBy(s => s.PersonInfo != null ? s.PersonInfo.LastName : "")
+                .ThenBy(s => s.PersonInfo != null ? s.PersonInfo.FirstName : "")
+                .ToListAsync();
+
+            return students.Select(s => new CoachStudentPickerItem
+            {
+                StudentId   = s.StudentId,
+                StudentName = s.PersonInfo is not null
+                    ? $"{s.PersonInfo.FirstName} {s.PersonInfo.LastName}".Trim()
+                    : $"Aluno {s.StudentId}",
+            }).ToList();
+        }
+
+        //  Private helpers
 
         private static string ResolveCoachName(Coach coach)
         {

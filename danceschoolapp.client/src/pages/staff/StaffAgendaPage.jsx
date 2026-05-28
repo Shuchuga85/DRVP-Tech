@@ -1,11 +1,16 @@
-// GET /api/staff/agenda?from={weekStart}&to={weekEnd}
-// Filters: studioId, status
+import AgendaCalendar from '../../components/common/AgendaCalendar'
+import { getAgenda } from '../../services/staffService'
+
+const fetchAgenda = (from, to) => getAgenda({ from, to })
+
 function StaffAgendaPage() {
     return (
-        <section className="dashboard-page-card">
-            <h2>Agenda Global</h2>
-            <p>Visualizar calendário semanal de todas as aulas.</p>
-        </section>
+        <AgendaCalendar
+            title="Agenda Global"
+            subtitle="Visualize todas as aulas marcadas na semana."
+            fetchFn={fetchAgenda}
+            showCoach
+        />
     )
 }
 

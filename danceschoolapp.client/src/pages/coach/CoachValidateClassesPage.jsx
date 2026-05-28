@@ -1,8 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import ClassValidationCard from '../../components/common/ClassValidationCard'
 import Modal from '../../components/common/Modal'
-import { getCoachValidate, coachAccept, coachReject, coachValidate } from '../../services/coachClassesService'
+import Button from '../../components/common/Button'
+import Select from '../../components/common/Select'
+import MonthCalendar, { isoDate, getMonthRange, fmtDateLong } from '../../components/common/MonthCalendar'
+import { getCoachValidate, coachAccept, coachReject, coachValidate, getStudentsByModality, coachCreateClass } from '../../services/coachClassesService'
+import { getModalities } from '../../services/modalitiesService'
 import '../../styles/ValidateClasses.css'
+import '../../styles/ParentClasses.css'
 
 function CoachValidateClassesPage() {
     const [activeTab, setActiveTab] = useState('requests')
@@ -14,6 +19,21 @@ function CoachValidateClassesPage() {
     const [rejectTarget, setRejectTarget] = useState(null)
     const [rejectReason, setRejectReason] = useState('')
     const [rejecting, setRejecting] = useState(false)
+
+    // ===== Coach-create class state =====
+    const [modalities, setModalities]         = useState([])
+    const [createModality, setCreateModality] = useState('')
+    const [createMonth, setCreateMonth]       = useState(new Date())
+    const [createSelectedDate, setCreateSelectedDate] = useState(null)  // "YYYY-MM-DD"
+    const [createStart, setCreateStart]       = useState('10:00')
+    const [createEnd, setCreateEnd]           = useState('11:00')
+    const [createMaxParts, setCreateMaxParts] = useState(1)
+    const [allStudents, setAllStudents]       = useState([])
+    const [selectedStudents, setSelectedStudents] = useState(new Set())
+    const [studentsLoading, setStudentsLoading]   = useState(false)
+    const [createSubmitting, setCreateSubmitting] = useState(false)
+    const [createError, setCreateError]           = useState('')
+    const [createSuccess, setCreateSuccess]       = useState(false)
 
     const fetchAulas = async (tab) => {
         setLoading(true)
@@ -96,12 +116,74 @@ function CoachValidateClassesPage() {
         }
     }
 
+    // Load modalities once
+    useEffect(() => {
+        getModalities().then(data => {
+            const items = Array.isArray(data) ? data : (data?.Items ?? data?.items ?? [])
+            setModalities(items)
+        }).catch(() => {})
+    }, [])
+
+    // Load students when modality changes
+    useEffect(() => {
+        if (!createModality) { setAllStudents([]); return }
+        setStudentsLoading(true); setSelectedStudents(new Set())
+        getStudentsByModality(Number(createModality))
+            .then(data => setAllStudents(Array.isArray(data) ? data : []))
+            .catch(() => setAllStudents([]))
+            .finally(() => setStudentsLoading(false))
+    }, [createModality])
+
+    const modalityOptions = useMemo(() =>
+        modalities.map(m => ({ value: String(m.ModalityId ?? m.modalityId ?? ''), label: m.Name ?? m.name ?? '' }))
+    , [modalities])
+
+    const toggleStudent = (id) => {
+        setSelectedStudents(prev => {
+            const next = new Set(prev)
+            next.has(id) ? next.delete(id) : next.add(id)
+            return next
+        })
+    }
+
+    const prevCreateMonth = () => setCreateMonth(prev => {
+        const d = new Date(prev); d.setDate(1); d.setMonth(d.getMonth() - 1); return d
+    })
+    const nextCreateMonth = () => setCreateMonth(prev => {
+        const d = new Date(prev); d.setDate(1); d.setMonth(d.getMonth() + 1); return d
+    })
+
+    const handleCoachCreate = async (e) => {
+        e.preventDefault()
+        if (!createModality)             { setCreateError('Selecione uma modalidade.'); return }
+        if (!createSelectedDate)         { setCreateError('Selecione um dia no calendário.'); return }
+        if (selectedStudents.size === 0) { setCreateError('Selecione pelo menos um aluno.'); return }
+        if (createEnd <= createStart)    { setCreateError('A hora de fim deve ser depois da hora de início.'); return }
+        setCreateSubmitting(true); setCreateError('')
+        try {
+            await coachCreateClass({
+                modalityId:      Number(createModality),
+                startDatetime:   `${createSelectedDate}T${createStart}:00`,
+                endDatetime:     `${createSelectedDate}T${createEnd}:00`,
+                maxParticipants: Number(createMaxParts),
+                studentIds:      [...selectedStudents],
+            })
+            setCreateSuccess(true)
+            setSelectedStudents(new Set())
+            setCreateSelectedDate(null)
+        } catch (err) {
+            setCreateError(err.message)
+        } finally {
+            setCreateSubmitting(false)
+        }
+    }
+
     const isRequests = activeTab === 'requests'
 
     return (
         <section className="dashboard-page-card">
-            <h2>Validar Aulas</h2>
-            <p>Aceite pedidos de aula aprovados pela direção e valide aulas pendentes após o prazo de 48h.</p>
+            <h2>Validar Coachings</h2>
+            <p>Aceite pedidos de coaching aprovados pela direção e valide coachings pendentes após o prazo de 48h.</p>
 
             <div className="validate-kpi-row" style={{ marginTop: '20px' }}>
                 <div className="validate-kpi">
@@ -124,7 +206,7 @@ function CoachValidateClassesPage() {
                     className={`validate-tab ${activeTab === 'requests' ? 'validate-tab--active' : ''}`}
                     onClick={() => setActiveTab('requests')}
                 >
-                    Pedidos de Aula ({stats.requests})
+                    Pedidos de Coaching ({stats.requests})
                 </button>
                 <button
                     type="button"
@@ -133,49 +215,221 @@ function CoachValidateClassesPage() {
                 >
                     Validações ({stats.validations})
                 </button>
+                <button
+                    type="button"
+                    className={`validate-tab ${activeTab === 'criar' ? 'validate-tab--active' : ''}`}
+                    onClick={() => { setActiveTab('criar'); setCreateSuccess(false); setCreateError('') }}
+                >
+                    Criar Coaching
+                </button>
             </div>
 
-            {loading && (
-                <div className="validate-empty">
-                    <p>Carregando...</p>
-                </div>
+            {/* ===== Requests / Validations tab content ===== */}
+            {activeTab !== 'criar' && (
+                <>
+                    {loading && (
+                        <div className="validate-empty">
+                            <p>Carregando...</p>
+                        </div>
+                    )}
+
+                    {!loading && aulas.length === 0 && (
+                        <div className="validate-empty">
+                            <div className="validate-empty-icon">{'\u2713'}</div>
+                            <h3>{isRequests ? 'Sem pedidos pendentes' : 'Sem validações pendentes'}</h3>
+                            <p>
+                                {isRequests
+                                    ? 'Não há coachings aprovados pela direção a aguardar a sua resposta.'
+                                    : 'Não há coachings em estado pendente para validar.'}
+                            </p>
+                        </div>
+                    )}
+
+                    {!loading && aulas.map(aula => {
+                        const classId = aula.ClassId ?? aula.classId ?? aula.id
+                        return (
+                            <ClassValidationCard
+                                key={classId}
+                                aula={aula}
+                                tipo={isRequests ? 'coach-request' : 'professor'}
+                                variant={isRequests ? 'purple' : 'orange'}
+                                showParticipants
+                                showCoachValidation={!isRequests}
+                                showParentTally={!isRequests}
+                                onConfirm={() => isRequests ? handleAccept(classId) : handleValidar(classId, true)}
+                                onReject={() => isRequests ? openRejectModal(classId) : handleValidar(classId, false)}
+                                confirmLabel={isRequests ? 'Aceitar Coaching' : 'Realizada'}
+                                rejectLabel={isRequests ? 'Recusar' : 'Não realizada'}
+                            />
+                        )
+                    })}
+                </>
             )}
 
-            {!loading && aulas.length === 0 && (
-                <div className="validate-empty">
-                    <div className="validate-empty-icon">{'\u2713'}</div>
-                    <h3>{isRequests ? 'Sem pedidos pendentes' : 'Sem validações pendentes'}</h3>
-                    <p>
-                        {isRequests
-                            ? 'Não há aulas aprovadas pela direção a aguardar a sua resposta.'
-                            : 'Não há aulas em estado pendente para validar.'}
-                    </p>
+            {/* ===== Criar Coaching tab content ===== */}
+            {activeTab === 'criar' && (
+                <div style={{ marginTop: '16px' }}>
+                    {createSuccess ? (
+                        <div className="validate-empty" style={{ padding: '24px' }}>
+                            <div className="validate-empty-icon">✓</div>
+                            <h3>Coaching criado!</h3>
+                            <p>Os EE dos alunos serão notificados para aprovar a inscrição.</p>
+                            <Button variant="secondary" onClick={() => setCreateSuccess(false)} style={{ marginTop: '12px' }}>
+                                Criar outro coaching
+                            </Button>
+                        </div>
+                    ) : (
+                        <>
+                            <p className="tab-description">
+                                Selecione a modalidade e clique num dia para definir o horário e os alunos. Os EE serão notificados para confirmar.
+                            </p>
+
+                            {/* Modality filter */}
+                            <div className="pc-filter-bar">
+                                <div className="pc-filter-group">
+                                    <label className="pc-filter-label">Modalidade *</label>
+                                    <Select
+                                        value={createModality}
+                                        onChange={v => { setCreateModality(v); setCreateSelectedDate(null); setCreateError('') }}
+                                        placeholder="Selecione a modalidade"
+                                        options={modalityOptions}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Month calendar — all future days clickable */}
+                            {(() => {
+                                const todayIso = isoDate(new Date())
+                                const renderDay = (key, dayNum) => {
+                                    const isPast     = key < todayIso
+                                    const isSelected = key === createSelectedDate
+                                    return (
+                                        <div
+                                            key={key}
+                                            className={[
+                                                'pc-day-cell',
+                                                isPast     ? 'pc-day-cell--past'     : 'pc-day-cell--has-slot',
+                                                isSelected ? 'pc-day-cell--selected' : '',
+                                            ].join(' ').trim()}
+                                            onClick={() => {
+                                                if (isPast) return
+                                                setCreateSelectedDate(isSelected ? null : key)
+                                                setCreateError('')
+                                            }}
+                                        >
+                                            <span className="pc-day-num">{dayNum}</span>
+                                        </div>
+                                    )
+                                }
+                                return (
+                                    <MonthCalendar
+                                        month={createMonth}
+                                        onPrev={() => { prevCreateMonth(); setCreateSelectedDate(null) }}
+                                        onNext={() => { nextCreateMonth(); setCreateSelectedDate(null) }}
+                                        renderDay={renderDay}
+                                        loading={false}
+                                    />
+                                )
+                            })()}
+
+                            {!createSelectedDate && (
+                                <div className="validate-empty" style={{ padding: '20px' }}>
+                                    <p style={{ color: '#6b7280' }}>Clique num dia para definir o horário do coaching.</p>
+                                </div>
+                            )}
+
+                            {/* Form shown after day is selected */}
+                            {createSelectedDate && (
+                                <form onSubmit={handleCoachCreate} className="modal-form" style={{ marginTop: '16px', maxWidth: '520px' }}>
+                                    <h3 className="validate-section-heading" style={{ marginBottom: '12px' }}>
+                                        {fmtDateLong(createSelectedDate)}
+                                    </h3>
+
+                                    {/* Students */}
+                                    <div className="modal-field">
+                                        <label className="modal-label">Alunos *</label>
+                                        {!createModality ? (
+                                            <p style={{ fontSize: '0.875rem', color: 'var(--text-2)' }}>Selecione uma modalidade primeiro.</p>
+                                        ) : studentsLoading ? (
+                                            <p style={{ fontSize: '0.875rem', color: 'var(--text-2)' }}>Carregando alunos...</p>
+                                        ) : allStudents.length === 0 ? (
+                                            <p style={{ fontSize: '0.875rem', color: 'var(--text-2)' }}>Nenhum aluno inscrito nesta modalidade.</p>
+                                        ) : (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '200px', overflowY: 'auto', padding: '4px 0' }}>
+                                                {allStudents.map(s => {
+                                                    const sid = s.StudentId ?? s.studentId
+                                                    return (
+                                                        <label key={sid} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem' }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={selectedStudents.has(sid)}
+                                                                onChange={() => toggleStudent(sid)}
+                                                            />
+                                                            {s.StudentName ?? s.studentName}
+                                                        </label>
+                                                    )
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Max participants */}
+                                    <div className="modal-field">
+                                        <label className="modal-label">Número máximo de alunos *</label>
+                                        <input
+                                            type="number"
+                                            className="input"
+                                            min={1}
+                                            max={20}
+                                            value={createMaxParts}
+                                            onChange={e => setCreateMaxParts(Number(e.target.value))}
+                                        />
+                                    </div>
+
+                                    {/* Time range */}
+                                    <div style={{ display: 'flex', gap: '12px' }}>
+                                        <div className="modal-field" style={{ flex: 1 }}>
+                                            <label className="modal-label">Hora início *</label>
+                                            <input
+                                                type="time"
+                                                className="input"
+                                                value={createStart}
+                                                onChange={e => setCreateStart(e.target.value)}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="modal-field" style={{ flex: 1 }}>
+                                            <label className="modal-label">Hora fim *</label>
+                                            <input
+                                                type="time"
+                                                className="input"
+                                                value={createEnd}
+                                                onChange={e => setCreateEnd(e.target.value)}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {createError && <p className="admin-error">{createError}</p>}
+
+                                    <div className="modal-actions" style={{ marginTop: '16px' }}>
+                                        <Button type="button" variant="secondary" onClick={() => setCreateSelectedDate(null)}>
+                                            Cancelar
+                                        </Button>
+                                        <Button type="submit" variant="primary" disabled={createSubmitting}>
+                                            {createSubmitting ? 'A criar...' : 'Criar Coaching'}
+                                        </Button>
+                                    </div>
+                                </form>
+                            )}
+                        </>
+                    )}
                 </div>
             )}
-
-            {!loading && aulas.map(aula => {
-                const classId = aula.ClassId ?? aula.classId ?? aula.id
-
-                return (
-                    <ClassValidationCard
-                        key={classId}
-                        aula={aula}
-                        tipo={isRequests ? 'coach-request' : 'professor'}
-                        variant={isRequests ? 'purple' : 'orange'}
-                        showParticipants
-                        showCoachValidation={!isRequests}
-                        showParentTally={!isRequests}
-                        onConfirm={() => isRequests ? handleAccept(classId) : handleValidar(classId, true)}
-                        onReject={() => isRequests ? openRejectModal(classId) : handleValidar(classId, false)}
-                        confirmLabel={isRequests ? 'Aceitar Aula' : 'Realizada'}
-                        rejectLabel={isRequests ? 'Recusar' : 'Não realizada'}
-                    />
-                )
-            })}
 
             <Modal
                 open={!!rejectTarget}
-                title="Recusar pedido de aula"
+                title="Recusar pedido de coaching"
                 onClose={() => {
                     setRejectTarget(null)
                     setRejectReason('')

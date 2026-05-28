@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import ClassValidationCard from '../../components/common/ClassValidationCard'
 import Modal from '../../components/common/Modal'
-import { getValidateClasses, staffApprove, staffReject, staffValidate, cancelClass } from '../../services/staffService'
+import Button from '../../components/common/Button'
+import Select from '../../components/common/Select'
+import { getValidateClasses, staffApprove, staffReject, staffValidate, updateClassDetails } from '../../services/staffService'
+import { getStudios } from '../../services/studiosService'
 import '../../styles/ValidateClasses.css'
 
 function StaffValidateClassesPage() {
@@ -10,10 +13,22 @@ function StaffValidateClassesPage() {
     const [loading, setLoading] = useState(false)
     const [stats, setStats] = useState({ requested: 0, pending: 0 })
 
+    // Studios for edit modal
+    const [studios, setStudios] = useState([])
+
     // Reject modal state
     const [rejectTarget, setRejectTarget] = useState(null)
     const [rejectReason, setRejectReason] = useState('')
     const [rejecting, setRejecting] = useState(false)
+
+    // Edit modal state
+    const [editTarget, setEditTarget] = useState(null)
+    const [editStudioId, setEditStudioId] = useState('')
+    const [editStartDate, setEditStartDate] = useState('')
+    const [editStartTime, setEditStartTime] = useState('')
+    const [editEndTime, setEditEndTime] = useState('')
+    const [editError, setEditError] = useState('')
+    const [editSaving, setEditSaving] = useState(false)
 
     const fetchData = async () => {
         setLoading(true)
@@ -37,6 +52,51 @@ function StaffValidateClassesPage() {
         fetchData()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTab])
+
+    useEffect(() => {
+        getStudios()
+            .then(data => setStudios(Array.isArray(data) ? data : (data?.items ?? data?.Items ?? [])))
+            .catch(() => {})
+    }, [])
+
+    const openEditModal = (aula) => {
+        setEditTarget(aula)
+        const startDt = aula.StartDatetime ?? aula.startDatetime ?? ''
+        const endDt   = aula.EndDatetime   ?? aula.endDatetime   ?? ''
+        setEditStudioId(String(aula.StudioId ?? aula.studioId ?? ''))
+        setEditStartDate(startDt ? startDt.slice(0, 10) : '')
+        setEditStartTime(startDt ? startDt.slice(11, 16) : '')
+        setEditEndTime(endDt ? endDt.slice(11, 16) : '')
+        setEditError('')
+    }
+
+    const submitEdit = async (e) => {
+        e.preventDefault()
+        if (!editStartDate || !editStartTime || !editEndTime) {
+            setEditError('Preencha data e horários.')
+            return
+        }
+        if (editEndTime <= editStartTime) {
+            setEditError('A hora de fim deve ser depois da hora de início.');
+            return
+        }
+        const id = editTarget?.ClassId ?? editTarget?.classId
+        setEditSaving(true); setEditError('')
+        try {
+            const body = {
+                startDatetime: `${editStartDate}T${editStartTime}:00`,
+                endDatetime:   `${editStartDate}T${editEndTime}:00`,
+            }
+            if (editStudioId) body.studioId = Number(editStudioId)
+            await updateClassDetails(id, body)
+            setEditTarget(null)
+            fetchData()
+        } catch (err) {
+            setEditError(err.message)
+        } finally {
+            setEditSaving(false)
+        }
+    }
 
     const handleApprove = async (id) => {
         try {
@@ -77,7 +137,7 @@ function StaffValidateClassesPage() {
 
     const handleCancel = async (id) => {
         try {
-            await cancelClass(id)
+            await staffValidate(id, false)
             fetchData()
         } catch (e) { console.error(e) }
     }
@@ -86,13 +146,13 @@ function StaffValidateClassesPage() {
 
     return (
         <section className="dashboard-page-card">
-            <h2>Aulas</h2>
-            <p>Aprovar aulas requisitadas e validar aulas pendentes após o prazo de 48h.</p>
+            <h2>Coachings</h2>
+            <p>Aprovar coachings requisitados e validar coachings pendentes após o prazo de 48h.</p>
 
             {/* KPI cards */}
             <div className="validate-kpi-row" style={{ marginTop: '20px' }}>
                 <div className="validate-kpi">
-                    <span className="validate-kpi-label">Requisitadas</span>
+                    <span className="validate-kpi-label">Requisitados</span>
                     <span className="validate-kpi-value validate-kpi-value--purple">
                         {loading ? '\u2014' : stats.requested}
                     </span>
@@ -118,7 +178,7 @@ function StaffValidateClassesPage() {
                     className={`validate-tab ${activeTab === 'requested' ? 'validate-tab--active' : ''}`}
                     onClick={() => setActiveTab('requested')}
                 >
-                    Requisitadas
+                    Requisitados
                 </button>
                 <button
                     type="button"
@@ -142,8 +202,8 @@ function StaffValidateClassesPage() {
                     <h3>Tudo em ordem!</h3>
                     <p>
                         {isRequested
-                            ? 'Não há pedidos de aulas aguardando aprovação.'
-                            : 'Não há aulas pendentes de validação.'}
+                            ? 'Não há pedidos de coaching aguardando aprovação.'
+                            : 'Não há coachings pendentes de validação.'}
                     </p>
                 </div>
             )}
@@ -159,22 +219,101 @@ function StaffValidateClassesPage() {
                     showParentTally={!isRequested}
                     onConfirm={(id) => isRequested ? handleApprove(id) : handleValidate(id)}
                     onReject={(id) => isRequested ? openRejectModal(id) : handleCancel(id)}
-                    confirmLabel={isRequested ? 'Aceitar Aula' : 'Validar'}
-                    rejectLabel={isRequested ? 'Recusar Aula' : 'Cancelar'}
+                    onEdit={isRequested ? openEditModal : undefined}
+                    confirmLabel={isRequested ? 'Aceitar Coaching' : 'Validar'}
+                    rejectLabel={isRequested ? 'Recusar Coaching' : 'Cancelar'}
                 />
             ))}
+
+            {/* Edit Modal */}
+            <Modal
+                open={!!editTarget}
+                title="Editar Detalhes do Coaching"
+                onClose={() => setEditTarget(null)}
+            >
+                <form onSubmit={submitEdit}>
+                    {editTarget && (
+                        <div className="reject-class-summary">
+                            <div><strong>Modalidade:</strong> {editTarget.ModalityName ?? editTarget.modalityName ?? '—'}</div>
+                            <div><strong>Coach:</strong> {editTarget.CoachName ?? editTarget.coachName ?? '—'}</div>
+                        </div>
+                    )}
+
+                    <div className="modal-field" style={{ marginTop: '16px' }}>
+                        <label className="modal-label">Estúdio</label>
+                        <Select
+                            value={editStudioId}
+                            onChange={setEditStudioId}
+                            options={[
+                                { value: '', label: 'Manter atual' },
+                                ...studios
+                                    .filter(s => s.isActive ?? s.IsActive ?? true)
+                                    .map(s => ({
+                                        value: String(s.StudioId ?? s.studioId),
+                                        label: s.Name ?? s.name ?? '',
+                                    }))
+                            ]}
+                        />
+                    </div>
+
+                    <div className="modal-field" style={{ marginTop: '12px' }}>
+                        <label className="modal-label">Data</label>
+                        <input
+                            type="date"
+                            className="input"
+                            value={editStartDate}
+                            onChange={e => setEditStartDate(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                        <div className="modal-field" style={{ flex: 1 }}>
+                            <label className="modal-label">Hora início</label>
+                            <input
+                                type="time"
+                                className="input"
+                                value={editStartTime}
+                                onChange={e => setEditStartTime(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="modal-field" style={{ flex: 1 }}>
+                            <label className="modal-label">Hora fim</label>
+                            <input
+                                type="time"
+                                className="input"
+                                value={editEndTime}
+                                onChange={e => setEditEndTime(e.target.value)}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    {editError && <p style={{ color: 'var(--danger)', fontSize: '0.875rem', marginTop: '8px' }}>{editError}</p>}
+
+                    <div className="modal-actions" style={{ marginTop: '16px' }}>
+                        <Button type="button" variant="secondary" onClick={() => setEditTarget(null)}>
+                            Cancelar
+                        </Button>
+                        <Button type="submit" variant="primary" disabled={editSaving}>
+                            {editSaving ? 'A guardar...' : 'Guardar Alterações'}
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
 
             {/* Reject Modal */}
             <Modal
                 open={!!rejectTarget}
-                title="Recusar Aula"
+                title="Recusar Coaching"
                 onClose={() => { setRejectTarget(null); setRejectReason('') }}
             >
                 <form onSubmit={submitReject}>
                     <p>
-                        Indique o motivo para recusar a aula de{' '}
+                        Indique o motivo para recusar o coaching de{' '}
                         <strong>
-                            {rejectTarget?.ModalityName ?? rejectTarget?.modalityName ?? rejectTarget?.Modality ?? rejectTarget?.modality ?? 'esta aula'}
+                            {rejectTarget?.ModalityName ?? rejectTarget?.modalityName ?? rejectTarget?.Modality ?? rejectTarget?.modality ?? 'este coaching'}
                         </strong>.
                     </p>
 
