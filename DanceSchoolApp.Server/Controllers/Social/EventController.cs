@@ -40,15 +40,16 @@ namespace DanceSchoolApp.Server.Controllers.Social
             }
         }
 
-        //  GET /api/events/active 
-        // Parent/Coach use — only active events visible to all users.
+        //  GET /api/events/active
+        // All authenticated roles — only active events. SecretDescription populated per caller eligibility.
         [Authorize]
         [HttpGet("active")]
         public async Task<IActionResult> GetActive()
         {
             try
             {
-                var result = await _eventService.GetActiveAsync();
+                var role = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+                var result = await _eventService.GetActiveAsync(role, GetUserId());
 
                 if (!result.Any())
                     return NoContent();
@@ -61,14 +62,15 @@ namespace DanceSchoolApp.Server.Controllers.Social
             }
         }
 
-        //  GET /api/events/{id} 
+        //  GET /api/events/{id}
         [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
             try
             {
-                var result = await _eventService.GetByIdAsync(id);
+                var role = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+                var result = await _eventService.GetByIdAsync(id, role, GetUserId());
                 return Ok(result);
             }
             catch (KeyNotFoundException ex)
@@ -130,7 +132,32 @@ namespace DanceSchoolApp.Server.Controllers.Social
             }
         }
 
-        //  PATCH /api/events/{id}/activate 
+        //  PATCH /api/events/{id}/secret-description
+        // Coach use — update secret description only if the coach is assigned to this event.
+        [Authorize(Roles = "coach")]
+        [HttpPatch("{id}/secret-description")]
+        public async Task<IActionResult> UpdateSecretDescription(int id, [FromBody] EventSecretDescriptionRequest request)
+        {
+            try
+            {
+                await _eventService.UpdateSecretDescriptionAsync(id, GetUserId(), request.SecretDescription);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+            }
+        }
+
+        //  PATCH /api/events/{id}/activate
         [Authorize(Roles = "staff")]
         [HttpPatch("{id}/activate")]
         public async Task<IActionResult> Activate(int id)
