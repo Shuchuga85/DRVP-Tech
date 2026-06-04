@@ -7,12 +7,12 @@ import path from 'path';
 import child_process from 'child_process';
 import { env } from 'process';
 
-const target = env.ASPNETCORE_HTTPS_PORT ? `https://localhost:${env.ASPNETCORE_HTTPS_PORT}` :
-    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'https://localhost:7003';
-
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
-    let httpsConfig = undefined;
+    // Cert setup and dev-server config only apply when running `vite serve` locally.
+    // During `vite build` (Vercel CI) there is no dev server, no dotnet toolchain,
+    // and no local ASP.NET cert — so skip all of this entirely.
+    let serverConfig = {};
 
     if (command === 'serve') {
         const baseFolder =
@@ -42,9 +42,22 @@ export default defineConfig(({ command }) => {
             }
         }
 
-        httpsConfig = {
-            key: fs.readFileSync(keyFilePath),
-            cert: fs.readFileSync(certFilePath),
+        const target = env.ASPNETCORE_HTTPS_PORT
+            ? `https://localhost:${env.ASPNETCORE_HTTPS_PORT}`
+            : env.ASPNETCORE_URLS
+                ? env.ASPNETCORE_URLS.split(';')[0]
+                : 'https://localhost:7003';
+
+        serverConfig = {
+            proxy: {
+                '/api': { target, secure: false },
+                '/uploads': { target, secure: false },
+            },
+            port: parseInt(env.DEV_SERVER_PORT || '5173'),
+            https: {
+                key: fs.readFileSync(keyFilePath),
+                cert: fs.readFileSync(certFilePath),
+            },
         };
     }
 
@@ -55,19 +68,6 @@ export default defineConfig(({ command }) => {
                 '@': fileURLToPath(new URL('./src', import.meta.url))
             }
         },
-        server: {
-            proxy: {
-                '/api': {
-                    target,
-                    secure: false
-                },
-                '/uploads': {
-                    target,
-                    secure: false
-                }
-            },
-            port: parseInt(env.DEV_SERVER_PORT || '5173'),
-            https: httpsConfig
-        }
+        server: serverConfig,
     };
-})
+});

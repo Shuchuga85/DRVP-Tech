@@ -252,13 +252,16 @@ namespace DanceSchoolApp.Server.Services.Classes
             _context.CoachClasses.Add(coachClass);
             await _context.SaveChangesAsync();
 
+            decimal defaultPrice = await ComputeDefaultPriceAsync(coachClass.StartDatetime);
+
             _context.Participants.Add(new Participant
             {
-                IdCoachClass          = coachClass.ClassId,
-                IdStudent             = request.StudentId,
-                JoinedAt              = DateOnly.FromDateTime(DateTime.Now),
-                ValidationStatus      = (byte)ParticipantValidationStatus.Pending,
-                ParentEnrollmentStatus = (byte)ParentEnrollmentStatus.NotRequired
+                IdCoachClass           = coachClass.ClassId,
+                IdStudent              = request.StudentId,
+                JoinedAt               = DateOnly.FromDateTime(DateTime.Now),
+                ValidationStatus       = (byte)ParticipantValidationStatus.Pending,
+                ParentEnrollmentStatus = (byte)ParentEnrollmentStatus.NotRequired,
+                PerParticipantPrice    = defaultPrice
             });
 
             await _context.SaveChangesAsync();
@@ -369,6 +372,8 @@ namespace DanceSchoolApp.Server.Services.Classes
             _context.CoachClasses.Add(coachClass);
             await _context.SaveChangesAsync();
 
+            decimal defaultPrice = await ComputeDefaultPriceAsync(coachClass.StartDatetime);
+
             foreach (var studentId in request.StudentIds)
             {
                 _context.Participants.Add(new Participant
@@ -377,7 +382,8 @@ namespace DanceSchoolApp.Server.Services.Classes
                     IdStudent              = studentId,
                     JoinedAt               = DateOnly.FromDateTime(DateTime.Now),
                     ValidationStatus       = (byte)ParticipantValidationStatus.Pending,
-                    ParentEnrollmentStatus = (byte)ParentEnrollmentStatus.Pending
+                    ParentEnrollmentStatus = (byte)ParentEnrollmentStatus.Pending,
+                    PerParticipantPrice    = defaultPrice
                 });
             }
 
@@ -477,9 +483,10 @@ namespace DanceSchoolApp.Server.Services.Classes
         }
 
         // Staff responds second: CoachApproved → Approved (approve) or Rejected (reject).
-        public async Task StaffRespondAsync(int classId, bool approve, string? reason)
+        public async Task StaffRespondAsync(int classId, bool approve, string? reason, decimal? perParticipantPrice = null)
         {
             var coachClass = await _context.CoachClasses
+                .Include(c => c.Participants)
                 .FirstOrDefaultAsync(c => c.ClassId == classId);
 
             if (coachClass is null)
@@ -535,6 +542,14 @@ namespace DanceSchoolApp.Server.Services.Classes
                     entityType: "CoachClass",
                     entityId: classId);
             }
+
+            // If staff provided a per-participant price override, apply to all participants
+            if (approve && perParticipantPrice.HasValue)
+            {
+                foreach (var p in coachClass.Participants)
+                    p.PerParticipantPrice = perParticipantPrice.Value;
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task UpdateDetailsAsync(int classId, CoachClassUpdateDetailsRequest request)
@@ -566,6 +581,13 @@ namespace DanceSchoolApp.Server.Services.Classes
                 if (request.EndDatetime.Value <= (request.StartDatetime ?? coachClass.StartDatetime))
                     throw new InvalidOperationException("EndDatetime must be after StartDatetime.");
                 coachClass.EndDatetime = request.EndDatetime.Value;
+                changed = true;
+            }
+
+            if (request is not null && request.PerParticipantPrice.HasValue)
+            {
+                foreach (var p in coachClass.Participants)
+                    p.PerParticipantPrice = request.PerParticipantPrice.Value;
                 changed = true;
             }
 
@@ -734,7 +756,7 @@ namespace DanceSchoolApp.Server.Services.Classes
             }
         }
 
-        public async Task StaffValidateAsync(int classId, bool confirmed, string? reason)
+        public async Task StaffValidateAsync(int classId, bool confirmed, string? reason, decimal? perParticipantPrice = null)
         {
             var coachClass = await _context.CoachClasses
                 .Include(c => c.Participants)
@@ -752,6 +774,13 @@ namespace DanceSchoolApp.Server.Services.Classes
             coachClass.Status = confirmed
                 ? (byte)CoachClassStatus.Validated
                 : (byte)CoachClassStatus.Cancelled;
+
+            // Apply per-participant price override if provided when confirming validation
+            if (confirmed && perParticipantPrice.HasValue)
+            {
+                foreach (var p in coachClass.Participants)
+                    p.PerParticipantPrice = perParticipantPrice.Value;
+            }
 
             await _context.SaveChangesAsync();
 
@@ -1009,6 +1038,14 @@ namespace DanceSchoolApp.Server.Services.Classes
             return person is not null
                 ? $"{person.FirstName} {person.LastName}".Trim()
                 : $"Student {student.StudentId}";
+        }
+
+        private async Task<decimal> ComputeDefaultPriceAsync(DateTime classStart)
+        {
+            bool isSundayOrHoliday = classStart.DayOfWeek == DayOfWeek.Sunday;
+            decimal weekdayRate = await _appSettingService.GetDecimalAsync("class_price_weekday", 36.00m);
+            decimal weekendRate = await _appSettingService.GetDecimalAsync("class_price_weekend", 43.50m);
+            return isSundayOrHoliday ? weekendRate : weekdayRate;
         }
     }
 }

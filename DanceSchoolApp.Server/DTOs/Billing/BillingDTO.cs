@@ -20,6 +20,9 @@ namespace DanceSchoolApp.Server.DTOs.Billing
         public decimal HoursCompleted => HoursWeekday + HoursWeekend;
         public decimal TotalAmount { get; set; }
         public string? Nif { get; set; }
+        // Responsible / guardian
+        public string? ResponsibleName { get; set; }
+        public string? ResponsibleNif { get; set; }
         public string? PaymentStatus { get; set; }    // null — deferred
         public DateTime? LastPaymentDate { get; set; } // null — deferred
     }
@@ -65,5 +68,25 @@ namespace DanceSchoolApp.Server.DTOs.Billing
         public int TotalCount { get; set; }
         public int Page { get; set; }
         public int PageSize { get; set; }
+    }
+
+    //  Annual billing
+
+    public class BillingAnnualMonthPoint
+    {
+        public int Month { get; set; }
+        public string MonthLabel { get; set; } = null!;
+        public decimal TotalRevenue { get; set; }
+        public decimal TotalHours { get; set; }
+        public int TotalSessions { get; set; }
+    }
+
+    public class BillingAnnualResponse
+    {
+        public int Year { get; set; }
+        public List<BillingAnnualMonthPoint> Months { get; set; } = new();
+        public decimal YearTotalRevenue { get; set; }
+        public decimal YearTotalHours { get; set; }
+        public int YearTotalSessions { get; set; }
     }
 }

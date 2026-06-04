@@ -1,4 +1,6 @@
-const API_BASE = '' // Uses Vite proxy — requests to /api/* are forwarded to the backend
+// In dev (no VITE_API_URL set), empty string lets the Vite proxy handle /api/* requests.
+// In production (Vercel), set VITE_API_URL=https://your-api.azurewebsites.net in the Vercel dashboard.
+export const API_BASE = import.meta.env.VITE_API_URL || ''
 
 // Deduplicates concurrent refresh calls: if multiple requests fail with 401
 // at the same time, only one refresh call is made and all waiters share it.
@@ -6,7 +8,7 @@ let refreshPromise = null
 
 function tryRefresh() {
     if (!refreshPromise) {
-        refreshPromise = fetch('/api/auth/refresh', {
+        refreshPromise = fetch(`${API_BASE}/api/auth/refresh`, {
             method: 'POST',
             credentials: 'include',
         }).finally(() => { refreshPromise = null })
@@ -30,11 +32,16 @@ async function request(url, options = {}, retry = true) {
     }
 
     if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        const firstError = body?.errors
-            ? Object.values(body.errors).flat()[0]
-            : null
-        throw new Error(firstError || body.message || body.title || `Erro ${res.status}`)
+        const text = await res.text().catch(() => '')
+        let message = `Erro ${res.status}`
+        try {
+            const body = JSON.parse(text)
+            const firstError = body?.errors ? Object.values(body.errors).flat()[0] : null
+            message = firstError || body.message || body.title || message
+        } catch {
+            if (text) message = text
+        }
+        throw new Error(message)
     }
 
     const text = await res.text()

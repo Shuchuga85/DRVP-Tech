@@ -23,6 +23,30 @@ namespace DanceSchoolApp.Server.Controllers.Classes
             _appSettingService = appSettingService;
         }
 
+        //  GET /api/coachclasses/default-price?date=YYYY-MM-DD
+        // Returns the default per-participant price according to app settings (weekday/weekend).
+        [Authorize(Roles = "staff")]
+        [HttpGet("default-price")]
+        public async Task<IActionResult> GetDefaultPrice([FromQuery] string? date)
+        {
+            try
+            {
+                DateTime classDate;
+                if (string.IsNullOrWhiteSpace(date) || !DateTime.TryParse(date, out classDate))
+                    classDate = DateTime.Now;
+
+                bool isSunday = classDate.DayOfWeek == DayOfWeek.Sunday;
+                var weekdayRate = await _appSettingService.GetDecimalAsync("class_price_weekday", 36.00m);
+                var weekendRate = await _appSettingService.GetDecimalAsync("class_price_weekend", 43.50m);
+                var price = isSunday ? weekendRate : weekdayRate;
+                return Ok(new { price });
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+            }
+        }
+
         //  GET /api/coachclasses
         // Staff use — returns all classes regardless of status.
         [Authorize(Roles = "staff")]
@@ -170,15 +194,10 @@ namespace DanceSchoolApp.Server.Controllers.Classes
         //  POST /api/coachclasses
         // Parent use — requests an individual class for one of their own students.
         // MaxParticipants is enforced to 1 server-side.
-        // Returns 423 Locked when join_class_enabled is false.
         [Authorize(Roles = "parent")]
         [HttpPost]
         public async Task<IActionResult> ParentCreate([FromBody] CoachClassParentCreateRequest request)
         {
-            if (!await _appSettingService.GetBoolAsync("join_class_enabled", defaultValue: true))
-                return StatusCode(StatusCodes.Status423Locked,
-                    "A funcionalidade de pedido de aulas está desativada.");
-
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -245,7 +264,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
 
             try
             {
-                await _coachClassService.StaffRespondAsync(id, request.Approve, request.Reason);
+                await _coachClassService.StaffRespondAsync(id, request.Approve, request.Reason, request.PerParticipantPrice);
                 return NoContent();
             }
             catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
@@ -313,7 +332,7 @@ namespace DanceSchoolApp.Server.Controllers.Classes
 
             try
             {
-                await _coachClassService.StaffValidateAsync(id, request.Confirmed, request.Reason);
+                await _coachClassService.StaffValidateAsync(id, request.Confirmed, request.Reason, request.PerParticipantPrice);
                 return NoContent();
             }
             catch (KeyNotFoundException ex) { return NotFound(ex.Message); }

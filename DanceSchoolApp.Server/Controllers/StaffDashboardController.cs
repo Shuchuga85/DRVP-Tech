@@ -28,6 +28,19 @@ namespace DanceSchoolApp.Server.Controllers
             _appSettingService = appSettingService;
         }
 
+        // DEBUG: return the computed student billing rows as JSON for inspection
+        [HttpGet("billing/students/debug")]
+        public async Task<IActionResult> DebugBillingStudents(
+            [FromQuery] string month,
+            [FromQuery] string? search = null)
+        {
+            if (!TryParseYearMonth(month, out int year, out int monthInt))
+                return BadRequest("Invalid month format. Expected YYYY-MM.");
+
+            var result = await _billingService.GetStudentBillingAsync(year, monthInt, search, page: 1, pageSize: int.MaxValue);
+            return Ok(result);
+        }
+
         //  GET /api/staff/dashboard 
         [HttpGet("dashboard")]
         public async Task<IActionResult> GetDashboard()
@@ -221,7 +234,28 @@ namespace DanceSchoolApp.Server.Controllers
         }
 
 
-        //  Private helpers 
+        //  GET /api/staff/billing/annual
+        // Query: year (int, defaults to current year)
+        [HttpGet("billing/annual")]
+        public async Task<IActionResult> GetBillingAnnual([FromQuery] int? year = null)
+        {
+            int targetYear = year ?? DateTime.UtcNow.Year;
+
+            if (targetYear < 2000 || targetYear > 2100)
+                return BadRequest("Invalid year.");
+
+            try
+            {
+                var result = await _billingService.GetAnnualBillingAsync(targetYear);
+                return Ok(result);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+            }
+        }
+
+        //  Private helpers
 
         private static bool TryParseYearMonth(string? input, out int year, out int month)
         {
