@@ -142,8 +142,8 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 | Pagination | `GET /api/staff/validate-classes?tab={tab}&page={n}` |
 | "Aceitar Aula" button (Requisitadas) | `PATCH /api/coachclasses/{id}/staff-respond` body: `{ "approve": true }` |
 | "Recusar Aula" button (Requisitadas) | `PATCH /api/coachclasses/{id}/staff-respond` body: `{ "approve": false, "reason"?: "..." }` |
-| "Validar" button (Pendentes tab) | `PATCH /api/coachclasses/{id}/staff-validate` |
-| "Cancelar" button (Pendentes tab) | `PATCH /api/coachclasses/{id}/cancel` |
+| "Validar" button (Pendentes tab) | `PATCH /api/coachclasses/{id}/staff-validate` body: `{ "confirmed": true }` |
+| "Cancelar" button (Pendentes tab) | `PATCH /api/coachclasses/{id}/staff-validate` body: `{ "confirmed": false }` |
 
 
 ### `/staff/modalities` — Modalidades
@@ -255,11 +255,14 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 | Page mount | `GET /api/auth/me` |
 | Tab "Tabela de Alunos" (default) | `GET /api/staff/billing/students?month={YYYY-MM}&page=1&pageSize=25` |
 | Tab "Tabela de Professores" | `GET /api/staff/billing/coaches?month={YYYY-MM}&page=1&pageSize=25` |
-| Month picker change | re-calls with new `month` param |
+| Tab "Gráfico Anual" | `GET /api/staff/billing/annual?year={YYYY}` — returns 12 monthly points (totalRevenue, totalHours, totalSessions) plus year totals |
+| Month picker change (students/coaches tabs) | re-calls with new `month` param |
+| Year prev/next (annual tab) | re-calls with new `year` param |
+| Metric toggle (Receita/Horas/Coachings) | client-side only — re-renders SVG chart from cached response |
 | Search box | re-calls with `&search={query}` |
-| Status filter | re-calls with `&status={value}` |
 | Pagination | re-calls with `&page={n}` |
-| "Exportar Excel" button | `GET /api/staff/billing/students/export?month={YYYY-MM}` *(deferred — not yet implemented)* |
+| "Exportar Excel" — students | `GET /api/staff/billing/students/export?month={YYYY-MM}` → streams .xlsx |
+| "Exportar Excel" — coaches | `GET /api/staff/billing/coaches/export?month={YYYY-MM}` → streams .xlsx |
 
 
 
@@ -290,16 +293,36 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 
 ### `/coach/validate` — Validar Aulas
 
+#### Tab: Pedidos de Coaching (default)
+
 | Element | Call |
 |---|---|
 | Page mount | `GET /api/auth/me` |
-| Tab "Pedidos de Aula" (default) | `GET /api/coach/validate?tab=requests&page=1&pageSize=10` |
-| Tab "Validações" | `GET /api/coach/validate?tab=validations&page=1&pageSize=10` |
-| Pagination | re-calls with `&page={n}` |
+| Tab mount | `GET /api/coach/validate?tab=requests&page=1&pageSize=10` |
 | "Aceitar Aula" button | `PATCH /api/coachclasses/{id}/coach-respond` body: `{ "accept": true }` |
 | "Recusar Aula" button | `PATCH /api/coachclasses/{id}/coach-respond` body: `{ "accept": false, "reason"?: "..." }` |
-| "Realizada" button (validations tab) | `PATCH /api/coachclasses/{id}/coach-validate` body: `{ didTeach: true }` |
-| "Não Realizada" button (validations tab) | `PATCH /api/coachclasses/{id}/coach-validate` body: `{ didTeach: false }` |
+
+> Note: `coach-respond` is **only valid for parent-created classes** (`ClassOrigin=0`). For coach-created classes, the endpoint throws 400 — the coach does not approve their own classes.
+
+#### Tab: Validações
+
+| Element | Call |
+|---|---|
+| Tab mount | `GET /api/coach/validate?tab=validations&page=1&pageSize=10` |
+| "Realizada" button | `PATCH /api/coachclasses/{id}/coach-validate` body: `{ didTeach: true }` |
+| "Não Realizada" button | `PATCH /api/coachclasses/{id}/coach-validate` body: `{ didTeach: false }` |
+
+#### Tab: Criar Aula (coach-initiated group or individual class)
+
+Coach selects modality, students, date, and time. Parents of selected students receive enrollment approval notifications.
+
+| Element | Call |
+|---|---|
+| Modality dropdown populate | `GET /api/modalities` |
+| Student list (filtered by modality) | `GET /api/coach/students?modalityId={id}` — returns active+accepted students in that modality |
+| "Criar Aula" submit | `POST /api/coachclasses/coach-create` body: `{ modalityId, startDatetime, endDatetime, maxParticipants, studentIds[] }` |
+
+> `ClassOrigin` is set to `1=CoachCreated`. Participants are created with `ParentEnrollmentStatus=1=Pending`. When all parents respond (≥1 approved) → auto-advances to `CoachApproved`; all rejected → auto-cancels.
 
 ### `/coach/agenda` — Agenda
 
@@ -310,6 +333,18 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 | Navigation arrows | `GET /api/coach/agenda?from={newStart}&to={newEnd}` |
 | Day click → detail below | uses data already in response |
 | "Cancelar" button on Approved class | `PATCH /api/coachclasses/{id}/cancel` *(staff only — coach cannot cancel; remove this button from coach view)* |
+
+### `/coach/marketplace` — Marketplace (read-only)
+
+| Element | Call |
+|---|---|
+| Page mount | `GET /api/auth/me` |
+| Item grid (all items) | `GET /api/items?page=1&pageSize=12` |
+| Category filter | `GET /api/item-categories` (populate dropdown) then re-call with `&categoryId={id}` |
+| Search box | re-call with `&search={query}` |
+| Pagination | re-call with `&page={n}&pageSize=12` |
+
+> Coaches see all items (school + community) but have **no** requisition capability. Cards are non-clickable and show no loan/request buttons.
 
 ### `/coach/events` — Eventos (read-only)
 
@@ -340,7 +375,9 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 | Navigation arrows (prev/next week) | `GET /api/ee/classes/my?from={newStart}&to={newEnd}` |
 | Day click → detail list below | uses data already in response |
 
-#### Tab: Criar Aula
+#### Tab: Criar Coaching (individual)
+
+Parent can only request **individual** classes (MaxParticipants = 1, single student that is their own child).
 
 | Element | Call |
 |---|---|
@@ -348,11 +385,24 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 | Coach dropdown populate | `GET /api/ee/coaches` (parent-facing endpoint — returns active coaches with modalities) |
 | Calendar slot grid (on dropdown change or initial) | `GET /api/ee/classes/available-slots?from={weekStart}&to={weekEnd}&modalityId={id}&coachId={id}` |
 | Navigation arrows on slot calendar | re-calls with new date range |
-| "Pedir Aula" button on a slot → modal open | no API call yet (just opens modal) |
+| "Pedir Coaching" button on a slot → modal open | no API call yet (just opens modal) |
 | Modal — student dropdown | `GET /api/ee/students` (already loaded or re-fetch) |
-| Modal — "Confirmar Pedido" submit | `POST /api/coachclasses` body: `{ coachId, modalityId, startDatetime, endDatetime, maxParticipants, studentIds[] }` |
+| Modal — "Confirmar Pedido" submit | `POST /api/coachclasses` body: `{ coachId, modalityId, startDatetime, endDatetime, studentId }` |
 
-> Gap: `GET /api/coaches` is currently `[Authorize(Roles = "staff")]`. The parent needs a read-only coach list to populate the dropdown. **Fix:** add `parent` to the roles on `GET /api/coaches`, OR create `GET /api/coaches/available` under `/api/ee/` that returns only active coaches with their modalities. The latter is cleaner.
+> Note: MaxParticipants is hardcoded to 1 on the backend for parent-created classes. `studentId` is a single integer (not an array). `ClassOrigin` is set to `0=ParentCreated`.
+
+#### Tab: Inscrições (coach-created enrollment approvals)
+
+Shown when a coach created a class and the parent's student was included. Parent must approve or reject before the class advances.
+
+| Element | Call |
+|---|---|
+| Tab mount — load pending enrollments | `GET /api/coachclasses/parent/{userId}` to find `ClassOrigin=1 + Status=Requested` classes, then `GET /api/coachclasses/{id}` per class to get participant detail |
+| "Aceitar" button | `PATCH /api/participants/{participantId}/parent-approve-enrollment` body: `{ "approve": true }` |
+| "Rejeitar" button | `PATCH /api/participants/{participantId}/parent-approve-enrollment` body: `{ "approve": false }` |
+
+> When all parents respond: if ≥1 approved → class auto-advances to `CoachApproved(8)`; if all rejected → class auto-cancels to `Cancelled(3)`.
+> `ParentEnrollmentStatus` values: `0=NotRequired` (parent-created), `1=Pending`, `2=Approved`, `3=Rejected`.
 
 #### Tab: Aulas Existentes
 
@@ -385,7 +435,7 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 | "Editar" → modal → form submit | `PUT /api/students/{id}` body: `{ firstName, lastName, birthDate, phone, address, nif }` |
 | "Remover" button | `PATCH /api/students/{id}/deactivate` |
 
-### `/ee/inventario` — Inventário (lista: tabs Escolar, Comunidade)
+### `/ee/inventario` — Inventário (lista: tabs Escolar, Comunidade, Pedidos)
 
 #### Tab: Escolar
 
@@ -396,8 +446,6 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 | Search box | re-call with `&search={query}` |
 | Pagination | `GET /api/ee/inventory/school?page={n}` |
 | Item card click → detail page | navigate to `/ee/inventario/:itemId` (no API call on list page) |
-| My Requisitions (section below grid) | `GET /api/requisitions` (parent sees own only) |
-| Return requisition | `PATCH /api/requisitions/{id}/return` body: `{ returnQuantity }` |
 
 #### Tab: Comunidade
 
@@ -411,6 +459,25 @@ The header mounts once per session. It does NOT call an endpoint on every naviga
 | Item card click → detail page | navigate to `/ee/inventario/:itemId` (no API call on list page) |
 | "Anunciar Item" → form submit | `POST /api/items/personal` body: `{ name, description?, contactPhone?, contactEmail?, contactAddress?, idCategory? }` → navigates to new item's detail page |
 
+#### Tab: Pedidos
+
+Two sections on the same tab:
+
+**Os meus pedidos** (outgoing — requisitions the parent made)
+
+| Element | Call |
+|---|---|
+| Section mount | `GET /api/requisitions` (parent sees their own only) |
+| Return item | `PATCH /api/requisitions/{id}/return` body: `{ returnQuantity }` |
+
+**Pedidos recebidos** (incoming — requisitions on items the parent owns)
+
+| Element | Call |
+|---|---|
+| Section mount | `GET /api/requisitions/received` — returns community-item requisitions where `item.idOwner === authenticatedUserId` |
+| "Aprovar" → modal submit | `PATCH /api/requisitions/{id}/owner-review` body: `{ approve: true, expectedReturnDate?, note? }` |
+| "Rejeitar" button | `PATCH /api/requisitions/{id}/owner-review` body: `{ approve: false }` |
+
 ### `/ee/inventario/:itemId` — Detalhe do Item (parent)
 
 Three access modes determined client-side by `item.fromSchool` and `item.idOwner === user.userId`:
@@ -423,12 +490,14 @@ Three access modes determined client-side by `item.fromSchool` and `item.idOwner
 | Variants for loan dropdown | embedded in `GET /api/items/{id}` response |
 | "Pedir Empréstimo" → form submit | `POST /api/requisitions` body: `{ itemVariantId, quantity, needFrom?, needUntil?, note? }` |
 
-#### Mode B — Community item, not owner (read-only + contact info)
+#### Mode B — Community item, not owner (contact info + request form)
 
 | Element | Call |
 |---|---|
 | Page mount | `GET /api/items/{id}` |
 | Contact info display | no API call — `contactPhone`/`contactEmail` from loaded item |
+| Variants dropdown (active, quantity > 0) | embedded in `GET /api/items/{id}` response |
+| "Enviar Pedido" → form submit | `POST /api/requisitions` body: `{ itemVariantId, quantity, needFrom?, needUntil?, note? }` — same endpoint as school loans; `fromSchool=false` routes review to the item owner instead of staff |
 
 #### Mode C — Community item, owner (full management)
 
@@ -452,6 +521,16 @@ Three access modes determined client-side by `item.fromSchool` and `item.idOwner
 |---|---|
 | Page mount | `GET /api/auth/me` |
 | Events list | `GET /api/events/active` (non-staff use `/active` — `GET /api/events` is staff-only) |
+
+---
+
+## Changelog
+
+| Session | Changes |
+|---|---|
+| Task 1 — Parent-to-parent requisitions | `POST /api/requisitions` now accepts community items (school-only guard removed). Staff `PATCH /api/requisitions/{id}/review` rejects community items (returns 400). New `GET /api/requisitions/received` and `PATCH /api/requisitions/{id}/owner-review` for item owners. `ItemRequisitionListResponse` now includes `fromSchool` flag. |
+| Task 2 — Coach marketplace | `/coach/marketplace` page added (read-only, no requisition). Uses `GET /api/items` — same endpoint as staff inventory, role-gated client-side only. |
+| Task 3 — Annual billing graph | `GET /api/staff/billing/annual?year=YYYY` added. Returns `BillingAnnualResponse` with 12 `BillingAnnualMonthPoint` entries. Staff billing page gains "Gráfico Anual" tab with SVG bar chart switchable between Receita/Horas/Coachings. Excel exports (`/students/export`, `/coaches/export`) were already implemented — marked as deferred in previous docs, now corrected. |
 
 ---
 
